@@ -87,9 +87,7 @@ export const Login = () => {
               <div className="login-form__bottom">
                 <span>
                   No account?{" "}
-                  <a onClick={() => router.push("/registration")}>
-                    Register now
-                  </a>
+                  <a onClick={() => router.push("/registration")}>Register</a>
                 </span>
                 <a href="#">Lost your password?</a>
               </div>
