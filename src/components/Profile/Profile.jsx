@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ProfileAside } from "./ProfileAside/ProfileAside";
 import { ProfileOrders } from "./ProfileOrders/ProfileOrders";
-
+import { ProfileWishlist } from "./ProfileWishlist/ProfileWishlist";
+import { ProfileMyInfo } from "./ProfileMyInfo/ProfileMyInfo";
 export const Profile = () => {
   const [activeTab, setActiveTab] = useState("orders");
   return (
@@ -35,26 +36,11 @@ export const Profile = () => {
                 </ul>
 
                 <div className="box-tab-cont">
-                  {activeTab === "myInfo" && (
-                    <div className="tab-cont" id="profile-tab_1">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                      Neque quasi, sit vel exercitationem ea veniam quo
-                      asperiores corporis dignissimos quod id. Adipisci libero
-                      similique a commodi fugiat quibusdam maiores ipsa!
-                    </div>
-                  )}
+                  {activeTab === "myInfo" && <ProfileMyInfo />}
 
                   {activeTab === "orders" && <ProfileOrders />}
 
-                  {activeTab === "wishList" && (
-                    <div className="tab-cont" id="profile-tab_3">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                      Cumque tempore saepe blanditiis omnis. Reprehenderit
-                      officia atque facere tempora, neque quaerat et aliquid
-                      tempore mollitia, nemo, minima iste placeat cupiditate
-                      odio?
-                    </div>
-                  )}
+                  {activeTab === "wishList" && <ProfileWishlist />}
                 </div>
               </div>
             </div>
@@ -70,3 +56,4 @@ export const Profile = () => {
     </>
   );
 };
+export default Profile;

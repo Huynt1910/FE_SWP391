@@ -19,7 +19,7 @@ export const navItem = [
     auth: false,
   },
   {
-    title: "INFORMATION",
+    title: "Information",
     path: "#",
     auth: false,
     submenu: [
