@@ -7,6 +7,7 @@ export const Nav = ({ navItem, auth }) => {
   const router = useRouter();
   const [sub, setSub] = useState(false);
   const [height, width] = useWindowSize();
+  const [activeSubmenu, setActiveSubmenu] = useState(null);
 
   useEffect(() => {
     if (height > 768) {
@@ -22,35 +23,37 @@ export const Nav = ({ navItem, auth }) => {
   };
 
   return (
-    <ul className="header-nav">
-      {navItem.map((nav) =>
-        shouldShowNavItem(nav) ? (
+    <nav className="header-nav">
+      <ul className="header-nav-list">
+        {navItem.map((item, index) => (
           <li
-            key={nav.path}
-            onClick={() => {
-              nav.subNav ? setSub(!sub) : "";
-            }}
+            key={index}
+            className={`header-nav-item ${item.submenu ? "has-child" : ""}`}
+            onMouseEnter={() => setActiveSubmenu(index)}
+            onMouseLeave={() => setActiveSubmenu(null)}
           >
-            <Link
-              href={nav.path}
-              className={nav.path === router.pathname ? "active" : ""}
-            >
-              {nav.name}
-            </Link>
-            {nav.subNav && (
-              <ul className={sub ? "active" : ""}>
-                {nav.subNav.filter(shouldShowNavItem).map((sub) => (
-                  <li key={sub.path}>
-                    <Link href={sub.path} legacyBehavior>
-                      {sub.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            {item.submenu ? (
+              <>
+                <span className="nav-link">
+                  {item.title}
+                  <i className="icon-arrow-down"></i>
+                </span>
+                {activeSubmenu === index && (
+                  <ul className="submenu">
+                    {item.submenu.map((subItem, subIndex) => (
+                      <li key={subIndex}>
+                        <Link href={subItem.path}>{subItem.title}</Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            ) : (
+              <Link href={item.path}>{item.title}</Link>
             )}
           </li>
-        ) : null
-      )}
-    </ul>
+        ))}
+      </ul>
+    </nav>
   );
 };

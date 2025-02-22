@@ -18,7 +18,7 @@ export const Login = () => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checnpnpmkbox" ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
