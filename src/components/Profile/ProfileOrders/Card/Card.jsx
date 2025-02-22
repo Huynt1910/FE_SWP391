@@ -3,40 +3,40 @@ export const Card = ({ order, index, onCollapse, active }) => {
 
   return (
     <>
-      <div className={`profile-orders__item ${active === index && 'active'}`}>
-        <div className='profile-orders__row'>
-          <div className='profile-orders__col'>
-            <span className='profile-orders__col-mob'>date</span>
-            <span className='profile-orders__item-date'>{date}</span>
+      <div className={`profile-orders__item ${active === index && "active"}`}>
+        <div className="profile-orders__row">
+          <div className="profile-orders__col">
+            <span className="profile-orders__col-mob">date</span>
+            <span className="profile-orders__item-date">{date}</span>
           </div>
-          <div className='profile-orders__col'>
-            <span className='profile-orders__col-mob'>Delivery address</span>
-            <span className='profile-orders__item-addr'>{deliveryAddress}</span>
+          <div className="profile-orders__col">
+            <span className="profile-orders__col-mob">Delivery address</span>
+            <span className="profile-orders__item-addr">{deliveryAddress}</span>
           </div>
-          <div className='profile-orders__col'>
-            <span className='profile-orders__col-mob'>amount</span>
-            <span className='profile-orders__item-price'>${amount}</span>
+          <div className="profile-orders__col">
+            <span className="profile-orders__col-mob">amount</span>
+            <span className="profile-orders__item-price">${amount}</span>
           </div>
-          <div className='profile-orders__col'>
-            <span className='profile-orders__col-mob'>Status</span>
+          <div className="profile-orders__col">
+            <span className="profile-orders__col-mob">Status</span>
             <span
               className={`profile-orders__col-${
-                status.delivered ? 'delivered' : 'onway'
+                status.delivered ? "delivered" : "onway"
               }`}
             >
               {status.onWay
-                ? 'on it’s way'
+                ? "on it’s way"
                 : status.delivered
-                ? 'DELIVERED'
+                ? "DELIVERED"
                 : null}
             </span>
             <span
               onClick={() => onCollapse(index)}
-              className='profile-orders__col-btn'
+              className="profile-orders__col-btn"
             ></span>
           </div>
         </div>
-        <div className='profile-orders__content'>
+        <div className="profile-orders__content">
           <ul>
             {orderItems.map((item, index) => (
               <li key={index}>

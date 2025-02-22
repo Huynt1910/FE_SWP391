@@ -52,9 +52,14 @@ export const Header = () => {
 
   const headerOptions = [
     { path: "/faq", icon: "icon-search", auth: false },
-    { path: "/profile", icon: "icon-user", auth: true },
-    { path: "/wishlist", icon: "icon-heart", auth: true },
-    { path: "/cart", icon: "icon-cart", auth: true, badge: cart.length ?? "0" },
+    { path: "/profile", icon: "icon-user", auth: false },
+    { path: "/wishlist", icon: "icon-heart", auth: false },
+    {
+      path: "/cart",
+      icon: "icon-cart",
+      auth: false,
+      badge: cart.length ?? "0",
+    },
     { icon: "icon-logout", auth: true, isLogout: true },
     { icon: "icon-login", auth: true, isLogin: true },
   ];
