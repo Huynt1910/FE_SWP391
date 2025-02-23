@@ -1,0 +1,336 @@
+.profileMyInfo-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 40px; // Add horizontal padding
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.profileMyInfo-title-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.profileMyInfo-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.profileMyInfo-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profileMyInfo-top-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  align-items: flex-start;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #ddd; // Add divider line
+}
+
+.profileMyInfo-left-section {
+  flex: 1;
+  max-width: 60%;
+}
+
+.profileMyInfo-right-section {
+  width: 300px;
+}
+
+.profileMyInfo-info {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.profileMyInfo-form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+
+  &:nth-child(2),  // Username
+  &:nth-child(3) {
+    // Name
+    .profileMyInfo-input {
+      width: 50%;
+    }
+  }
+}
+
+.profileMyInfo-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.profileMyInfo-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.profileMyInfo-input-disabled {
+  background-color: #f0f0f0;
+}
+
+.profileMyInfo-radio-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.profileMyInfo-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+
+  input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.profileMyInfo-dob-group {
+  display: flex;
+  gap: 10px;
+}
+
+.profileMyInfo-select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.profileMyInfo-checkbox {
+  margin-right: 8px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.profileMyInfo-image-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  margin-left: 20px;
+}
+
+.profileMyInfo-security-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 0; // Remove top margin
+  margin-bottom: 0; // Remove bottom margin
+}
+
+.profileMyInfo-personal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 24px;
+  width: 100%;
+  border-top: 1px solid #eee; // Add separator line
+}
+
+.profileMyInfo-info-title,
+.profileMyInfo-security-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #333;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #ff69b4;
+}
+
+.profileMyInfo-image-container {
+  width: 150px;
+  height: 150px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.profileMyInfo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profileMyInfo-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileMyInfo-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.profileMyInfo-file-label {
+  display: inline-block;
+  padding: 10px;
+  background-color: #add8e6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  width: 100px;
+}
+
+.profileMyInfo-file-input {
+  display: none;
+}
+
+.profileMyInfo-delete-button {
+  padding: 10px;
+  background-color: white;
+  color: red;
+  border: 1px solid red;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  width: 100px;
+}
+
+.profileMyInfo-save-button {
+  display: block;
+  margin: 20px auto;
+  width: fit-content; // Make button width fit content
+  min-width: 100px; // Minimum width
+  max-width: 200px; // Maximum width
+  padding: 12px 24px;
+  background-color: #ff69b4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  text-align: center;
+}
+
+.profileMyInfo-save-button:hover {
+  background-color: #ff1493;
+}
+
+.profileMyInfo-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.profileMyInfo-change-button {
+  padding: 8px 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #45a049;
+  }
+}
+
+.profileMyInfo-password-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #ff69b4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+
+  &:hover {
+    background-color: #ff1493;
+  }
+}
+
+.profileMyInfo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.profileMyInfo-modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  h3 {
+    margin: 0;
+    text-align: center;
+    color: #333;
+  }
+
+  .profileMyInfo-input {
+    margin: 0;
+  }
+}
+
+.profileMyInfo-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+
+  button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:first-child {
+      background-color: #4caf50;
+      color: white;
+
+      &:hover {
+        background-color: #45a049;
+      }
+    }
+
+    &:last-child {
+      background-color: #f44336;
+      color: white;
+
+      &:hover {
+        background-color: #da190b;
+      }
+    }
+  }
+}
