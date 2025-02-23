@@ -3,8 +3,10 @@ import { ProfileAside } from "./ProfileAside/ProfileAside";
 import { ProfileOrders } from "./ProfileOrders/ProfileOrders";
 import { ProfileWishlist } from "./ProfileWishlist/ProfileWishlist";
 import { ProfileMyInfo } from "./ProfileMyInfo/ProfileMyInfo";
+
 export const Profile = () => {
   const [activeTab, setActiveTab] = useState("orders");
+
   return (
     <>
       {/* <!-- BEGIN PROFILE --> */}
@@ -37,9 +39,7 @@ export const Profile = () => {
 
                 <div className="box-tab-cont">
                   {activeTab === "myInfo" && <ProfileMyInfo />}
-
                   {activeTab === "orders" && <ProfileOrders />}
-
                   {activeTab === "wishList" && <ProfileWishlist />}
                 </div>
               </div>
@@ -56,4 +56,5 @@ export const Profile = () => {
     </>
   );
 };
+
 export default Profile;
