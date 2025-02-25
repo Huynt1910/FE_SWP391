@@ -60,7 +60,7 @@ export const Header = () => {
       auth: false,
       badge: cart.length ?? "0",
     },
-    { icon: "icon-logout", auth: true, isLogout: true },
+    { icon: "icon-logout", auth: false, isLogout: true },
     { icon: "icon-login", auth: true, isLogin: true },
   ];
 
@@ -78,14 +78,17 @@ export const Header = () => {
           </div>
         )}
         <div className={`header-content ${fixedNav ? "fixed" : ""}`}>
+          {/* Logo */}
           <div className="header-logo">
             <Link href="/">
               <img src={header.logo} alt="" />
             </Link>
           </div>
+
+          {/* Nav */}
           <div style={{ right: openMenu ? 0 : -360 }} className="header-box">
-            {/* Nav */}
             <Nav navItem={navItem} auth={self} />
+
             {/* header options */}
             <ul className="header-options">
               {headerOptions
@@ -93,7 +96,7 @@ export const Header = () => {
                 .map((option, index) => (
                   <li key={index}>
                     {option.isLogout ? (
-                      <button className="sign-out-btn" onClick={logOut}>
+                      <button className="signout-btn" onClick={logOut}>
                         Signout
                       </button>
                     ) : (
@@ -104,16 +107,15 @@ export const Header = () => {
                     )}
                   </li>
                 ))}
+              {!self && (
+                <div className="login-btn">
+                  <Link href="/login" className="login-btn">
+                    Login
+                  </Link>
+                </div>
+              )}
             </ul>
           </div>
-
-          {!self && (
-            <div className="header-login">
-              <Link href="/login" className="login-btn">
-                Login
-              </Link>
-            </div>
-          )}
 
           <div
             onClick={() => setOpenMenu(!openMenu)}
