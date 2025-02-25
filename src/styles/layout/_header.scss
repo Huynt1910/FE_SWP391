@@ -30,7 +30,7 @@ header {
       font-size: 14px;
       color: #ffffff;
       opacity: 0.8;
-      text-transform: uppercase;
+      text-transform: l;
       // margin-left: 79px;
       margin-left: 60px;
     }
@@ -455,19 +455,42 @@ header {
       cursor: pointer;
 
       .nav-link {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-
+        color: #222222;
+        font-size: 14px;
+        line-height: 17px;
+        position: relative;
+        text-transform: uppercase;
+        z-index: 2;
+        &:after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 30px;
+          height: 37px;
+          opacity: 0;
+          background-image: url(/assets/img/link-bg.png);
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          transition: $transition;
+        }
+        &:hover,
+        &.active {
+          color: #d05278;
+          &:after {
+            opacity: 1;
+          }
+        }
         i {
-          font-size: 12px;
           transition: transform 0.3s;
         }
       }
 
       &:hover {
         .icon-arrow-down {
-          transform: rotate(180deg);
+          transform: rotate(90deg);
         }
       }
 
@@ -481,6 +504,9 @@ header {
         border-radius: 4px;
         padding: 8px 0;
         z-index: 1000;
+      }
+      &:hover {
+        display: block;
       }
     }
   }
@@ -513,9 +539,8 @@ header {
       color: #d05278;
     }
   }
-
   .submenu {
-    position: absolute;
+    position: fixed;
     top: 100%;
     left: 0;
     background: #fff;

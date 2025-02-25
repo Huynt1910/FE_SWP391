@@ -45,14 +45,4 @@ export const navItem = [
       },
     ],
   },
-  {
-    name: "blog",
-    path: "/blog",
-    auth: false,
-  },
-  {
-    name: "contact",
-    path: "/contact",
-    auth: false,
-  },
 ];

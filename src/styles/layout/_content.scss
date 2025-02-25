@@ -7033,3 +7033,401 @@ input[type="search"]::-webkit-search-results-decoration {
 }
 
 // ========================================== My info  ============================================= //
+.profile-my-info-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 40px; // Add horizontal padding
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.profile-my-info-title-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.profile-my-info-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.profile-my-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.profile-my-info-info-container {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 24px;
+}
+
+.profile-my-info-top-section {
+  display: none;
+}
+
+.profile-my-info-left-section {
+  flex: 1;
+  max-width: 60%;
+}
+
+.profile-my-info-right-section {
+  width: 300px;
+  display: flex;
+  justify-content: center; // Center horizontally
+  align-items: center; // Center vertically
+}
+
+.profile-my-info-info {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.profile-my-info-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+
+  .profile-my-info-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  // Remove the width constraint for username and name inputs
+  &:nth-child(2),
+  &:nth-child(3) {
+    .profile-my-info-input {
+      width: 100%; // Make inputs full width
+    }
+  }
+}
+
+.profile-my-info-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.profile-my-info-input {
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+
+  &-disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
+}
+
+.profile-my-info-input-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  input {
+    flex: 1;
+  }
+
+  button {
+    padding: 8px 16px;
+    white-space: nowrap;
+  }
+}
+
+.profile-my-info-radio-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.profile-my-info-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+
+  input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.profile-my-info-dob-group {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-my-info-select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.profile-my-info-checkbox {
+  margin-right: 8px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.profile-my-info-image-section {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: -20px; // Move up slightly
+  justify-content: center; // Center vertically
+  height: 100%; // Take full height
+  margin: auto 0; // Center vertically in parent
+}
+
+.profile-my-info-security-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+
+  .profile-my-info-security-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+  }
+}
+
+.profile-my-info-personal-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 24px;
+  width: 100%;
+  border-top: 1px solid #eee; // Add separator line
+  flex: 1;
+}
+
+.profile-my-info-bottom-section {
+  display: none;
+}
+
+.profile-my-info-info-title,
+.profile-my-info-security-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #333;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #d05278;
+}
+
+.profile-my-info-image-container {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #d05278;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px; // Center horizontally and keep bottom margin
+}
+
+.profile-my-info-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-my-info-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-my-info-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-my-info-file-label {
+  display: inline-block;
+  padding: 10px;
+  background-color: #add8e6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  width: 100px;
+}
+
+.profile-my-info-file-input {
+  display: none;
+}
+
+.profile-my-info-delete-button {
+  padding: 10px;
+  background-color: white;
+  color: red;
+  border: 1px solid red;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  width: 100px;
+}
+
+.profile-my-info-save-button {
+  display: block;
+  margin: 20px auto;
+  width: fit-content; // Make button width fit content
+  min-width: 100px; // Minimum width
+  max-width: 200px; // Maximum width
+  padding: 12px 24px;
+  background-color: #d05278;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  text-align: center;
+}
+
+.profile-my-info-save-button:hover {
+  background-color: #c65875;
+}
+
+.profile-my-info-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.profile-my-info-change-button {
+  background-color: #d05278;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #c65875;
+  }
+}
+
+.profile-my-info-password-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: fit-content; // Adjust width to content
+  padding: 8px 16px;
+  margin-left: auto; // Move to right side
+  background-color: #d05278;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+
+  &::before {
+    content: "Change password";
+    font-weight: 500;
+    color: #666;
+    margin-right: 8px;
+  }
+
+  &:hover {
+    background-color: #c65875;
+  }
+}
+
+.profile-my-info-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.profile-my-info-modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  h3 {
+    margin: 0;
+    text-align: center;
+    color: #333;
+  }
+
+  .profile-my-info-input {
+    margin: 0;
+  }
+}
+
+.profile-my-info-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+
+  button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:first-child {
+      background-color: #4caf50;
+      color: white;
+
+      &:hover {
+        background-color: #45a049;
+      }
+    }
+
+    &:last-child {
+      background-color: #f44336;
+      color: white;
+
+      &:hover {
+        background-color: #da190b;
+      }
+    }
+  }
+}
+
+// Remove any margin-top from existing .profile-my-info-info-container if present
+.profile-my-info-info-container {
+  margin-top: 0;
+}

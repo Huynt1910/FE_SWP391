@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import styles from "./ProfileMyInfo.module.scss";
 
 const ProfileMyInfo = () => {
   const [username, setUsername] = useState("triuhuynquyn659");
@@ -73,277 +72,196 @@ const ProfileMyInfo = () => {
   };
 
   return (
-    <div className={styles["profileMyInfo-container"]}>
-      <div className={styles["profileMyInfo-title-container"]}>
-        <div className={styles["profileMyInfo-title"]}>Profile</div>
+    <div className="profile-my-info-container">
+      <div className="profile-my-info-title-container">
+        <div className="profile-my-info-title">Hồ Sơ Của Tôi</div>
       </div>
 
-      <div className={styles["profileMyInfo-content"]}>
-        {/* Top section with security and image */}
-        <div className={styles["profileMyInfo-top-section"]}>
-          <div className={styles["profileMyInfo-left-section"]}>
-            <div className={styles["profileMyInfo-security-section"]}>
-              <div className={styles["profileMyInfo-security-title"]}>
-                Security
+      <div className="profile-my-info-content">
+        {/* Personal info and image sections */}
+        <div className="profile-my-info-info-container">
+          <div className="profile-my-info-personal-section">
+            <div className="profile-my-info-info-title">Thông tin cá nhân</div>
+            <div className="profile-my-info-form-group">
+              <label className="profile-my-info-label">Username</label>
+              <input
+                type="text"
+                value={username}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
+              />
+            </div>
+            <div className="profile-my-info-form-group">
+              <label className="profile-my-info-label">Full name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="profile-my-info-input"
+              />
+            </div>
+            <div className="profile-my-info-form-group">
+              <label className="profile-my-info-label">Gender</label>
+              <div className="profile-my-info-radio-group">
+                {["Male", "Female", "Other"].map((option) => (
+                  <label key={option} className="profile-my-info-radio-label">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value={option}
+                      checked={gender === option}
+                      onChange={() => handleGenderChange(option)}
+                      className="profile-my-info-radio-input"
+                    />
+                    {option}
+                  </label>
+                ))}
               </div>
-              <div className={styles["profileMyInfo-form-group"]}>
-                <label className={styles["profileMyInfo-label"]}>Email</label>
-                <div className={styles["profileMyInfo-input-group"]}>
-                  <input
-                    type="text"
-                    value={email}
-                    disabled
-                    className={`${styles["profileMyInfo-input"]} ${styles["profileMyInfo-input-disabled"]}`}
-                  />
-                  <button
-                    onClick={() => setShowEmailModal(true)}
-                    className={styles["profileMyInfo-change-button"]}
-                  >
-                    Change
-                  </button>
-                </div>
+            </div>
+            <div className="profile-my-info-form-group">
+              <label className="profile-my-info-label">Birthday</label>
+              <div className="profile-my-info-dob-group">
+                <select
+                  value={dob.day}
+                  onChange={(e) => setDob({ ...dob, day: e.target.value })}
+                  className="profile-my-info-select"
+                >
+                  <option value="">Day</option>
+                  {[...Array(31).keys()].map((day) => (
+                    <option key={day + 1} value={day + 1}>
+                      {day + 1}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={dob.month}
+                  onChange={(e) => setDob({ ...dob, month: e.target.value })}
+                  className="profile-my-info-select"
+                >
+                  <option value="">Month</option>
+                  {[...Array(12).keys()].map((month) => (
+                    <option key={month + 1} value={month + 1}>
+                      {month + 1}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={dob.year}
+                  onChange={(e) => setDob({ ...dob, year: e.target.value })}
+                  className="profile-my-info-select"
+                >
+                  <option value="">Year</option>
+                  {[...Array(100).keys()].map((year) => (
+                    <option key={year + 1925} value={year + 1925}>
+                      {year + 1925}
+                    </option>
+                  ))}
+                </select>
               </div>
+            </div>
+            <div className="profile-my-info-form-group">
+              <label className="profile-my-info-label">
+                <input
+                  type="checkbox"
+                  checked={promotions}
+                  onChange={handlePromotionsChange}
+                  className="profile-my-info-checkbox"
+                />
+                Nhận khuyến mãi
+              </label>
+            </div>
+            <button
+              onClick={handleSave}
+              className="profile-my-info-save-button"
+            >
+              Save
+            </button>
+          </div>
 
-              <div className={styles["profileMyInfo-form-group"]}>
-                <label className={styles["profileMyInfo-label"]}>Phone</label>
-                <div className={styles["profileMyInfo-input-group"]}>
-                  <input
-                    type="text"
-                    value={phone}
-                    disabled
-                    className={`${styles["profileMyInfo-input"]} ${styles["profileMyInfo-input-disabled"]}`}
-                  />
-                  <button
-                    onClick={() => setShowPhoneModal(true)}
-                    className={styles["profileMyInfo-change-button"]}
-                  >
-                    Change
-                  </button>
-                </div>
-              </div>
+          <div className="profile-my-info-image-section">
+            <div className="profile-my-info-image-container">
+              {image ? (
+                <img
+                  src={image}
+                  alt="Avatar"
+                  className="profile-my-info-image"
+                />
+              ) : (
+                <div className="profile-my-info-image-placeholder">Ảnh</div>
+              )}
+            </div>
+            <div className="profile-my-info-buttons">
+              <label className="profile-my-info-file-label">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="profile-my-info-file-input"
+                />
+                Chọn ảnh
+              </label>
+              <button
+                onClick={handleDeleteImage}
+                className="profile-my-info-delete-button"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Security section */}
+        <div className="profile-my-info-security-section">
+          <div className="profile-my-info-security-title">
+            Bảo mật thông tin
+          </div>
+          <div className="profile-my-info-form-group">
+            <label className="profile-my-info-label">Email</label>
+            <div className="profile-my-info-input-group">
+              <input
+                type="text"
+                value={email}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
+              />
+              <button
+                onClick={() => setShowEmailModal(true)}
+                className="profile-my-info-change-button"
+              >
+                Change
+              </button>
+            </div>
+          </div>
+
+          <div className="profile-my-info-form-group">
+            <label className="profile-my-info-label">Phone</label>
+            <div className="profile-my-info-input-group">
+              <input
+                type="text"
+                value={phone}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
+              />
+              <button
+                onClick={() => setShowPhoneModal(true)}
+                className="profile-my-info-change-button"
+              >
+                Change
+              </button>
+            </div>
+          </div>
+          <div className="profile-my-info-form-group">
+            <div className="profile-my-info-input-group">
               <button
                 onClick={() => setShowPasswordModal(true)}
-                className={styles["profileMyInfo-password-button"]}
+                className="profile-my-info-change-button"
               >
                 Change password
               </button>
             </div>
           </div>
-
-          <div className={styles["profileMyInfo-right-section"]}>
-            <div className={styles["profileMyInfo-image-section"]}>
-              <div className={styles["profileMyInfo-image-container"]}>
-                {image ? (
-                  <img
-                    src={image}
-                    alt="Avatar"
-                    className={styles["profileMyInfo-image"]}
-                  />
-                ) : (
-                  <div className={styles["profileMyInfo-image-placeholder"]}>
-                    Picture
-                  </div>
-                )}
-              </div>
-              <div className={styles["profileMyInfo-buttons"]}>
-                <label className={styles["profileMyInfo-file-label"]}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className={styles["profileMyInfo-file-input"]}
-                  />
-                  Add
-                </label>
-                <button
-                  onClick={handleDeleteImage}
-                  className={styles["profileMyInfo-delete-button"]}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom section with personal info */}
-        <div className={styles["profileMyInfo-personal-section"]}>
-          <div className={styles["profileMyInfo-info-title"]}>Information</div>
-          <div className={styles["profileMyInfo-form-group"]}>
-            <label className={styles["profileMyInfo-label"]}>Username</label>
-            <input
-              type="text"
-              value={username}
-              disabled
-              className={`${styles["profileMyInfo-input"]} ${styles["profileMyInfo-input-disabled"]}`}
-            />
-          </div>
-          <div className={styles["profileMyInfo-form-group"]}>
-            <label className={styles["profileMyInfo-label"]}>Full name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={styles["profileMyInfo-input"]}
-            />
-          </div>
-          <div className={styles["profileMyInfo-form-group"]}>
-            <label className={styles["profileMyInfo-label"]}>Gender</label>
-            <div className={styles["profileMyInfo-radio-group"]}>
-              {["Male", "Female", "Other"].map((option) => (
-                <label
-                  key={option}
-                  className={styles["profileMyInfo-radio-label"]}
-                >
-                  <input
-                    type="radio"
-                    name="gender"
-                    value={option}
-                    checked={gender === option}
-                    onChange={() => handleGenderChange(option)}
-                    className={styles["profileMyInfo-radio-input"]}
-                  />
-                  {option}
-                </label>
-              ))}
-            </div>
-          </div>
-          <div className={styles["profileMyInfo-form-group"]}>
-            <label className={styles["profileMyInfo-label"]}>Birthday</label>
-            <div className={styles["profileMyInfo-dob-group"]}>
-              <select
-                value={dob.day}
-                onChange={(e) => setDob({ ...dob, day: e.target.value })}
-                className={styles["profileMyInfo-select"]}
-              >
-                <option value="">Day</option>
-                {[...Array(31).keys()].map((day) => (
-                  <option key={day + 1} value={day + 1}>
-                    {day + 1}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={dob.month}
-                onChange={(e) => setDob({ ...dob, month: e.target.value })}
-                className={styles["profileMyInfo-select"]}
-              >
-                <option value="">Month</option>
-                {[...Array(12).keys()].map((month) => (
-                  <option key={month + 1} value={month + 1}>
-                    {month + 1}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={dob.year}
-                onChange={(e) => setDob({ ...dob, year: e.target.value })}
-                className={styles["profileMyInfo-select"]}
-              >
-                <option value="">Year</option>
-                {[...Array(100).keys()].map((year) => (
-                  <option key={year + 1925} value={year + 1925}>
-                    {year + 1925}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className={styles["profileMyInfo-form-group"]}>
-            <label className={styles["profileMyInfo-label"]}>
-              <input
-                type="checkbox"
-                checked={promotions}
-                onChange={handlePromotionsChange}
-                className={styles["profileMyInfo-checkbox"]}
-              />
-              Nhận khuyến mãi
-            </label>
-          </div>
-          <button
-            onClick={handleSave}
-            className={styles["profileMyInfo-save-button"]}
-          >
-            Save
-          </button>
         </div>
       </div>
-
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div className={styles["profileMyInfo-modal"]}>
-          <div className={styles["profileMyInfo-modal-content"]}>
-            <h3>Change password</h3>
-            <input
-              type="password"
-              placeholder="Current password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className={styles["profileMyInfo-input"]}
-            />
-            <input
-              type="password"
-              placeholder="New password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className={styles["profileMyInfo-input"]}
-            />
-            <input
-              type="password"
-              placeholder="Confirm new password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className={styles["profileMyInfo-input"]}
-            />
-            <div className={styles["profileMyInfo-modal-buttons"]}>
-              <button onClick={handleChangePassword}>Confirm</button>
-              <button onClick={() => setShowPasswordModal(false)}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Email Modal */}
-      {showEmailModal && (
-        <div className={styles["profileMyInfo-modal"]}>
-          <div className={styles["profileMyInfo-modal-content"]}>
-            <h3>Change email</h3>
-            <input
-              type="email"
-              placeholder="Enter new email"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-              className={styles["profileMyInfo-input"]}
-            />
-            <div className={styles["profileMyInfo-modal-buttons"]}>
-              <button onClick={handleChangeEmail}>Confirm</button>
-              <button onClick={() => setShowEmailModal(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Phone Modal */}
-      {showPhoneModal && (
-        <div className={styles["profileMyInfo-modal"]}>
-          <div className={styles["profileMyInfo-modal-content"]}>
-            <h3>Change phone number</h3>
-            <input
-              type="tel"
-              placeholder="Enter new phone number"
-              value={newPhone}
-              onChange={(e) => setNewPhone(e.target.value)}
-              className={styles["profileMyInfo-input"]}
-            />
-            <div className={styles["profileMyInfo-modal-buttons"]}>
-              <button onClick={handleChangePhone}>Confirm</button>
-              <button onClick={() => setShowPhoneModal(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
