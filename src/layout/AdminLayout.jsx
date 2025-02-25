@@ -1,6 +1,6 @@
 import Sidebar from "@/components/Admin/Sidebar";
 import { Breadcrumb } from "@components/shared/Breadcrumb/Breadcrumb";
-
+import { Header } from "@components/shared/Header/Header";
 export const AdminLayout = ({ children, breadcrumb, breadcrumbTitle }) => {
   return (
     <div className="admin-container">
@@ -12,9 +12,6 @@ export const AdminLayout = ({ children, breadcrumb, breadcrumbTitle }) => {
       {/* Content Area */}
       <div className="admin-main">
         {/* Breadcrumb */}
-        <div className="admin-breadcrumb">
-          <Breadcrumb breadcrumb={breadcrumb} title={breadcrumbTitle} />
-        </div>
 
         {/* Main Content */}
         <main className="admin-content">{children}</main>
