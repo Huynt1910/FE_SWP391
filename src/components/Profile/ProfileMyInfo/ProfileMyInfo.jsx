@@ -1,74 +1,65 @@
-import React, { useState } from "react";
+import { useMyInfo } from "@/auth/hook/useMyInfo";
+import React, { useState, useEffect } from "react";
 
 const ProfileMyInfo = () => {
-  const [username, setUsername] = useState("triuhuynquyn659");
-  const [name, setName] = useState("Nguyễn Triệu Huy");
-  const [email, setEmail] = useState("hu*******@gmail.com");
-  const [phone, setPhone] = useState("********06");
-  const [gender, setGender] = useState("Male");
-  const [dob, setDob] = useState({ day: "", month: "", year: "" });
-  const [image, setImage] = useState(null);
-  const [promotions, setPromotions] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [showPhoneModal, setShowPhoneModal] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [newPhone, setNewPhone] = useState("");
+  const [formData, setFormData] = useState({
+    username: "",
+    fullname: "",
+    email: "",
+    phone: "",
+    gender: "",
+    dob: {
+      day: "",
+      month: "",
+      year: "",
+    },
+    image: null,
+  });
+  const { profileData, isPending, isError, isSuccess, error } = useMyInfo();
 
+  // Update form data when profileData is available
+  useEffect(() => {
+    if (profileData) {
+      setFormData(profileData);
+    }
+  }, [profileData]);
+
+  // Handle image upload
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => setImage(reader.result);
+      reader.onloadend = () =>
+        setFormData((prev) => ({ ...prev, image: reader.result }));
       reader.readAsDataURL(file);
     }
   };
 
+  // Delete image
   const handleDeleteImage = () => {
-    setImage(null);
+    setFormData((prev) => ({ ...prev, image: null }));
+  };
+
+  // Handle changes to form fields
+  const handleInputChange = (field) => (event) => {
+    const value = event.target.value;
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleDobChange = (field) => (event) => {
+    const value = event.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      dob: {
+        ...prev.dob,
+        [field]: value,
+      },
+    }));
   };
 
   const handleSave = () => {
-    // Add logic to save the updated profile information
-    console.log({
-      username,
-      name,
-      email,
-      phone,
-      gender,
-      dob,
-      image,
-      promotions,
-    });
-  };
-
-  const handleChangePassword = () => {
-    // Add API call to change password
-    console.log({ currentPassword, newPassword, confirmPassword });
-    setShowPasswordModal(false);
-  };
-
-  const handleChangeEmail = () => {
-    // Add API call to change email
-    console.log({ newEmail });
-    setShowEmailModal(false);
-  };
-
-  const handleChangePhone = () => {
-    // Add API call to change phone
-    console.log({ newPhone });
-    setShowPhoneModal(false);
-  };
-
-  const handleGenderChange = (selectedGender) => {
-    setGender(selectedGender);
-  };
-
-  const handlePromotionsChange = (e) => {
-    setPromotions(e.target.checked);
+    // Implement save logic here
+    console.log("Saved form data:", formData);
   };
 
   return (
@@ -86,7 +77,7 @@ const ProfileMyInfo = () => {
               <label className="profile-my-info-label">Username</label>
               <input
                 type="text"
-                value={username}
+                value={formData.username}
                 disabled
                 className="profile-my-info-input profile-my-info-input-disabled"
               />
@@ -95,35 +86,29 @@ const ProfileMyInfo = () => {
               <label className="profile-my-info-label">Full name</label>
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={formData.fullname}
+                onChange={handleInputChange("fullname")}
                 className="profile-my-info-input"
               />
             </div>
             <div className="profile-my-info-form-group">
               <label className="profile-my-info-label">Gender</label>
-              <div className="profile-my-info-radio-group">
-                {["Male", "Female", "Other"].map((option) => (
-                  <label key={option} className="profile-my-info-radio-label">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value={option}
-                      checked={gender === option}
-                      onChange={() => handleGenderChange(option)}
-                      className="profile-my-info-radio-input"
-                    />
-                    {option}
-                  </label>
-                ))}
-              </div>
+              <select
+                value={formData.gender}
+                onChange={handleInputChange("gender")}
+                className="profile-my-info-input"
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div className="profile-my-info-form-group">
               <label className="profile-my-info-label">Birthday</label>
               <div className="profile-my-info-dob-group">
                 <select
-                  value={dob.day}
-                  onChange={(e) => setDob({ ...dob, day: e.target.value })}
+                  value={formData.dob.day}
+                  onChange={handleDobChange("day")}
                   className="profile-my-info-select"
                 >
                   <option value="">Day</option>
@@ -134,8 +119,8 @@ const ProfileMyInfo = () => {
                   ))}
                 </select>
                 <select
-                  value={dob.month}
-                  onChange={(e) => setDob({ ...dob, month: e.target.value })}
+                  value={formData.dob.month}
+                  onChange={handleDobChange("month")}
                   className="profile-my-info-select"
                 >
                   <option value="">Month</option>
@@ -146,8 +131,8 @@ const ProfileMyInfo = () => {
                   ))}
                 </select>
                 <select
-                  value={dob.year}
-                  onChange={(e) => setDob({ ...dob, year: e.target.value })}
+                  value={formData.dob.year}
+                  onChange={handleDobChange("year")}
                   className="profile-my-info-select"
                 >
                   <option value="">Year</option>
@@ -159,17 +144,7 @@ const ProfileMyInfo = () => {
                 </select>
               </div>
             </div>
-            <div className="profile-my-info-form-group">
-              <label className="profile-my-info-label">
-                <input
-                  type="checkbox"
-                  checked={promotions}
-                  onChange={handlePromotionsChange}
-                  className="profile-my-info-checkbox"
-                />
-                Nhận khuyến mãi
-              </label>
-            </div>
+
             <button
               onClick={handleSave}
               className="profile-my-info-save-button"
@@ -180,9 +155,9 @@ const ProfileMyInfo = () => {
 
           <div className="profile-my-info-image-section">
             <div className="profile-my-info-image-container">
-              {image ? (
+              {formData.image ? (
                 <img
-                  src={image}
+                  src={formData.image}
                   alt="Avatar"
                   className="profile-my-info-image"
                 />
@@ -220,7 +195,7 @@ const ProfileMyInfo = () => {
             <div className="profile-my-info-input-group">
               <input
                 type="text"
-                value={email}
+                value={formData.email}
                 disabled
                 className="profile-my-info-input profile-my-info-input-disabled"
               />
@@ -238,7 +213,7 @@ const ProfileMyInfo = () => {
             <div className="profile-my-info-input-group">
               <input
                 type="text"
-                value={phone}
+                value={formData.phone}
                 disabled
                 className="profile-my-info-input profile-my-info-input-disabled"
               />

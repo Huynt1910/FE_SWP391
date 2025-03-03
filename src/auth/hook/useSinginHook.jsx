@@ -10,18 +10,18 @@ export function useSignIn() {
 
   const { mutateAsync: signIn, isPending } = useMutation({
     mutationFn: async (params) => {
-      const { data, status_code } = await APIClient.invoke({
+      const { result } = await APIClient.invoke({
         action: ACTIONS.SIGN_IN,
         data: params,
       });
 
-      if (status_code === 200) {
-        const { access_token, access_expire } = data;
+      if (result.success == true) {
+        const { token } = result;
 
-        setCookie("access_token", access_token, {
-          expires: new Date(access_expire * 1000),
-          httpOnly: false,
-        });
+        setCookie("token", token);
+        // expires: new Date(access_expire * 1000),
+        // httpOnly: false,
+
         // setCookie("refresh_token", refresh_token, {
         //   expires: new Date(refresh_expire * 1000),
         //   httpOnly: false,

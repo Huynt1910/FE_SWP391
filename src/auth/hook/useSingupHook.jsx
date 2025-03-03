@@ -11,12 +11,12 @@ export function useSignUp() {
 
   const { mutateAsync: signUp, isPending } = useMutation({
     mutationFn: async (params) => {
-      const { data, status_code } = await APIClient.invoke({
+      const { success } = await APIClient.invoke({
         action: ACTIONS.SIGN_UP,
         data: params,
       });
 
-      if (status_code === 201) {
+      if (success == true) {
         showToast.success(
           "Successfully signed up! Please check your email to verify your account."
         );
