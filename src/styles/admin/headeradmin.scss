@@ -1,0 +1,128 @@
+// file: src/components/Admin/Navbar/Navbar.scss
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f9fa; // Màu sáng cho header
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &__left {
+    display: flex;
+    align-items: center;
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+
+    &-input {
+      border: none;
+      outline: none;
+      margin-left: 8px;
+      background: transparent;
+    }
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+  }
+
+  &__notification {
+    background: none;
+    border: none;
+    margin-right: 20px;
+    cursor: pointer;
+  }
+
+  &__profile {
+    position: relative;
+    cursor: pointer;
+
+    &-image {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #ddd;
+    }
+
+    &__dropdown {
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__dropdown-item {
+      padding: 10px 15px;
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+      width: 100%;
+
+      &:hover {
+        background: #f1f1f1;
+      }
+    }
+  }
+
+  &__icon {
+    font-size: 18px;
+    color: #333;
+  }
+}
+.sidebar {
+  padding: 20px 0;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  nav {
+    width: 100%;
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        width: 100%;
+        margin-bottom: 10px;
+
+        .sidebar__link {
+          display: flex;
+          align-items: center;
+          justify-content: center; // căn giữa theo ngang
+          width: 100%;
+          padding: 10px 0;
+          text-decoration: none;
+          color: #fff;
+          transition: background-color 0.3s;
+
+          &:hover {
+            background-color: #1a252f;
+          }
+
+          .sidebar__text {
+            margin-left: 10px;
+            font-size: 16px;
+          }
+        }
+      }
+    }
+  }
+}

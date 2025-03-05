@@ -24,7 +24,10 @@ export const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("formData", formData);
+    console.log("formData", {
+      username: formData.email,
+      password: formData.password,
+    });
 
     try {
       await signIn({

@@ -36,10 +36,10 @@ export class APIClient {
     const headers = {};
     if (secure) {
       // Add access token to headers
-      const access_token = getCookie("access_token");
-      // console.log(access_token);
-      if (access_token) {
-        headers["Authorization"] = `Bearer ${access_token}`;
+      const token = getCookie("token");
+      // console.log(token);
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
       }
     }
 

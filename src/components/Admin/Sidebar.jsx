@@ -1,24 +1,39 @@
 import React from "react";
 import Link from "next/link";
+import {
+  FaTachometerAlt,
+  FaUsers,
+  FaBoxOpen,
+  FaShoppingCart,
+  FaCog,
+} from "react-icons/fa";
 
-const Sidebar = () => {
+const Sidebar = ({ expanded }) => {
   const menuItems = [
-    { text: "Dashboard", path: "/admin" },
-    { text: "Quản lý người dùng", path: "/admin/users" },
-    { text: "Quản lý sản phẩm", path: "/admin/products" },
-    { text: "Quản lý đơn hàng", path: "/admin/orders" },
-    { text: "Cài đặt", path: "/admin/settings" },
+    { text: "Dashboard", path: "/admin", icon: <FaTachometerAlt /> },
+    { text: "Quản lý người dùng", path: "/admin/users", icon: <FaUsers /> },
+    { text: "Quản lý sản phẩm", path: "/admin/products", icon: <FaBoxOpen /> },
+    {
+      text: "Quản lý đơn hàng",
+      path: "/admin/orders",
+      icon: <FaShoppingCart />,
+    },
+    { text: "Cài đặt", path: "/admin/settings", icon: <FaCog /> },
   ];
 
   return (
     <div className="sidebar">
-      <h2>Admin Panel</h2>
       <nav>
         <ul>
           {menuItems.map((item, index) => (
             <li key={index}>
               <Link href={item.path} legacyBehavior>
-                <a>{item.text}</a>
+                <a className="sidebar__link">
+                  {item.icon}
+                  {expanded && (
+                    <span className="sidebar__text">{item.text}</span>
+                  )}
+                </a>
               </Link>
             </li>
           ))}

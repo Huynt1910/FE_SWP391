@@ -24,8 +24,8 @@ export const Header = () => {
   });
 
   const logOut = async () => {
-    deleteCookie("access_token");
-    deleteCookie("refresh_token");
+    deleteCookie("token");
+    deleteCookie("token");
     window.location.reload();
   };
 
