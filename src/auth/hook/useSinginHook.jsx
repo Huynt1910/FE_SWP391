@@ -26,7 +26,7 @@ export function useSignIn() {
         //   expires: new Date(refresh_expire * 1000),
         //   httpOnly: false,
         // });
-        window.location.reload();
+        // window.location.reload();
         router.push("/"); // Navigate to home page
         showToast.success("Successfully signed in!");
       } else {

@@ -7,16 +7,28 @@ export const RequestMethod = {
 
 export const END_POINTS = {
   signIn: { path: "/authentication/log-in", method: "POST" },
-  signUp: { path: "/auth/sign-up", method: "POST" },
+  signUp: { path: "/users", method: "POST" },
   getSelf: { path: "/users/myInfo", method: "GET", secure: true },
+  forgotpassword: {
+    path: "/authentication/changeForgotPassword",
+    method: "POST",
+  },
+  getSurveyQuestions: {
+    path: "/survey/questions",
+    method: "GET",
+    secure: true,
+  },
 };
 
 export const ACTIONS = {
   SIGN_IN: "signIn",
   SIGN_UP: "signUp",
-  GET_SELF: "myInfo",
+  MY_INFO: "myInfo",
+  GET_SELF: "getSelf",
+  FORGOT_PASSWORD: "forgotpassword",
+  GET_SURVEY_QUESTIONS: "getSurveyQuestions",
 };
 
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://skincare-booking-api-3e537a79674f.herokuapp.com";
+  "https://skincare-booking-api-3e537a79674f.herokuapp.com/api";
