@@ -7432,125 +7432,56 @@ input[type="search"]::-webkit-search-results-decoration {
   margin-top: 0;
 }
 
-// for-got password
-.forgot-password {
+.forgot-password-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-color: #f5f5f5;
+  height: 100vh;
+  background-color: #f0f2f5;
+}
 
-  .wrapper {
-    width: 100%;
-    max-width: 480px;
-    padding: 20px;
-  }
+.forgot-password-box {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  text-align: center;
+}
 
-  .forgot-password-form {
-    background-size: cover;
-    background-position: center;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 40px;
-    background-color: #ffffff;
-    text-align: center;
+.forgot-password-box h2 {
+  margin-bottom: 20px;
+}
 
-    h3 {
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 30px;
-      color: #333;
-    }
+.form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
 
-    .box-field {
-      margin-bottom: 20px;
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
 
-      .form-control {
-        width: 100%;
-        padding: 12px 15px;
-        font-size: 16px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        outline: none;
-        transition: border-color 0.3s ease;
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
 
-        &:focus {
-          border-color: #007bff;
-          box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-        }
+.submit-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #1877f2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
-        &::placeholder {
-          color: #999;
-        }
-      }
-    }
-
-    .btn {
-      width: 100%;
-      font-size: 16px;
-      font-weight: 500;
-      color: #fff;
-      background-color: #ff00ff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-
-      &:hover {
-        background-color: #b30074;
-      }
-
-      &:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-      }
-    }
-
-    .forgot-password-form__bottom {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #666;
-
-      a {
-        color: #ff00bf;
-        text-decoration: none;
-        cursor: pointer;
-
-        &:hover {
-          text-decoration: underline;
-        }
-      }
-    }
-  }
-
-  @media (max-width: 576px) {
-    .wrapper {
-      padding: 15px;
-    }
-
-    .forgot-password-form {
-      padding: 20px;
-
-      h3 {
-        font-size: 20px;
-        margin-bottom: 20px;
-      }
-
-      .box-field .form-control {
-        font-size: 14px;
-        padding: 10px;
-      }
-
-      .btn {
-        font-size: 14px;
-        padding: 10px;
-      }
-
-      .forgot-password-form__bottom {
-        font-size: 12px;
-      }
-    }
-  }
+.submit-btn:hover {
+  background-color: #165cdb;
 }
 // survey form
 .survey-container {
