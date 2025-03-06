@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from "react";
 import { useMyInfo } from "@auth/hook/useMyInfo";
 
@@ -85,79 +84,6 @@ const ProfileMyInfo = () => {
         birthDate: `${newDob.year}-${newDob.month}-${newDob.day}`,
       }));
     }
-=======
-import React, { useState } from "react";
-
-const ProfileMyInfo = () => {
-  const [username, setUsername] = useState("triuhuynquyn659");
-  const [name, setName] = useState("Nguyễn Triệu Huy");
-  const [email, setEmail] = useState("hu*******@gmail.com");
-  const [phone, setPhone] = useState("********06");
-  const [gender, setGender] = useState("Male");
-  const [dob, setDob] = useState({ day: "", month: "", year: "" });
-  const [image, setImage] = useState(null);
-  const [promotions, setPromotions] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [showPhoneModal, setShowPhoneModal] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [newPhone, setNewPhone] = useState("");
-
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImage(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDeleteImage = () => {
-    setImage(null);
-  };
-
-  const handleSave = () => {
-    // Add logic to save the updated profile information
-    console.log({
-      username,
-      name,
-      email,
-      phone,
-      gender,
-      dob,
-      image,
-      promotions,
-    });
-  };
-
-  const handleChangePassword = () => {
-    // Add API call to change password
-    console.log({ currentPassword, newPassword, confirmPassword });
-    setShowPasswordModal(false);
-  };
-
-  const handleChangeEmail = () => {
-    // Add API call to change email
-    console.log({ newEmail });
-    setShowEmailModal(false);
-  };
-
-  const handleChangePhone = () => {
-    // Add API call to change phone
-    console.log({ newPhone });
-    setShowPhoneModal(false);
-  };
-
-  const handleGenderChange = (selectedGender) => {
-    setGender(selectedGender);
-  };
-
-  const handlePromotionsChange = (e) => {
-    setPromotions(e.target.checked);
->>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
   };
 
   return (
@@ -175,11 +101,7 @@ const ProfileMyInfo = () => {
               <label className="profile-my-info-label">Username</label>
               <input
                 type="text"
-<<<<<<< HEAD
                 value={formData.username}
-=======
-                value={username}
->>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
                 disabled
                 className="profile-my-info-input profile-my-info-input-disabled"
               />
@@ -188,13 +110,8 @@ const ProfileMyInfo = () => {
               <label className="profile-my-info-label">Full name</label>
               <input
                 type="text"
-<<<<<<< HEAD
                 value={`${formData.firstName} ${formData.lastName}`}
                 onChange={handleNameChange}
-=======
-                value={name}
-                onChange={(e) => setName(e.target.value)}
->>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
                 className="profile-my-info-input"
               />
             </div>
@@ -207,13 +124,8 @@ const ProfileMyInfo = () => {
                       type="radio"
                       name="gender"
                       value={option}
-<<<<<<< HEAD
                       checked={formData.gender === option}
                       onChange={handleChange}
-=======
-                      checked={gender === option}
-                      onChange={() => handleGenderChange(option)}
->>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
                       className="profile-my-info-radio-input"
                     />
                     {option}
@@ -224,7 +136,6 @@ const ProfileMyInfo = () => {
             <div className="profile-my-info-form-group">
               <label className="profile-my-info-label">Birthday</label>
               <div className="profile-my-info-dob-group">
-<<<<<<< HEAD
                 <select name="day" value={dob.day} onChange={handleDobChange}>
                   ...
                 </select>
@@ -240,57 +151,6 @@ const ProfileMyInfo = () => {
                 </select>
               </div>
             </div>
-=======
-                <select
-                  value={dob.day}
-                  onChange={(e) => setDob({ ...dob, day: e.target.value })}
-                  className="profile-my-info-select"
-                >
-                  <option value="">Day</option>
-                  {[...Array(31).keys()].map((day) => (
-                    <option key={day + 1} value={day + 1}>
-                      {day + 1}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={dob.month}
-                  onChange={(e) => setDob({ ...dob, month: e.target.value })}
-                  className="profile-my-info-select"
-                >
-                  <option value="">Month</option>
-                  {[...Array(12).keys()].map((month) => (
-                    <option key={month + 1} value={month + 1}>
-                      {month + 1}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={dob.year}
-                  onChange={(e) => setDob({ ...dob, year: e.target.value })}
-                  className="profile-my-info-select"
-                >
-                  <option value="">Year</option>
-                  {[...Array(100).keys()].map((year) => (
-                    <option key={year + 1925} value={year + 1925}>
-                      {year + 1925}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="profile-my-info-form-group">
-              <label className="profile-my-info-label">
-                <input
-                  type="checkbox"
-                  checked={promotions}
-                  onChange={handlePromotionsChange}
-                  className="profile-my-info-checkbox"
-                />
-                Nhận khuyến mãi
-              </label>
-            </div>
->>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
             <button
               onClick={handleSave}
               className="profile-my-info-save-button"
@@ -341,11 +201,7 @@ const ProfileMyInfo = () => {
             <div className="profile-my-info-input-group">
               <input
                 type="text"
-<<<<<<< HEAD
                 value={formData.email}
-=======
-                value={email}
->>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
                 disabled
                 className="profile-my-info-input profile-my-info-input-disabled"
               />
@@ -363,11 +219,7 @@ const ProfileMyInfo = () => {
             <div className="profile-my-info-input-group">
               <input
                 type="text"
-<<<<<<< HEAD
                 value={formData.phone}
-=======
-                value={phone}
->>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
                 disabled
                 className="profile-my-info-input profile-my-info-input-disabled"
               />
