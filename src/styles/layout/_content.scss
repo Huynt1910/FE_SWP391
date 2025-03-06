@@ -7431,3 +7431,239 @@ input[type="search"]::-webkit-search-results-decoration {
 .profile-my-info-info-container {
   margin-top: 0;
 }
+<<<<<<< HEAD
+=======
+
+.forgot-password-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f2f5;
+}
+
+.forgot-password-box {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  text-align: center;
+}
+
+.forgot-password-box h2 {
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #1877f2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background-color: #165cdb;
+}
+// survey form
+.survey-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.survey-form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+  font-size: 1.1em;
+  color: #d05278; // Pink tone
+}
+
+.radio-group,
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-option,
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #fff; // White background
+  border: 1px solid #d05278;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease;
+  font-size: 1em;
+}
+
+.radio-option:hover,
+.checkbox-option:hover {
+  background: #f8bbd0;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d05278;
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type="radio"]:checked,
+input[type="checkbox"]:checked {
+  background: #d05278;
+}
+
+textarea,
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d05278;
+  border-radius: 5px;
+  font-size: 1em;
+  background: #fff; // White background
+  transition: 0.3s;
+}
+
+textarea:focus,
+input[type="text"]:focus {
+  border-color: #ad1457;
+  background: #fff;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #d05278;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.submit-btn:hover {
+  background: #ad1457;
+  transform: scale(1.05);
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.recommendation-tab {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff; // White background
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 0.5s ease-in-out forwards;
+
+  h2 {
+    font-size: 1.5rem;
+    color: #d05278;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 15px;
+    line-height: 1.5;
+  }
+
+  .book-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #d05278, #ad1457);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      background: linear-gradient(135deg, #ad1457, #d05278);
+      transform: scale(1.05);
+    }
+  }
+}
+
+// Fade-in effect for recommendation
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive for mobile
+@media (max-width: 768px) {
+  .recommendation-tab {
+    max-width: 90%;
+    padding: 15px;
+
+    h2 {
+      font-size: 1.3rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+    }
+
+    .book-btn {
+      font-size: 0.9rem;
+      padding: 8px 16px;
+    }
+  }
+}
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46

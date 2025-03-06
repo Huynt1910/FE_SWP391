@@ -25,7 +25,10 @@ export const Header = () => {
 
   const logOut = async () => {
     deleteCookie("token");
+<<<<<<< HEAD
     deleteCookie("token");
+=======
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
     window.location.reload();
   };
 
@@ -64,6 +67,13 @@ export const Header = () => {
     { icon: "icon-login", auth: true, isLogin: true },
   ];
 
+<<<<<<< HEAD
+=======
+  const filteredOptions = headerOptions.filter((option) => {
+    return !option.auth || (option.auth && self);
+  });
+
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
   return (
     <>
       {/* <!-- BEGIN HEADER --> */}
@@ -91,15 +101,21 @@ export const Header = () => {
 
             {/* header options */}
             <ul className="header-options">
+<<<<<<< HEAD
               {headerOptions
                 .filter((option) => !option.auth || (option.auth && self))
                 .map((option, index) => (
+=======
+              {filteredOptions.map((option, index) => {
+                return (
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
                   <li key={index}>
                     {option.isLogout ? (
                       <button className="signout-btn" onClick={logOut}>
                         Signout
                       </button>
                     ) : (
+<<<<<<< HEAD
                       <Link href={option.path}>
                         <i className={option.icon}></i>
                         {option.badge && <span>{option.badge}</span>}
@@ -107,6 +123,18 @@ export const Header = () => {
                     )}
                   </li>
                 ))}
+=======
+                      option?.path && (
+                        <Link href={option.path}>
+                          <i className={option.icon}></i>
+                          {option.badge && <span>{option.badge}</span>}
+                        </Link>
+                      )
+                    )}
+                  </li>
+                );
+              })}
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
               {!self && (
                 <div className="login-btn">
                   <Link href="/login" className="login-btn">

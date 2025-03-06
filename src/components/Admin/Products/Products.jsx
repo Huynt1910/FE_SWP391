@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState } from "react";
 
 function Products() {
@@ -198,6 +199,12 @@ function Products() {
       )}
     </div>
   );
+=======
+import React from "react";
+
+function Products() {
+  return <div>Product</div>;
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
 }
 
 export default Products;

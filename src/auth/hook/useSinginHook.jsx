@@ -15,18 +15,11 @@ export function useSignIn() {
         data: params,
       });
 
-      if (result.success == true) {
+      if (result && result.success == true) {
         const { token } = result;
 
         setCookie("token", token);
-        // expires: new Date(access_expire * 1000),
-        // httpOnly: false,
 
-        // setCookie("refresh_token", refresh_token, {
-        //   expires: new Date(refresh_expire * 1000),
-        //   httpOnly: false,
-        // });
-        // window.location.reload();
         router.push("/"); // Navigate to home page
         showToast.success("Successfully signed in!");
       } else {
