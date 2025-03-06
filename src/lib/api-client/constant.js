@@ -9,8 +9,16 @@ export const END_POINTS = {
   signIn: { path: "/authentication/log-in", method: "POST" },
   signUp: { path: "/users", method: "POST" },
   myInfo: { path: "/users/myInfo", method: "GET", secure: true },
-  forgotpassword: {
-    path: "/authentication/changeForgotPassword",
+  forgotPasswordVerifyEmail: {
+    path: "/forgot-password/verifyEmail",
+    method: "POST",
+  },
+  forgotPasswordVerifyOtp: {
+    path: "/forgot-password/verifyOtp",
+    method: "POST",
+  },
+  forgotPasswordChange: {
+    path: "/forgot-password/changeForgotPassword",
     method: "POST",
   },
   getSurveyQuestions: {
@@ -24,7 +32,9 @@ export const ACTIONS = {
   SIGN_IN: "signIn",
   SIGN_UP: "signUp",
   MY_INFO: "myInfo",
-  FORGOT_PASSWORD: "forgotpassword",
+  FORGOT_PASSWORD_VERIFY_EMAIL: "forgotPasswordVerifyEmail",
+  FORGOT_PASSWORD_VERIFY_OTP: "forgotPasswordVerifyOtp",
+  FORGOT_PASSWORD_CHANGE: "forgotPasswordChange",
   GET_SURVEY_QUESTIONS: "getSurveyQuestions",
 };
 
