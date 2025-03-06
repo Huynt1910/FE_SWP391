@@ -1,65 +1,89 @@
-import { useMyInfo } from "@/auth/hook/useMyInfo";
 import React, { useState, useEffect } from "react";
+import { useMyInfo } from "@auth/hook/useMyInfo";
 
 const ProfileMyInfo = () => {
+  // Sử dụng hook useMyInfo để lấy thông tin người dùng từ server
+  const { profile, isLoading, error } = useMyInfo();
+
+  // State để lưu thông tin form
   const [formData, setFormData] = useState({
     username: "",
-    fullname: "",
+    password: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
+    address: "",
     gender: "",
-    dob: {
-      day: "",
-      month: "",
-      year: "",
-    },
-    image: null,
+    birthDate: "",
   });
-  const { profileData, isPending, isError, isSuccess, error } = useMyInfo();
+  // State riêng quản lý day, month, year của birthday
+  const [dob, setDob] = useState({
+    day: "",
+    month: "",
+    year: "",
+  });
 
-  // Update form data when profileData is available
+  // Khi user data từ useMyInfo có giá trị, cập nhật formData
   useEffect(() => {
-    if (profileData) {
-      setFormData(profileData);
+    if (profile) {
+      setFormData(profile);
     }
-  }, [profileData]);
+  }, [profile]);
 
-  // Handle image upload
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () =>
-        setFormData((prev) => ({ ...prev, image: reader.result }));
-      reader.readAsDataURL(file);
+  // Khi formData.birthDate thay đổi, parse thành day, month, year
+  useEffect(() => {
+    if (formData.birthDate) {
+      const parts = formData.birthDate.split("-");
+      if (parts.length === 3) {
+        setDob({
+          year: parts[0],
+          month: parts[1],
+          day: parts[2],
+        });
+      }
+    }
+  }, [formData.birthDate]);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error fetching user information.</div>;
+
+  // Các hàm xử lý khác (handleChange, handleSave, etc) vẫn tương tự
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    // Call API cập nhật thông tin, ví dụ updateUserInfo(token, formData)
+    try {
+      const updatedUser = await updateUserInfo(formData);
+      setFormData(updatedUser);
+      alert("Cập nhật thành công!");
+    } catch (error) {
+      alert("Cập nhật thất bại!");
     }
   };
-
-  // Delete image
-  const handleDeleteImage = () => {
-    setFormData((prev) => ({ ...prev, image: null }));
-  };
-
-  // Handle changes to form fields
-  const handleInputChange = (field) => (event) => {
-    const value = event.target.value;
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleDobChange = (field) => (event) => {
-    const value = event.target.value;
+  const handleNameChange = (e) => {
+    const [first, ...last] = e.target.value.split(" ");
     setFormData((prev) => ({
       ...prev,
-      dob: {
-        ...prev.dob,
-        [field]: value,
-      },
+      firstName: first,
+      lastName: last.join(" "),
     }));
   };
+  const handleDobChange = (e) => {
+    const { name, value } = e.target;
+    const newDob = { ...dob, [name]: value };
+    setDob(newDob);
 
-  const handleSave = () => {
-    // Implement save logic here
-    console.log("Saved form data:", formData);
+    // Cập nhật lại birthDate trong formData
+    if (newDob.year && newDob.month && newDob.day) {
+      setFormData((prev) => ({
+        ...prev,
+        birthDate: `${newDob.year}-${newDob.month}-${newDob.day}`,
+      }));
+    }
   };
 
   return (
@@ -86,65 +110,47 @@ const ProfileMyInfo = () => {
               <label className="profile-my-info-label">Full name</label>
               <input
                 type="text"
-                value={formData.fullname}
-                onChange={handleInputChange("fullname")}
+                value={`${formData.firstName} ${formData.lastName}`}
+                onChange={handleNameChange}
                 className="profile-my-info-input"
               />
             </div>
             <div className="profile-my-info-form-group">
               <label className="profile-my-info-label">Gender</label>
-              <select
-                value={formData.gender}
-                onChange={handleInputChange("gender")}
-                className="profile-my-info-input"
-              >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
+              <div className="profile-my-info-radio-group">
+                {["Male", "Female", "Other"].map((option) => (
+                  <label key={option} className="profile-my-info-radio-label">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value={option}
+                      checked={formData.gender === option}
+                      onChange={handleChange}
+                      className="profile-my-info-radio-input"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
             </div>
             <div className="profile-my-info-form-group">
               <label className="profile-my-info-label">Birthday</label>
               <div className="profile-my-info-dob-group">
-                <select
-                  value={formData.dob.day}
-                  onChange={handleDobChange("day")}
-                  className="profile-my-info-select"
-                >
-                  <option value="">Day</option>
-                  {[...Array(31).keys()].map((day) => (
-                    <option key={day + 1} value={day + 1}>
-                      {day + 1}
-                    </option>
-                  ))}
+                <select name="day" value={dob.day} onChange={handleDobChange}>
+                  ...
                 </select>
                 <select
-                  value={formData.dob.month}
-                  onChange={handleDobChange("month")}
-                  className="profile-my-info-select"
+                  name="month"
+                  value={dob.month}
+                  onChange={handleDobChange}
                 >
-                  <option value="">Month</option>
-                  {[...Array(12).keys()].map((month) => (
-                    <option key={month + 1} value={month + 1}>
-                      {month + 1}
-                    </option>
-                  ))}
+                  ...
                 </select>
-                <select
-                  value={formData.dob.year}
-                  onChange={handleDobChange("year")}
-                  className="profile-my-info-select"
-                >
-                  <option value="">Year</option>
-                  {[...Array(100).keys()].map((year) => (
-                    <option key={year + 1925} value={year + 1925}>
-                      {year + 1925}
-                    </option>
-                  ))}
+                <select name="year" value={dob.year} onChange={handleDobChange}>
+                  ...
                 </select>
               </div>
             </div>
-
             <button
               onClick={handleSave}
               className="profile-my-info-save-button"
@@ -155,9 +161,9 @@ const ProfileMyInfo = () => {
 
           <div className="profile-my-info-image-section">
             <div className="profile-my-info-image-container">
-              {formData.image ? (
+              {image ? (
                 <img
-                  src={formData.image}
+                  src={image}
                   alt="Avatar"
                   className="profile-my-info-image"
                 />

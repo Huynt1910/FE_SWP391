@@ -1,17 +1,16 @@
 import { useSignIn } from "@auth/hook/useSinginHook";
 import { SocialLogin } from "@components/shared/SocialLogin/SocialLogin";
+import { showToast } from "@utils/toast";
 import router from "next/router";
 import { useState } from "react";
-import { showToast } from "@utils/toast";
 
 export const Login = () => {
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
     rememberMe: false,
   });
 
-  // call cai nay
   const { signIn, isPending } = useSignIn();
 
   const handleInputChange = (e) => {
@@ -24,18 +23,15 @@ export const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("formData", {
-      username: formData.email,
-      password: formData.password,
-    });
 
     try {
       await signIn({
-        email: formData.email,
+        username: formData.username,
         password: formData.password,
       });
     } catch (error) {
-      showToast.error("Login failed:", error);
+      showToast.error("An error occurred during login. Please try again.");
+      console.error("Login error:", error);
     }
   };
 
@@ -55,10 +51,10 @@ export const Login = () => {
               <div className="box-field">
                 <input
                   type="text"
-                  name="email"
+                  name="username"
                   className="form-control"
-                  placeholder="Enter your email or nickname"
-                  value={formData.email}
+                  placeholder="Enter your username"
+                  value={formData.username}
                   onChange={handleInputChange}
                   required
                 />
@@ -92,7 +88,9 @@ export const Login = () => {
                   No account?{" "}
                   <a onClick={() => router.push("/registration")}>Register</a>
                 </span>
-                <a href="#">Lost your password?</a>
+                <a onClick={() => router.push("/forgot-password")}>
+                  Lost your password?
+                </a>
               </div>
             </form>
           </div>
