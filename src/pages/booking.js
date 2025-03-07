@@ -1,29 +1,23 @@
-import BookingScreen, {
-  BookingServiceForm,
-} from "@/components/BookingServiceForm/BookingServiceForm";
-import SurveyForm from "@/components/SurveyFrom/SurveyForm";
+import BookingForm from "@/components/BookingForm/BookingForm";
 import { PublicLayout } from "@/layout/PublicLayout";
-
 import { Subscribe } from "@components/shared/Subscribe/Subscribe";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 const breadcrumbsData = [
-  {
-    label: "Home",
-    path: "/",
-  },
-  {
-    label: "Booking",
-    path: "/booking",
-  },
+  { label: "Home", path: "/" },
+  { label: "Booking", path: "/booking" },
 ];
 
-const SurveyPage = () => {
+const BookingPage = () => {
   return (
-    <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Survey">
-      <BookingServiceForm />
-      <Subscribe />
-    </PublicLayout>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Booking">
+        <BookingForm />
+        <Subscribe />
+      </PublicLayout>
+    </LocalizationProvider>
   );
 };
 
-export default SurveyPage;
+export default BookingPage;

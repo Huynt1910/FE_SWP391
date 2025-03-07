@@ -7664,3 +7664,36 @@ input[type="text"]:focus {
     }
   }
 }
+/* BookingServiceForm.css */
+.booking-form {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background-color: #fff;
+
+  .form-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .date-picker,
+  .time-picker {
+    width: 100%;
+  }
+
+  .subtotal {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .button-group {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 20px;
+  }
+}
