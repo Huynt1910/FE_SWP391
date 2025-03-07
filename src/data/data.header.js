@@ -1,9 +1,5 @@
 export const header = {
-<<<<<<< HEAD
-  logo: "/assets/img/header-logo.svg",
-=======
   logo: "/assets/img/Bamboo_tech_logo.png",
->>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
 };
 
 export const navItem = [
@@ -24,11 +20,7 @@ export const navItem = [
   },
   {
     title: "Information",
-<<<<<<< HEAD
-    path: "#",
-=======
     path: "",
->>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
     auth: false,
     submenu: [
       {

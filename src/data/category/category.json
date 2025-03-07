@@ -25,13 +25,8 @@
     "image": "/assets/img/top-categories-img5.jpg"
   },
   {
-<<<<<<< HEAD
-    "categoryId": "body",
-    "name": "Body",
-=======
     "categoryId": "hair",
     "name": "Hair",
->>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
     "image": "/assets/img/top-categories-img6.jpg"
   }
 ]
