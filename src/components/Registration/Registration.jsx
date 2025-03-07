@@ -1,18 +1,34 @@
 import { SocialLogin } from "@components/shared/SocialLogin/SocialLogin";
 import { useState } from "react";
 import router from "next/router";
+<<<<<<< HEAD
 import { useSignUp } from "@auth/hook/useSingupHook"; // Adjust the import path accordingly
+=======
+import { useSignUp } from "@/auth/hook/useSingupHook";
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
 
 export const Registration = () => {
   const { signUp, isPending } = useSignUp();
   const [formData, setFormData] = useState({
+<<<<<<< HEAD
+=======
+    username: "",
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
     firstName: "",
     lastName: "",
     phone: "",
     email: "",
+<<<<<<< HEAD
     password: "",
     confirmPassword: "",
     gender: "", // Add gender field
+=======
+    address: "",
+    password: "",
+    confirmPassword: "",
+    gender: "",
+    birthDate: "", // Add birthDate field
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
   });
 
   const handleChange = (e) => {
@@ -20,7 +36,11 @@ export const Registration = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+<<<<<<< HEAD
   const handleSubmit = async (e) => {
+=======
+  const handleSubmit = (e) => {
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
     e.preventDefault();
 
     // Validate that passwords match
@@ -28,6 +48,7 @@ export const Registration = () => {
       return alert("Passwords do not match!");
     }
 
+<<<<<<< HEAD
     try {
       await signUp({
         first_name: formData.firstName,
@@ -41,6 +62,11 @@ export const Registration = () => {
     } catch (error) {
       console.error("Sign up error:", error);
     }
+=======
+    const payload = { ...formData };
+    delete payload.confirmPassword;
+    signUp(payload);
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
   };
 
   return (
@@ -58,8 +84,24 @@ export const Registration = () => {
                   <input
                     type="text"
                     className="form-control"
+<<<<<<< HEAD
                     name="firstName"
                     placeholder="Enter your username"
+=======
+                    name="username"
+                    placeholder="Enter your username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="box-field">
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="firstName"
+                    placeholder="Enter your first name"
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
                     value={formData.firstName}
                     onChange={handleChange}
                     required
@@ -76,6 +118,20 @@ export const Registration = () => {
                     required
                   />
                 </div>
+<<<<<<< HEAD
+=======
+                <div className="box-field">
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="address"
+                    placeholder="Enter your address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
               </div>
               <div className="box-field__row">
                 <div className="box-field">
@@ -141,15 +197,39 @@ export const Registration = () => {
                     <option value="" aria-disabled>
                       Select your gender ?
                     </option>
+<<<<<<< HEAD
 
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                     <option value="other">Other</option>
                     <option value="prefer-not-to-say">Prefer not to say</option>
+=======
+                    <option value="Male">Male</option>
+                    <option value="Memale">Female</option>
+                    <option value="Other">Other</option>
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
                   </select>
                 </div>
               </div>
 
+<<<<<<< HEAD
+=======
+              {/* Birth Date Field */}
+              <div className="box-field__row">
+                <div className="box-field">
+                  <input
+                    type="date"
+                    className="form-control"
+                    name="birthDate"
+                    placeholder="Enter your birth date"
+                    value={formData.birthDate}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+>>>>>>> 036e585c0a1989822418855a48b6b136afee7f46
               <button className="btn" type="submit" disabled={isPending}>
                 {isPending ? "Registering..." : "Register"}
               </button>

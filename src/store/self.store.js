@@ -7,11 +7,11 @@ export function useSelf() {
     queryKey: ["self"],
     queryFn: async () => {
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_SELF,
+        action: ACTIONS.MY_INFO,
       });
 
-      if (response.status_code === 200) {
-        return response.data;
+      if (response?.success) {
+        return response?.result;
       }
 
       console.log(response.data.message);

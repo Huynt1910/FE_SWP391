@@ -1,17 +1,27 @@
 import { APIClient } from "@/lib/api-client";
 import { useQuery } from "@tanstack/react-query";
 import { ACTIONS } from "@lib/api-client/constant";
-export function useMyInfo() {
-  return useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      const response = await APIClient.invoke({ action: ACTIONS.GET_SELF });
+import { getCookie } from "cookies-next";
 
-      if (response.status_code === 200) {
-        return { profile: response.data }; // ✅ Trả về object chứa `profile`
+export function useMyInfo() {
+  const token = getCookie("token");
+
+  return useQuery({
+    queryKey: ["profile", token],
+    queryFn: async () => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.MY_INFO,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Dựa vào mẫu API bạn cung cấp: nếu response.success là true,
+      // thì dữ liệu người dùng nằm trong response.result.
+      if (response && response.success === true) {
+        return { profile: response.result, token: token };
       }
 
-      throw new Error(response.data.message || "Lỗi khi lấy thông tin cá nhân");
+      throw new Error(response.message || "Lỗi khi lấy thông tin cá nhân");
     },
+    enabled: !!token, // Chỉ chạy khi có token
   });
 }

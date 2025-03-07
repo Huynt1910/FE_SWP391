@@ -1,5 +1,5 @@
 export const header = {
-  logo: "/assets/img/header-logo.svg",
+  logo: "/assets/img/Bamboo_tech_logo.png",
 };
 
 export const navItem = [
@@ -20,7 +20,7 @@ export const navItem = [
   },
   {
     title: "Information",
-    path: "#",
+    path: "",
     auth: false,
     submenu: [
       {

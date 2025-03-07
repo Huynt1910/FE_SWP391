@@ -25,7 +25,6 @@ export const Header = () => {
 
   const logOut = async () => {
     deleteCookie("token");
-    deleteCookie("token");
     window.location.reload();
   };
 
@@ -64,6 +63,10 @@ export const Header = () => {
     { icon: "icon-login", auth: true, isLogin: true },
   ];
 
+  const filteredOptions = headerOptions.filter((option) => {
+    return !option.auth || (option.auth && self);
+  });
+
   return (
     <>
       {/* <!-- BEGIN HEADER --> */}
@@ -91,22 +94,24 @@ export const Header = () => {
 
             {/* header options */}
             <ul className="header-options">
-              {headerOptions
-                .filter((option) => !option.auth || (option.auth && self))
-                .map((option, index) => (
+              {filteredOptions.map((option, index) => {
+                return (
                   <li key={index}>
                     {option.isLogout ? (
                       <button className="signout-btn" onClick={logOut}>
                         Signout
                       </button>
                     ) : (
-                      <Link href={option.path}>
-                        <i className={option.icon}></i>
-                        {option.badge && <span>{option.badge}</span>}
-                      </Link>
+                      option?.path && (
+                        <Link href={option.path}>
+                          <i className={option.icon}></i>
+                          {option.badge && <span>{option.badge}</span>}
+                        </Link>
+                      )
                     )}
                   </li>
-                ))}
+                );
+              })}
               {!self && (
                 <div className="login-btn">
                   <Link href="/login" className="login-btn">
