@@ -1,7 +1,19 @@
+// components/ProfileMyInfo.jsx
 import React, { useState, useEffect } from "react";
-import { useMyInfo } from "@auth/hook/useMyInfo";
+import { useMyInfo } from "@/auth/hook/useMyInfoHook";
+import { useUpdateUser } from "@/auth/hook/useUpdateUserHook";
+import { useChangePassword } from "@/auth/hook/useChangePasswordHook";
+import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
+import UpdateInfoModal from "./Modal/UpdateInfoModal";
+import ChangeEmailModal from "./Modal/ChangeEmailModal";
+import ChangePhoneModal from "./Modal/ChangePhoneModal";
+import ChangePasswordModal from "./Modal/ChangePasswordModal";
+import { maskEmail, maskPhone } from "./Helper/Helper";
 
 export const ProfileMyInfo = () => {
+  const queryClient = useQueryClient();
+
   const [formData, setFormData] = useState({
     username: "",
     firstName: "",
@@ -12,71 +24,149 @@ export const ProfileMyInfo = () => {
     gender: "",
     birthDate: "",
   });
-
-  const [dob, setDob] = useState({ day: "", month: "", year: "" });
   const [editMode, setEditMode] = useState(false);
 
+  // Modal state
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
+  // Form data for modals
+  const [newEmail, setNewEmail] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [updateFormData, setUpdateFormData] = useState({
+    firstName: "",
+    lastName: "",
+    birthDate: "",
+    gender: "",
+    address: "",
+  });
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  // Hooks for updating user info and fetching personal info
+  const { mutate: updateUser } = useUpdateUser();
   const { data, isLoading, error } = useMyInfo();
+  const { mutate: changePassword, isLoading: isPasswordLoading } =
+    useChangePassword();
 
   useEffect(() => {
-    if (data && data.profile) {
-      console.log("Profile received:", data.profile);
+    if (data?.profile) {
       setFormData(data.profile);
     }
   }, [data]);
 
-  // Parse birthDate to dob if cần thiết
   useEffect(() => {
-    if (formData.birthDate) {
-      const parts = formData.birthDate.split("-");
-      if (parts.length === 3) {
-        setDob({ year: parts[0], month: parts[1], day: parts[2] });
-      }
+    if (isUpdateModalOpen) {
+      setUpdateFormData({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        birthDate: formData.birthDate,
+        gender: formData.gender,
+        address: formData.address,
+      });
     }
-  }, [formData.birthDate]);
+  }, [isUpdateModalOpen, formData]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleInputChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  // Handle updating personal info
+  const handleUpdateSubmit = () => {
+    const payload = { ...updateFormData };
+
+    updateUser(payload, {
+      onSuccess: (updatedData) => {
+        setFormData((prev) => ({ ...prev, ...updatedData }));
+        setIsUpdateModalOpen(false);
+        toast.success("Cập nhật thông tin thành công!");
+      },
+      onError: (error) => {
+        toast.error(`Cập nhật thất bại: ${error.message}`);
+      },
+    });
   };
 
-  // Example submit handler - gọi API updateUserInfo
-  const handleSubmit = async () => {
-    try {
-      const updatedData = await updateUserInfo(formData);
-      // Cập nhật lại state nếu cần
-      setFormData(updatedData);
-      setEditMode(false);
-      alert("Cập nhật thành công!");
-    } catch (err) {
-      console.error(err);
-      alert("Cập nhật thất bại!");
-    }
+  // Handle updating phone number
+  const handlePhoneUpdate = () => {
+    const payload = { phone: newPhone };
+
+    updateUser(payload, {
+      onSuccess: (updatedData) => {
+        setFormData((prev) => ({ ...prev, phone: updatedData.phone }));
+        setIsPhoneModalOpen(false);
+        setNewPhone("");
+        toast.success("Cập nhật số điện thoại thành công!");
+      },
+      onError: (error) => {
+        toast.error(`Cập nhật số điện thoại thất bại: ${error.message}`);
+      },
+    });
+  };
+
+  // Handle updating email
+  const handleEmailUpdate = () => {
+    const payload = { email: newEmail };
+
+    updateUser(payload, {
+      onSuccess: (updatedData) => {
+        setFormData(updatedData);
+        setIsEmailModalOpen(false);
+        setNewEmail("");
+        toast.success("Cập nhật email thành công!");
+      },
+      onError: (error) => {
+        toast.error("Cập nhật email thất bại: " + error.message);
+      },
+    });
+  };
+
+  // Handle changing password
+  const handlePasswordChange = () => {
+    changePassword(
+      {
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword,
+      },
+      {
+        onSuccess: () => {
+          setIsPasswordModalOpen(false);
+          setPasswordData({
+            oldPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+          });
+          toast.success("Password has been changed");
+        },
+        onError: (error) => {
+          toast.error(`Change password failed: ${error.message}`);
+        },
+      }
+    );
   };
 
   return (
     <div className="profile-my-info-container">
       <div className="profile-my-info-title-container">
         <div className="profile-my-info-title">Hồ Sơ Của Tôi</div>
-        {/* Nút chuyển sang chế độ edit */}
-        {!editMode && (
-          <button
-            onClick={() => setEditMode(true)}
-            className="profile-my-info-update-button"
-          >
-            Update Info
-          </button>
-        )}
+        <button
+          onClick={() => setIsUpdateModalOpen(true)}
+          className="profile-my-info-update-button"
+        >
+          Update Info
+        </button>
       </div>
 
       <div className="profile-my-info-content">
-        {/* Personal info section */}
+        {/* Thông tin cá nhân */}
         <div className="profile-my-info-info-container">
           <div className="profile-my-info-personal-section">
             <div className="profile-my-info-info-title">Thông tin cá nhân</div>
@@ -86,7 +176,7 @@ export const ProfileMyInfo = () => {
                 type="text"
                 name="username"
                 value={formData.username || ""}
-                disabled // Username không cho chỉnh sửa
+                disabled
                 className="profile-my-info-input profile-my-info-input-disabled"
               />
             </div>
@@ -94,122 +184,162 @@ export const ProfileMyInfo = () => {
               <label className="profile-my-info-label">Full name</label>
               <input
                 type="text"
-                placeholder="Full name"
                 value={`${formData.firstName} ${formData.lastName}`}
-                disabled={!editMode}
-                onChange={(e) => {
-                  const names = e.target.value.split(" ");
-                  setFormData((prev) => ({
-                    ...prev,
-                    firstName: names[0] || "",
-                    lastName: names.slice(1).join(" ") || "",
-                  }));
-                }}
-                className={`profile-my-info-input ${
-                  editMode ? "" : "profile-my-info-input-disabled"
-                }`}
-              />
-            </div>
-            <div className="profile-my-info-form-group">
-              <label className="profile-my-info-label">Email</label>
-              <input
-                type="text"
-                name="email"
-                placeholder="Email"
-                value={formData.email || ""}
-                disabled={!editMode}
-                onChange={handleInputChange}
-                className={`profile-my-info-input ${
-                  editMode ? "" : "profile-my-info-input-disabled"
-                }`}
-              />
-            </div>
-            <div className="profile-my-info-form-group">
-              <label className="profile-my-info-label">Phone</label>
-              <input
-                type="text"
-                name="phone"
-                placeholder="Phone"
-                value={formData.phone || ""}
-                disabled={!editMode}
-                onChange={handleInputChange}
-                className={`profile-my-info-input ${
-                  editMode ? "" : "profile-my-info-input-disabled"
-                }`}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
               />
             </div>
             <div className="profile-my-info-form-group">
               <label className="profile-my-info-label">Gender</label>
               <input
                 type="text"
-                name="gender"
-                placeholder="Gender"
                 value={formData.gender || ""}
-                disabled={!editMode}
-                onChange={handleInputChange}
-                className={`profile-my-info-input ${
-                  editMode ? "" : "profile-my-info-input-disabled"
-                }`}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
               />
             </div>
             <div className="profile-my-info-form-group">
               <label className="profile-my-info-label">Birth Date</label>
               <input
-                type="date"
-                name="birthDate"
+                type="text"
                 value={formData.birthDate || ""}
-                disabled={!editMode}
-                onChange={handleInputChange}
-                className={`profile-my-info-input ${
-                  editMode ? "" : "profile-my-info-input-disabled"
-                }`}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
+              />
+            </div>
+            <div className="profile-my-info-form-group">
+              <label className="profile-my-info-label">Address</label>
+              <input
+                type="text"
+                value={formData.address || ""}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
               />
             </div>
           </div>
         </div>
 
-        {/* Security section */}
+        {/* Modal cập nhật thông tin */}
+        {isUpdateModalOpen && (
+          <UpdateInfoModal
+            updateFormData={updateFormData}
+            setUpdateFormData={setUpdateFormData}
+            onSubmit={handleUpdateSubmit}
+            onCancel={() => setIsUpdateModalOpen(false)}
+          />
+        )}
+
+        {/* Phần bảo mật thông tin */}
         <div className="profile-my-info-security-section">
           <div className="profile-my-info-security-title">
             Bảo mật thông tin
           </div>
           <div className="profile-my-info-form-group">
             <label className="profile-my-info-label">Email</label>
-            <div className="profile-my-info-input-group">
+            <div className="profile-my-info-input-group masked-field">
               <input
                 type="text"
                 name="email"
-                value={formData.email || ""}
+                value={editMode ? formData.email : maskEmail(formData.email)}
                 disabled={!editMode}
                 onChange={handleInputChange}
                 className={`profile-my-info-input ${
                   editMode ? "" : "profile-my-info-input-disabled"
                 }`}
               />
+              <button
+                onClick={() => setIsEmailModalOpen(true)}
+                className="profile-my-info-change-button"
+              >
+                Change
+              </button>
             </div>
           </div>
           <div className="profile-my-info-form-group">
             <label className="profile-my-info-label">Phone</label>
-            <div className="profile-my-info-input-group">
+            <div className="profile-my-info-input-group masked-field">
               <input
                 type="text"
                 name="phone"
-                value={formData.phone || ""}
+                value={editMode ? formData.phone : maskPhone(formData.phone)}
                 disabled={!editMode}
                 onChange={handleInputChange}
                 className={`profile-my-info-input ${
                   editMode ? "" : "profile-my-info-input-disabled"
                 }`}
               />
+              <button
+                onClick={() => setIsPhoneModalOpen(true)}
+                className="profile-my-info-change-button"
+              >
+                Change
+              </button>
             </div>
           </div>
+          <div className="profile-my-info-form-group">
+            <h3 className="profile-my-info-label">Password</h3>
+            <div className="profile-my-info-input-group">
+              <button
+                onClick={() => setIsPasswordModalOpen(true)}
+                className="profile-my-info-change-button"
+              >
+                Change
+              </button>
+            </div>
+          </div>
+          {isEmailModalOpen && (
+            <ChangeEmailModal
+              newEmail={newEmail}
+              setNewEmail={setNewEmail}
+              onSubmit={handleEmailUpdate}
+              onCancel={() => setIsEmailModalOpen(false)}
+            />
+          )}
+          {isPhoneModalOpen && (
+            <ChangePhoneModal
+              newPhone={newPhone}
+              setNewPhone={setNewPhone}
+              onSubmit={handlePhoneUpdate}
+              onCancel={() => {
+                setIsPhoneModalOpen(false);
+                setNewPhone("");
+              }}
+            />
+          )}
+          {isPasswordModalOpen && passwordData && (
+            <ChangePasswordModal
+              passwordData={passwordData}
+              setPasswordData={setPasswordData}
+              onSubmit={handlePasswordChange}
+              onCancel={() => {
+                setIsPasswordModalOpen(false);
+                setPasswordData({
+                  oldPassword: "",
+                  newPassword: "",
+                  confirmPassword: "",
+                });
+              }}
+            />
+          )}
         </div>
 
-        {/* Nếu đang ở chế độ edit, hiển thị nút Submit và Cancel */}
         {editMode && (
           <div className="profile-my-info-form-actions">
             <button
-              onClick={handleSubmit}
+              onClick={() => {
+                updateUser(
+                  { ...formData },
+                  {
+                    onSuccess: (updatedData) => {
+                      setFormData(updatedData);
+                      setEditMode(false);
+                      toast.success("Cập nhật thành công!");
+                    },
+                    onError: (error) =>
+                      toast.error("Cập nhật thất bại! " + error.message),
+                  }
+                );
+              }}
               className="profile-my-info-submit-button"
             >
               Submit

@@ -16,35 +16,37 @@ export class APIClient {
     };
 
     const fullUrl = `${url}${queryParams ? `?${queryParams}` : ""}`;
-    console.log("fullUrl", fullUrl);
+    console.log("Request URL:", fullUrl);
+    console.log("Request data:", data);
 
     const response = await fetch(fullUrl, options);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
+    }
     return response.json();
   }
 
   static async invoke(params) {
-    const { action, data, query } = params;
+    const { action, data, query, headers = {} } = params;
 
     if (!END_POINTS[action]) {
       throw new Error(`Invalid action: ${action}`);
     }
 
-    console.log("endpointwaction", END_POINTS[action]);
+    const endpoint = END_POINTS[action];
+    console.log("Endpoint config:", endpoint);
 
-    const { path, method, secure } = END_POINTS[action];
-
-    const headers = {};
-    if (secure) {
-      // Add access token to headers
-      const token = getCookie("token");
-      // console.log(token);
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
+    const token = getCookie("token");
+    if (endpoint.secure && token) {
+      headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const url = `${API_URL}${path}`;
+    const url = `${API_URL}${endpoint.path}`;
+    console.log("Final URL:", url);
 
-    return this.request(url, method, data, headers, query);
+    return this.request(url, endpoint.method, data, headers, query);
   }
 }

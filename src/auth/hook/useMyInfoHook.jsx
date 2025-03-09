@@ -14,8 +14,6 @@ export function useMyInfo() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Dựa vào mẫu API bạn cung cấp: nếu response.success là true,
-      // thì dữ liệu người dùng nằm trong response.result.
       if (response && response.success === true) {
         return { profile: response.result, token: token };
       }
