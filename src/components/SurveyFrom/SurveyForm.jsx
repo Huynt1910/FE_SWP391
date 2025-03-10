@@ -1,306 +1,477 @@
-// src/components/SurveyForm.jsx
-// This is my updated to-do list style survey! Removing Finish button and Completed status as requested :)
 import React, { useState, useEffect } from "react";
-import {
-  Typography,
-  Box,
-  TextField,
-  Button,
-  LinearProgress,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-} from "@mui/material";
-import { useForm, Controller } from "react-hook-form"; // Learned from a tutorial for form handling
+import { FaArrowLeft, FaArrowRight, FaCheck, FaClipboardList } from "react-icons/fa";
+import { showToast } from "@/utils/toast"; // Adjust path as needed
+import Recommendation from "./Recommendation";
 
-// Assuming Recommendation is a separate component (placeholder)
-const Recommendation = ({ answers }) => {
-  // Determine recommendation based on answers
-  const feedback = answers.feedback || "Mild"; // Radio choice
-  const skincareStatus = answers.skincareStatus || "Mild";
-  const severity =
-    feedback === "Advanced" && skincareStatus === "Severe"
-      ? "severe"
-      : feedback === "Regular" && skincareStatus === "Moderate"
-      ? "moderate"
-      : "mild";
-  const serviceRecommendation = {
-    severe: "Advanced Dermatology Consultation",
-    moderate: "Custom Skincare Plan",
-    mild: "Basic Skincare Maintenance",
-  }[severity];
-
-  return (
-    <div>
-      <Typography variant="h6" color="success.main" gutterBottom>
-        Evaluation Complete! 🌟
-      </Typography>
-      <Typography variant="body1" sx={{ mt: 2 }}>
-        Based on your input, your acne severity is {severity}. Recommended
-        service: <strong>{serviceRecommendation}</strong>
-      </Typography>
-      <Typography variant="body2" sx={{ mt: 1 }}>
-        Details: You described your routine as {feedback} and rated your
-        condition as {skincareStatus}.
-      </Typography>
-    </div>
-  );
-};
+// Enhanced survey questions with more details
+const surveyQuestions = [
+  {
+    id: 1,
+    title: "Skincare Routine",
+    text: "How would you describe your current skincare routine?",
+    type: "radio",
+    options: [
+      { 
+        id: "basic", 
+        value: "Basic", 
+        description: "Cleansing and occasional moisturizing" 
+      },
+      { 
+        id: "regular", 
+        value: "Regular", 
+        description: "Daily cleansing, toning, and moisturizing" 
+      },
+      { 
+        id: "advanced", 
+        value: "Advanced", 
+        description: "Complete routine with specialized products and treatments" 
+      }
+    ],
+    validation: (value) => value !== "",
+    name: "skincare_routine",
+    icon: "🧴"
+  },
+  {
+    id: 2,
+    title: "Skin Condition",
+    text: "How would you rate your current skin condition?",
+    type: "radio",
+    options: [
+      { 
+        id: "mild", 
+        value: "Mild", 
+        description: "Occasional breakouts, minor concerns" 
+      },
+      { 
+        id: "moderate", 
+        value: "Moderate", 
+        description: "Regular breakouts, visible concerns" 
+      },
+      { 
+        id: "severe", 
+        value: "Severe", 
+        description: "Persistent breakouts, significant concerns" 
+      }
+    ],
+    validation: (value) => value !== "",
+    name: "skin_condition",
+    icon: "🔍"
+  },
+  {
+    id: 3,
+    title: "Skin Type",
+    text: "What is your skin type?",
+    type: "radio",
+    options: [
+      { 
+        id: "dry", 
+        value: "Dry", 
+        description: "Feels tight, may have flaky patches" 
+      },
+      { 
+        id: "oily", 
+        value: "Oily", 
+        description: "Shiny appearance, especially in T-zone" 
+      },
+      { 
+        id: "combination", 
+        value: "Combination", 
+        description: "Oily in some areas, dry in others" 
+      },
+      { 
+        id: "normal", 
+        value: "Normal", 
+        description: "Well-balanced, neither too oily nor too dry" 
+      },
+      { 
+        id: "sensitive", 
+        value: "Sensitive", 
+        description: "Easily irritated, may redden or sting with products" 
+      }
+    ],
+    validation: (value) => value !== "",
+    name: "skin_type",
+    icon: "💧"
+  },
+  {
+    id: 4,
+    title: "Skin Concerns",
+    text: "What are your primary skin concerns? (Select all that apply)",
+    type: "checkbox",
+    options: [
+      { id: "acne", value: "Acne", description: "Breakouts and blemishes" },
+      { id: "aging", value: "Aging", description: "Fine lines and wrinkles" },
+      { id: "pigmentation", value: "Pigmentation", description: "Dark spots or uneven tone" },
+      { id: "dryness", value: "Dryness", description: "Flaky or tight feeling skin" },
+      { id: "sensitivity", value: "Sensitivity", description: "Easily irritated skin" }
+    ],
+    validation: (value) => Array.isArray(value) && value.length > 0,
+    name: "skin_concerns",
+    icon: "⚠️"
+  },
+  {
+    id: 5,
+    title: "Additional Information",
+    text: "Please share any additional information about your skin that might be helpful.",
+    type: "textarea",
+    placeholder: "For example: allergies, previous treatments, specific areas of concern...",
+    validation: (value) => true, // Optional field
+    name: "additional_info",
+    icon: "📝"
+  }
+];
 
 function SurveyForm() {
-  const { control, handleSubmit } = useForm(); // Using react-hook-form for state management
-  const [formData, setFormData] = useState({
-    feedback: "",
-    skincareStatus: "",
-  }); // Track answers for each question
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Current task/question
-  const [isPending, setIsPending] = useState(false); // Submission status
-  const [isSubmitted, setIsSubmitted] = useState(false); // Show results
-  const [showReview, setShowReview] = useState(false); // Show review screen
-  const [progress, setProgress] = useState(0); // Track progress
+  // Step tracking
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = surveyQuestions.length + 1; // Questions + Results
 
-  // Define questions as a to-do list
-  const questions = [
-    {
-      id: 1,
-      text: "How would you describe your current skincare routine?",
-      type: "radio",
-      options: ["Basic", "Regular", "Advanced"],
-      validation: (value) => value !== "",
-      name: "feedback",
-    },
-    {
-      id: 2,
-      text: "How would you rate your skincare condition?",
-      type: "radio",
-      options: ["Mild", "Moderate", "Severe"],
-      validation: (value) => value !== "",
-      name: "skincareStatus",
-    },
-  ];
+  // Form state
+  const [formData, setFormData] = useState({});
+  const [isPending, setIsPending] = useState(false);
+  const [surveyCompleted, setSurveyCompleted] = useState(false);
 
-  // Calculate isCompleted based on all questions
-  const isCompleted = questions.every((q) => q.validation(formData[q.name]));
-
-  // Update progress based on completed questions
-  useEffect(() => {
-    const totalQuestions = questions.length;
-    const completedQuestions = questions.filter((q) =>
-      q.validation(formData[q.name])
-    ).length;
-    setProgress((completedQuestions / totalQuestions) * 100);
-  }, [formData, questions]);
-
-  // Handle input change
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // Handle radio input change
+  const handleRadioChange = (questionName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [questionName]: value
+    }));
   };
 
-  // Move to next question
-  const handleNextQuestion = () => {
-    const currentQuestion = questions[currentQuestionIndex];
-    if (currentQuestion.validation(formData[currentQuestion.name])) {
-      if (currentQuestionIndex + 1 < questions.length) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-      } else if (isCompleted) {
-        handleSubmitForm(); // Automatically submit when all questions are done
+  // Handle checkbox input change
+  const handleCheckboxChange = (questionName, value) => {
+    setFormData(prev => {
+      const currentValues = prev[questionName] || [];
+      const newValues = currentValues.includes(value)
+        ? currentValues.filter(v => v !== value)
+        : [...currentValues, value];
+      
+      return {
+        ...prev,
+        [questionName]: newValues
+      };
+    });
+  };
+
+  // Handle textarea input change
+  const handleTextareaChange = (questionName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [questionName]: value
+    }));
+  };
+
+  // Navigate to next step
+  const nextStep = () => {
+    const currentQuestion = surveyQuestions[currentStep - 1];
+    
+    // If we're on a question step, validate before proceeding
+    if (currentStep <= surveyQuestions.length) {
+      if (!currentQuestion.validation(formData[currentQuestion.name])) {
+        showToast.error(`Please answer the question before proceeding`);
+        return;
       }
-    } else {
-      alert(`Please complete the "${currentQuestion.text}" task fully!`);
+    }
+    
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
+      
+      // If moving to results step, mark survey as completed
+      if (currentStep === surveyQuestions.length) {
+        setSurveyCompleted(true);
+      }
     }
   };
 
-  // Move to previous question
-  const handlePreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+  // Navigate to previous step
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      window.scrollTo(0, 0);
     }
   };
 
-  // Handle form submission (all questions done)
-  const handleSubmitForm = (e) => {
-    e?.preventDefault(); // Handle both button and programmatic call
+  // Submit the survey
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    
     setIsPending(true);
-    if (isCompleted) {
-      setIsPending(false);
-      setIsSubmitted(true); // Set isSubmitted only when all tasks are done
-    } else {
-      alert("Please complete all questions before submitting!");
+    try {
+      // Simulate API call to submit survey
+      setTimeout(() => {
+        showToast.success("Survey submitted successfully!");
+        setIsPending(false);
+      }, 1500);
+    } catch (error) {
+      showToast.error("Error submitting survey");
       setIsPending(false);
     }
   };
 
-  // Show review of answers
-  const handleReview = () => {
-    setShowReview(true);
+  // Restart the survey
+  const restartSurvey = () => {
+    setFormData({});
+    setCurrentStep(1);
+    setSurveyCompleted(false);
+    window.scrollTo(0, 0);
   };
 
-  // Retry the survey
-  const handleRetry = () => {
-    setFormData({ feedback: "", skincareStatus: "" });
-    setCurrentQuestionIndex(0);
-    setIsSubmitted(false);
-    setShowReview(false);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  // Render step indicators
+  const renderStepIndicators = () => {
+    const steps = surveyQuestions.map(q => ({ 
+      number: q.id, 
+      label: q.title,
+      icon: q.icon
+    }));
+    
+    // Add results step
+    steps.push({ 
+      number: surveyQuestions.length + 1, 
+      label: "Results",
+      icon: "🎯"
+    });
+
+    return (
+      <div className="survey-steps">
+        {steps.map((step) => (
+          <div 
+            key={step.number} 
+            className={`survey-step ${currentStep === step.number ? 'active' : ''} ${currentStep > step.number ? 'completed' : ''}`}
+          >
+            <div className="step-number">
+              {currentStep > step.number ? <FaCheck /> : <span>{step.icon}</span>}
+            </div>
+            <div className="step-label">{step.label}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Render radio question
+  const renderRadioQuestion = (question) => {
+    return (
+      <div className="survey-question">
+        <h4>{question.text}</h4>
+        <div className="options-grid">
+          {question.options.map((option) => (
+            <div
+              key={option.id}
+              className={`option-card ${
+                formData[question.name] === option.value ? "selected" : ""
+              }`}
+              onClick={() => handleRadioChange(question.name, option.value)}
+            >
+              <div className="option-content">
+                <h5>{option.value}</h5>
+                <p className="option-description">{option.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render checkbox question
+  const renderCheckboxQuestion = (question) => {
+    const selectedValues = formData[question.name] || [];
+    
+    return (
+      <div className="survey-question">
+        <h4>{question.text}</h4>
+        <div className="options-grid">
+          {question.options.map((option) => (
+            <div
+              key={option.id}
+              className={`option-card ${
+                selectedValues.includes(option.value) ? "selected" : ""
+              }`}
+              onClick={() => handleCheckboxChange(question.name, option.value)}
+            >
+              <div className="option-content">
+                <h5>{option.value}</h5>
+                <p className="option-description">{option.description}</p>
+              </div>
+              {selectedValues.includes(option.value) && (
+                <div className="checkbox-indicator">
+                  <FaCheck />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render textarea question
+  const renderTextareaQuestion = (question) => {
+    return (
+      <div className="survey-question">
+        <h4>{question.text}</h4>
+        <textarea
+          placeholder={question.placeholder}
+          value={formData[question.name] || ""}
+          onChange={(e) => handleTextareaChange(question.name, e.target.value)}
+          rows={5}
+          className="survey-textarea"
+        />
+      </div>
+    );
+  };
+
+  // Render current question based on type
+  const renderCurrentQuestion = () => {
+    if (currentStep > surveyQuestions.length) {
+      return null; // We're on the results step
+    }
+    
+    const question = surveyQuestions[currentStep - 1];
+    
+    switch (question.type) {
+      case "radio":
+        return renderRadioQuestion(question);
+      case "checkbox":
+        return renderCheckboxQuestion(question);
+      case "textarea":
+        return renderTextareaQuestion(question);
+      default:
+        return null;
+    }
+  };
+
+  // Render results
+  const renderResults = () => {
+    return (
+      <div className="survey-results">
+        <div className="results-header">
+          <h4>Your Skin Analysis Results</h4>
+          <div className="survey-id">Survey ID: SV{Math.floor(100000 + Math.random() * 900000)}</div>
+        </div>
+        
+        <Recommendation answers={formData} />
+        
+        <div className="results-summary">
+          <h5>Your Survey Responses</h5>
+          
+          {surveyQuestions.map((question) => {
+            let answerDisplay;
+            
+            if (question.type === "checkbox" && formData[question.name]) {
+              answerDisplay = formData[question.name].join(", ");
+            } else if (question.type === "textarea") {
+              answerDisplay = formData[question.name] || "No additional information provided";
+            } else {
+              answerDisplay = formData[question.name] || "Not answered";
+            }
+            
+            return (
+              <div key={question.id} className="summary-item">
+                <div className="question">
+                  <span className="question-icon">{question.icon}</span>
+                  <span>{question.text}</span>
+                </div>
+                <div className="answer">{answerDisplay}</div>
+              </div>
+            );
+          })}
+        </div>
+        
+        <div className="next-steps">
+          <h5>Recommended Next Steps</h5>
+          <ul>
+            <li>Book a consultation with one of our skincare specialists</li>
+            <li>Explore our recommended products for your skin type</li>
+            <li>Learn more about treatments for your specific concerns</li>
+          </ul>
+          
+          <div className="action-buttons">
+            <button 
+              className="btn btn-primary"
+              onClick={() => window.location.href = '/booking'}
+            >
+              Book a Consultation
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={() => window.location.href = '/shop'}
+            >
+              Shop Recommended Products
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <Box
-      className="survey-container"
-      role="region"
-      aria-label="Acne Evaluation Survey"
-    >
-      <Typography variant="h4" gutterBottom component="h1">
-        Acne Condition Evaluation 🎓
-      </Typography>
-      <LinearProgress variant="determinate" value={progress} sx={{ mb: 2 }} />
-      {showReview ? (
-        <Box sx={{ textAlign: "center" }}>
-          <Typography variant="h5" gutterBottom>
-            Survey Review
-          </Typography>
-          <TableContainer
-            component={Paper}
-            sx={{ mt: 2, maxWidth: 600, margin: "0 auto" }}
+    <>
+      <div className="survey-service">
+        <div className="wrapper">
+          <div
+            className="survey-form js-img"
+            style={{
+              backgroundImage: `url('/assets/img/survey-form__bg.png')`,
+            }}
           >
-            <Table aria-label="survey review table">
-              <TableBody>
-                {questions.map((question) => (
-                  <TableRow key={question.id}>
-                    <TableCell sx={{ width: "50%" }}>
-                      <Typography variant="body1">{question.text}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Your Answer: {formData[question.name] || "Not provided"}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        Answer: {formData[question.name] || "Not provided"}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleRetry}
-            sx={{ mt: 2 }}
-          >
-            Try Again!
-          </Button>
-        </Box>
-      ) : isSubmitted ? (
-        <Box sx={{ textAlign: "center" }}>
-          <Recommendation answers={formData} />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleReview}
-            sx={{ mt: 2, mr: 1 }}
-          >
-            Review Answers
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={handleRetry}
-            sx={{ mt: 2 }}
-          >
-            Try Again!
-          </Button>
-        </Box>
-      ) : (
-        <>
-          <Typography variant="h6" gutterBottom>
-            Task {currentQuestionIndex + 1} of {questions.length}:{" "}
-            {questions[currentQuestionIndex].text}
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmitForm}
-            noValidate
-            sx={{ mt: 2 }}
-          >
-            {questions[currentQuestionIndex].type === "textarea" ? (
-              <Controller
-                name="feedback"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label={questions[currentQuestionIndex].text}
-                    margin="normal"
-                    variant="outlined"
-                    multiline
-                    rows={4}
-                    placeholder={questions[currentQuestionIndex].placeholder}
-                    aria-required="true"
-                    autoComplete="off"
-                    onChange={(e) => handleChange(e)}
-                  />
+            <form onSubmit={(e) => e.preventDefault()}>
+              <h3>Skin Assessment Survey</h3>
+              
+              {/* Step indicators */}
+              {renderStepIndicators()}
+              
+              {/* Current step content */}
+              <div className="survey-content">
+                {currentStep <= surveyQuestions.length ? (
+                  renderCurrentQuestion()
+                ) : (
+                  renderResults()
                 )}
-              />
-            ) : (
-              <FormControl component="fieldset" sx={{ mb: 2 }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  {questions[currentQuestionIndex].text}
-                </Typography>
-                <RadioGroup
-                  value={formData[questions[currentQuestionIndex].name]}
-                  onChange={handleChange}
-                  name={questions[currentQuestionIndex].name}
-                  aria-label={questions[currentQuestionIndex].text}
-                >
-                  {questions[currentQuestionIndex].options.map((option) => (
-                    <FormControlLabel
-                      key={option}
-                      value={option}
-                      control={<Radio />}
-                      label={option}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-            )}
-            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handlePreviousQuestion}
-                disabled={currentQuestionIndex === 0}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleNextQuestion}
-                disabled={
-                  !questions[currentQuestionIndex].validation(
-                    formData[questions[currentQuestionIndex].name]
-                  )
-                }
-              >
-                Next
-              </Button>
-            </Box>
-          </Box>
-        </>
-      )}
-    </Box>
+              </div>
+              
+              {/* Navigation buttons */}
+              <div className="survey-navigation">
+                {currentStep > 1 && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={prevStep}
+                  >
+                    <FaArrowLeft /> Back
+                  </button>
+                )}
+                
+                {currentStep < totalSteps ? (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={nextStep}
+                  >
+                    Next <FaArrowRight />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn btn-success"
+                    onClick={restartSurvey}
+                    disabled={isPending}
+                  >
+                    Take Survey Again
+                  </button>
+                )}
+              </div>
+
+              <div className="survey-form__bottom">
+                <a onClick={() => window.location.href = "/home"}>Cancel and return to Home</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
