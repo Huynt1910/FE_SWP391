@@ -1,7 +1,7 @@
-import { useMutation } from "@tanstack/react-query";
-import { showToast } from "@utils/toast";
 import { ACTIONS } from "@lib/api-client/constant";
 import { APIClient } from "@lib/api-client";
+import { useMutation } from "@tanstack/react-query";
+import { showToast } from "@utils/toast";
 
 export function useForgotPassword() {
   // Step 1: Verify Email
@@ -21,6 +21,7 @@ export function useForgotPassword() {
           return { success: false };
         }
       } catch (error) {
+        console.error("Verify email error:", error);
         showToast.error("Failed to send OTP. Please try again.");
         return { success: false };
       }
@@ -44,6 +45,7 @@ export function useForgotPassword() {
           return { success: false };
         }
       } catch (error) {
+        console.error("Verify OTP error:", error);
         showToast.error("Failed to verify OTP. Please try again.");
         return { success: false };
       }
@@ -67,6 +69,7 @@ export function useForgotPassword() {
           return { success: false };
         }
       } catch (error) {
+        console.error("Change password error:", error);
         showToast.error("Failed to change password. Please try again.");
         return { success: false };
       }

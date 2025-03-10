@@ -2,13 +2,16 @@ import { useState } from "react";
 import { showToast } from "@utils/toast";
 import router from "next/router";
 import { useForgotPassword } from "@auth/hook/useForgotPasswordHook";
+import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
 
 export const ForgotPassword = () => {
   const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
-  const [repassword, setRepassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const { 
     verifyEmail, 
@@ -31,12 +34,37 @@ export const ForgotPassword = () => {
     setPassword(e.target.value);
   };
 
-  const handleRepasswordChange = (e) => {
-    setRepassword(e.target.value);
+  const handleConfirmPasswordChange = (e) => {
+    setConfirmPassword(e.target.value);
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  const goBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
   };
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!email) {
+      showToast.error("Please enter your email address");
+      return;
+    }
+    
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      showToast.error("Please enter a valid email address");
+      return;
+    }
+    
     try {
       const result = await verifyEmail(email);
       if (result.success) {
@@ -49,6 +77,12 @@ export const ForgotPassword = () => {
 
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!otp) {
+      showToast.error("Please enter the verification code");
+      return;
+    }
+    
     try {
       const result = await verifyOtp({ email, otp });
       if (result.success) {
@@ -62,13 +96,28 @@ export const ForgotPassword = () => {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     
-    if (password !== repassword) {
+    if (!password || !confirmPassword) {
+      showToast.error("Please enter and confirm your new password");
+      return;
+    }
+    
+    if (password.length < 8) {
+      showToast.error("Password must be at least 8 characters long");
+      return;
+    }
+    
+    if (password !== confirmPassword) {
       showToast.error("Passwords do not match");
       return;
     }
     
     try {
-      const result = await changePassword({ email, password, repassword });
+      const result = await changePassword({ 
+        email, 
+        password, 
+        repassword: confirmPassword 
+      });
+      
       if (result.success) {
         showToast.success("Password reset successful");
         router.push("/login");
@@ -79,86 +128,117 @@ export const ForgotPassword = () => {
   };
 
   const renderEmailForm = () => (
-    <form onSubmit={handleEmailSubmit}>
-      <h3>Forgot Password</h3>
-      <p className="mb-4">Enter your email to receive a verification code</p>
+    <form onSubmit={handleEmailSubmit} className="forgot-password-form">
+      <h3 className="form-title">Forgot Password</h3>
+      <p className="form-subtitle">Enter your email to receive a verification code</p>
+      
       <div className="box-field">
         <input
           type="email"
-          name="email"
           className="form-control"
-          placeholder="Enter your email"
+          placeholder="Email Address"
           value={email}
           onChange={handleEmailChange}
           required
         />
       </div>
+      
       <button className="btn" type="submit" disabled={isVerifyingEmail}>
         {isVerifyingEmail ? "Sending..." : "Send Verification Code"}
       </button>
+      
       <div className="forgot-password-form__bottom">
-        Remembered your password?{" "}
-        <a onClick={() => router.push("/login")}>Log in</a>
+        <span>
+          Remembered your password?{" "}
+          <a onClick={() => router.push("/login")}>Log in</a>
+        </span>
       </div>
     </form>
   );
 
   const renderOtpForm = () => (
-    <form onSubmit={handleOtpSubmit}>
-      <h3>Verify OTP</h3>
-      <p className="mb-4">Enter the verification code sent to your email</p>
+    <form onSubmit={handleOtpSubmit} className="forgot-password-form">
+      <div className="back-button" onClick={goBack}>
+        <FaArrowLeft /> <span>Back</span>
+      </div>
+      
+      <h3 className="form-title">Verify OTP</h3>
+      <p className="form-subtitle">Enter the verification code sent to {email}</p>
+      
       <div className="box-field">
         <input
           type="text"
-          name="otp"
           className="form-control"
-          placeholder="Enter verification code"
+          placeholder="Verification Code"
           value={otp}
           onChange={handleOtpChange}
           required
         />
       </div>
+      
       <button className="btn" type="submit" disabled={isVerifyingOtp}>
         {isVerifyingOtp ? "Verifying..." : "Verify Code"}
       </button>
-      <div className="forgot-password-form__bottom">
-        <a onClick={() => setStep(1)}>Back to Email</a>
+      
+      <div className="resend-otp">
+        <span>
+          Didn't receive the code?{" "}
+          <a onClick={() => verifyEmail(email)}>Resend</a>
+        </span>
       </div>
     </form>
   );
 
   const renderPasswordForm = () => (
-    <form onSubmit={handlePasswordSubmit}>
-      <h3>Reset Password</h3>
-      <p className="mb-4">Enter your new password</p>
-      <div className="box-field">
+    <form onSubmit={handlePasswordSubmit} className="forgot-password-form">
+      <div className="back-button" onClick={goBack}>
+        <FaArrowLeft /> <span>Back</span>
+      </div>
+      
+      <h3 className="form-title">Reset Password</h3>
+      <p className="form-subtitle">Create a new password for your account</p>
+      
+      <div className="box-field password-field">
         <input
-          type="password"
-          name="password"
+          type={showPassword ? "text" : "password"}
           className="form-control"
-          placeholder="New password"
+          placeholder="New Password"
           value={password}
           onChange={handlePasswordChange}
           required
         />
+        <button 
+          type="button" 
+          className="password-toggle" 
+          onClick={togglePasswordVisibility}
+          tabIndex="-1"
+        >
+          {showPassword ? <FaEyeSlash /> : <FaEye />}
+        </button>
       </div>
-      <div className="box-field">
+      
+      <div className="box-field password-field">
         <input
-          type="password"
-          name="repassword"
+          type={showConfirmPassword ? "text" : "password"}
           className="form-control"
-          placeholder="Confirm new password"
-          value={repassword}
-          onChange={handleRepasswordChange}
+          placeholder="Confirm New Password"
+          value={confirmPassword}
+          onChange={handleConfirmPasswordChange}
           required
         />
+        <button 
+          type="button" 
+          className="password-toggle" 
+          onClick={toggleConfirmPasswordVisibility}
+          tabIndex="-1"
+        >
+          {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+        </button>
       </div>
+      
       <button className="btn" type="submit" disabled={isChangingPassword}>
         {isChangingPassword ? "Resetting..." : "Reset Password"}
       </button>
-      <div className="forgot-password-form__bottom">
-        <a onClick={() => setStep(2)}>Back to Verification</a>
-      </div>
     </form>
   );
 

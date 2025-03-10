@@ -45,19 +45,21 @@ export class APIClient {
 
     // Handle parameterized paths
     let finalPath = path;
+    let requestData = { ...data };
+    
     if (parameterized && data) {
       Object.keys(data).forEach(key => {
         const placeholder = `:${key}`;
         if (finalPath.includes(placeholder)) {
           finalPath = finalPath.replace(placeholder, data[key]);
           // Remove the parameter from data to avoid duplication
-          delete data[key];
+          delete requestData[key];
         }
       });
     }
 
     const url = `${API_URL}${finalPath}`;
 
-    return this.request(url, method, data, headers, query);
+    return this.request(url, method, Object.keys(requestData).length > 0 ? requestData : null, headers, query);
   }
 }
