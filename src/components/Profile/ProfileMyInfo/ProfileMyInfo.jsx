@@ -1,84 +1,172 @@
-import React, { useState } from "react";
+// components/ProfileMyInfo.jsx
+import React, { useState, useEffect } from "react";
+import { useMyInfo } from "@/auth/hook/useMyInfoHook";
+import { useUpdateUser } from "@/auth/hook/useUpdateUserHook";
+import { useChangePassword } from "@/auth/hook/useChangePasswordHook";
+import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
+import UpdateInfoModal from "./Modal/UpdateInfoModal";
+import ChangeEmailModal from "./Modal/ChangeEmailModal";
+import ChangePhoneModal from "./Modal/ChangePhoneModal";
+import ChangePasswordModal from "./Modal/ChangePasswordModal";
+import { maskEmail, maskPhone } from "./Helper/Helper";
 
-const ProfileMyInfo = () => {
-  const [username, setUsername] = useState("triuhuynquyn659");
-  const [name, setName] = useState("Nguyễn Triệu Huy");
-  const [email, setEmail] = useState("hu*******@gmail.com");
-  const [phone, setPhone] = useState("********06");
-  const [gender, setGender] = useState("Male");
-  const [dob, setDob] = useState({ day: "", month: "", year: "" });
-  const [image, setImage] = useState(null);
-  const [promotions, setPromotions] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [showPhoneModal, setShowPhoneModal] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+export const ProfileMyInfo = () => {
+  const queryClient = useQueryClient();
+
+  const [formData, setFormData] = useState({
+    username: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    gender: "",
+    birthDate: "",
+  });
+  const [editMode, setEditMode] = useState(false);
+
+  // Modal state
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
+  // Form data for modals
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
+  const [updateFormData, setUpdateFormData] = useState({
+    firstName: "",
+    lastName: "",
+    birthDate: "",
+    gender: "",
+    address: "",
+  });
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setImage(reader.result);
-      reader.readAsDataURL(file);
+  // Hooks for updating user info and fetching personal info
+  const { mutate: updateUser } = useUpdateUser();
+  const { data, isLoading, error } = useMyInfo();
+  const { mutate: changePassword, isLoading: isPasswordLoading } =
+    useChangePassword();
+
+  useEffect(() => {
+    if (data?.profile) {
+      setFormData(data.profile);
     }
-  };
+  }, [data]);
 
-  const handleDeleteImage = () => {
-    setImage(null);
-  };
+  useEffect(() => {
+    if (isUpdateModalOpen) {
+      setUpdateFormData({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        birthDate: formData.birthDate,
+        gender: formData.gender,
+        address: formData.address,
+      });
+    }
+  }, [isUpdateModalOpen, formData]);
 
-  const handleSave = () => {
-    // Add logic to save the updated profile information
-    console.log({
-      username,
-      name,
-      email,
-      phone,
-      gender,
-      dob,
-      image,
-      promotions,
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  const handleInputChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  // Handle updating personal info
+  const handleUpdateSubmit = () => {
+    const payload = { ...updateFormData };
+
+    updateUser(payload, {
+      onSuccess: (updatedData) => {
+        setFormData((prev) => ({ ...prev, ...updatedData }));
+        setIsUpdateModalOpen(false);
+        toast.success("Cập nhật thông tin thành công!");
+      },
+      onError: (error) => {
+        toast.error(`Cập nhật thất bại: ${error.message}`);
+      },
     });
   };
 
-  const handleChangePassword = () => {
-    // Add API call to change password
-    console.log({ currentPassword, newPassword, confirmPassword });
-    setShowPasswordModal(false);
+  // Handle updating phone number
+  const handlePhoneUpdate = () => {
+    const payload = { phone: newPhone };
+
+    updateUser(payload, {
+      onSuccess: (updatedData) => {
+        setFormData((prev) => ({ ...prev, phone: updatedData.phone }));
+        setIsPhoneModalOpen(false);
+        setNewPhone("");
+        toast.success("Cập nhật số điện thoại thành công!");
+      },
+      onError: (error) => {
+        toast.error(`Cập nhật số điện thoại thất bại: ${error.message}`);
+      },
+    });
   };
 
-  const handleChangeEmail = () => {
-    // Add API call to change email
-    console.log({ newEmail });
-    setShowEmailModal(false);
+  // Handle updating email
+  const handleEmailUpdate = () => {
+    const payload = { email: newEmail };
+
+    updateUser(payload, {
+      onSuccess: (updatedData) => {
+        setFormData(updatedData);
+        setIsEmailModalOpen(false);
+        setNewEmail("");
+        toast.success("Cập nhật email thành công!");
+      },
+      onError: (error) => {
+        toast.error("Cập nhật email thất bại: " + error.message);
+      },
+    });
   };
 
-  const handleChangePhone = () => {
-    // Add API call to change phone
-    console.log({ newPhone });
-    setShowPhoneModal(false);
-  };
-
-  const handleGenderChange = (selectedGender) => {
-    setGender(selectedGender);
-  };
-
-  const handlePromotionsChange = (e) => {
-    setPromotions(e.target.checked);
+  // Handle changing password
+  const handlePasswordChange = () => {
+    changePassword(
+      {
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword,
+      },
+      {
+        onSuccess: () => {
+          setIsPasswordModalOpen(false);
+          setPasswordData({
+            oldPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+          });
+          toast.success("Password has been changed");
+        },
+        onError: (error) => {
+          toast.error(`Change password failed: ${error.message}`);
+        },
+      }
+    );
   };
 
   return (
     <div className="profile-my-info-container">
       <div className="profile-my-info-title-container">
         <div className="profile-my-info-title">Hồ Sơ Của Tôi</div>
+        <button
+          onClick={() => setIsUpdateModalOpen(true)}
+          className="profile-my-info-update-button"
+        >
+          Update Info
+        </button>
       </div>
 
       <div className="profile-my-info-content">
-        {/* Personal info and image sections */}
+        {/* Thông tin cá nhân */}
         <div className="profile-my-info-info-container">
           <div className="profile-my-info-personal-section">
             <div className="profile-my-info-info-title">Thông tin cá nhân</div>
@@ -86,7 +174,8 @@ const ProfileMyInfo = () => {
               <label className="profile-my-info-label">Username</label>
               <input
                 type="text"
-                value={username}
+                name="username"
+                value={formData.username || ""}
                 disabled
                 className="profile-my-info-input profile-my-info-input-disabled"
               />
@@ -95,155 +184,92 @@ const ProfileMyInfo = () => {
               <label className="profile-my-info-label">Full name</label>
               <input
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="profile-my-info-input"
+                value={`${formData.firstName} ${formData.lastName}`}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
               />
             </div>
             <div className="profile-my-info-form-group">
               <label className="profile-my-info-label">Gender</label>
-              <div className="profile-my-info-radio-group">
-                {["Male", "Female", "Other"].map((option) => (
-                  <label key={option} className="profile-my-info-radio-label">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value={option}
-                      checked={gender === option}
-                      onChange={() => handleGenderChange(option)}
-                      className="profile-my-info-radio-input"
-                    />
-                    {option}
-                  </label>
-                ))}
-              </div>
+              <input
+                type="text"
+                value={formData.gender || ""}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
+              />
             </div>
             <div className="profile-my-info-form-group">
-              <label className="profile-my-info-label">Birthday</label>
-              <div className="profile-my-info-dob-group">
-                <select
-                  value={dob.day}
-                  onChange={(e) => setDob({ ...dob, day: e.target.value })}
-                  className="profile-my-info-select"
-                >
-                  <option value="">Day</option>
-                  {[...Array(31).keys()].map((day) => (
-                    <option key={day + 1} value={day + 1}>
-                      {day + 1}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={dob.month}
-                  onChange={(e) => setDob({ ...dob, month: e.target.value })}
-                  className="profile-my-info-select"
-                >
-                  <option value="">Month</option>
-                  {[...Array(12).keys()].map((month) => (
-                    <option key={month + 1} value={month + 1}>
-                      {month + 1}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={dob.year}
-                  onChange={(e) => setDob({ ...dob, year: e.target.value })}
-                  className="profile-my-info-select"
-                >
-                  <option value="">Year</option>
-                  {[...Array(100).keys()].map((year) => (
-                    <option key={year + 1925} value={year + 1925}>
-                      {year + 1925}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <label className="profile-my-info-label">Birth Date</label>
+              <input
+                type="text"
+                value={formData.birthDate || ""}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
+              />
             </div>
             <div className="profile-my-info-form-group">
-              <label className="profile-my-info-label">
-                <input
-                  type="checkbox"
-                  checked={promotions}
-                  onChange={handlePromotionsChange}
-                  className="profile-my-info-checkbox"
-                />
-                Nhận khuyến mãi
-              </label>
-            </div>
-            <button
-              onClick={handleSave}
-              className="profile-my-info-save-button"
-            >
-              Save
-            </button>
-          </div>
-
-          <div className="profile-my-info-image-section">
-            <div className="profile-my-info-image-container">
-              {image ? (
-                <img
-                  src={image}
-                  alt="Avatar"
-                  className="profile-my-info-image"
-                />
-              ) : (
-                <div className="profile-my-info-image-placeholder">Ảnh</div>
-              )}
-            </div>
-            <div className="profile-my-info-buttons">
-              <label className="profile-my-info-file-label">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="profile-my-info-file-input"
-                />
-                Chọn ảnh
-              </label>
-              <button
-                onClick={handleDeleteImage}
-                className="profile-my-info-delete-button"
-              >
-                Xóa
-              </button>
+              <label className="profile-my-info-label">Address</label>
+              <input
+                type="text"
+                value={formData.address || ""}
+                disabled
+                className="profile-my-info-input profile-my-info-input-disabled"
+              />
             </div>
           </div>
         </div>
 
-        {/* Security section */}
+        {/* Modal cập nhật thông tin */}
+        {isUpdateModalOpen && (
+          <UpdateInfoModal
+            updateFormData={updateFormData}
+            setUpdateFormData={setUpdateFormData}
+            onSubmit={handleUpdateSubmit}
+            onCancel={() => setIsUpdateModalOpen(false)}
+          />
+        )}
+
+        {/* Phần bảo mật thông tin */}
         <div className="profile-my-info-security-section">
           <div className="profile-my-info-security-title">
             Bảo mật thông tin
           </div>
           <div className="profile-my-info-form-group">
             <label className="profile-my-info-label">Email</label>
-            <div className="profile-my-info-input-group">
+            <div className="profile-my-info-input-group masked-field">
               <input
                 type="text"
-                value={email}
-                disabled
-                className="profile-my-info-input profile-my-info-input-disabled"
+                name="email"
+                value={editMode ? formData.email : maskEmail(formData.email)}
+                disabled={!editMode}
+                onChange={handleInputChange}
+                className={`profile-my-info-input ${
+                  editMode ? "" : "profile-my-info-input-disabled"
+                }`}
               />
               <button
-                onClick={() => setShowEmailModal(true)}
+                onClick={() => setIsEmailModalOpen(true)}
                 className="profile-my-info-change-button"
               >
                 Change
               </button>
             </div>
           </div>
-
           <div className="profile-my-info-form-group">
             <label className="profile-my-info-label">Phone</label>
-            <div className="profile-my-info-input-group">
+            <div className="profile-my-info-input-group masked-field">
               <input
                 type="text"
-                value={phone}
-                disabled
-                className="profile-my-info-input profile-my-info-input-disabled"
+                name="phone"
+                value={editMode ? formData.phone : maskPhone(formData.phone)}
+                disabled={!editMode}
+                onChange={handleInputChange}
+                className={`profile-my-info-input ${
+                  editMode ? "" : "profile-my-info-input-disabled"
+                }`}
               />
               <button
-                onClick={() => setShowPhoneModal(true)}
+                onClick={() => setIsPhoneModalOpen(true)}
                 className="profile-my-info-change-button"
               >
                 Change
@@ -251,19 +277,84 @@ const ProfileMyInfo = () => {
             </div>
           </div>
           <div className="profile-my-info-form-group">
+            <h3 className="profile-my-info-label">Password</h3>
             <div className="profile-my-info-input-group">
               <button
-                onClick={() => setShowPasswordModal(true)}
+                onClick={() => setIsPasswordModalOpen(true)}
                 className="profile-my-info-change-button"
               >
-                Change password
+                Change
               </button>
             </div>
           </div>
+          {isEmailModalOpen && (
+            <ChangeEmailModal
+              newEmail={newEmail}
+              setNewEmail={setNewEmail}
+              onSubmit={handleEmailUpdate}
+              onCancel={() => setIsEmailModalOpen(false)}
+            />
+          )}
+          {isPhoneModalOpen && (
+            <ChangePhoneModal
+              newPhone={newPhone}
+              setNewPhone={setNewPhone}
+              onSubmit={handlePhoneUpdate}
+              onCancel={() => {
+                setIsPhoneModalOpen(false);
+                setNewPhone("");
+              }}
+            />
+          )}
+          {isPasswordModalOpen && passwordData && (
+            <ChangePasswordModal
+              passwordData={passwordData}
+              setPasswordData={setPasswordData}
+              onSubmit={handlePasswordChange}
+              onCancel={() => {
+                setIsPasswordModalOpen(false);
+                setPasswordData({
+                  oldPassword: "",
+                  newPassword: "",
+                  confirmPassword: "",
+                });
+              }}
+            />
+          )}
         </div>
+
+        {editMode && (
+          <div className="profile-my-info-form-actions">
+            <button
+              onClick={() => {
+                updateUser(
+                  { ...formData },
+                  {
+                    onSuccess: (updatedData) => {
+                      setFormData(updatedData);
+                      setEditMode(false);
+                      toast.success("Cập nhật thành công!");
+                    },
+                    onError: (error) =>
+                      toast.error("Cập nhật thất bại! " + error.message),
+                  }
+                );
+              }}
+              className="profile-my-info-submit-button"
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => setEditMode(false)}
+              className="profile-my-info-cancel-button"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export { ProfileMyInfo };
+export default ProfileMyInfo;

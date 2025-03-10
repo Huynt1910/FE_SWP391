@@ -33,6 +33,16 @@ export const RequestMethod = {
       method: "GET",
       secure: true,
     },
+    updateInfo: {
+      path: "/users/update",
+      method: "PUT",
+      secure: true,
+    },
+    changePassword: {
+      path: "/users/change-password",
+      method: "PUT",
+      secure: true,
+    },
   };
   
   export const ACTIONS = {
@@ -44,6 +54,8 @@ export const RequestMethod = {
     VERIFY_OTP: "verifyOtp",
     CHANGE_FORGOT_PASSWORD: "changeForgotPassword",
     GET_SURVEY_QUESTIONS: "getSurveyQuestions",
+    UPDATE_INFO: "updateInfo",
+    CHANGE_PASSWORD: "changePassword",
   };
   
   export const API_URL =
