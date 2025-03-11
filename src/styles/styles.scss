@@ -2,6 +2,10 @@
 @import "~slick-carousel/slick/slick-theme.css";
 @import "base/_reset";
 @import "base/_fonts";
+@import "utils/_variables"; // Các biến cần được import trước
+@import "utils/_mixins"; // Các mixin cần được import trước
+
+// các import sau này
 @import "components/_jquery.formstyler";
 @import "components/_ion.rangeSlider.min";
 @import "components/_slick";
@@ -11,7 +15,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&display=swap");
 @import "rc-slider/assets/index.css";
 @import "react-dropdown/style.css";
-@import "admin/layout";
-@import "admin/components";
-@import "admin/headeradmin";
-@import "admin/navbar";
+
+// Admin Layout
+
+@import "admin/layout/navbar";
+@import "admin/layout/sidebar";
+
+// Admin Components
+@import "admin/components/schedule";
+@import "admin/components/dashboard";
+@import "admin/components/users";
+@import "admin/components/services";
+@import "admin/components/settings";
+@import "admin/components/shared";

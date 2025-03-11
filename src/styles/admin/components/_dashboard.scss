@@ -1,0 +1,558 @@
+@import "../../utils/variables";
+@import "../../utils/mixins";
+@import "./shared";
+.admin-dashboard {
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: $spacing-lg;
+    margin-bottom: $spacing-lg;
+
+    @media (max-width: 576px) {
+      grid-template-columns: 1fr;
+    }
+
+    &-card {
+      @include card;
+      @include flex(space-between, center);
+
+      .info {
+        .value {
+          font-size: 28px;
+          font-weight: 600;
+          margin-bottom: $spacing-sm;
+        }
+
+        .label {
+          color: $text-secondary;
+          font-size: 14px;
+        }
+      }
+
+      .icon {
+        width: 60px;
+        height: 60px;
+        border-radius: $spacing-xs;
+        @include flex(center, center);
+        font-size: 24px;
+
+        &.customers {
+          background-color: rgba($admin-primary, 0.1);
+          color: $admin-primary;
+        }
+
+        &.services {
+          background-color: rgba($admin-success, 0.1);
+          color: $admin-success;
+        }
+
+        &.orders {
+          background-color: rgba($admin-warning, 0.1);
+          color: $admin-warning;
+        }
+      }
+    }
+  }
+
+  &__charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-lg;
+
+    @media (max-width: 992px) {
+      grid-template-columns: 1fr;
+    }
+
+    &-card {
+      @include card;
+
+      &-header {
+        @include flex(space-between, center);
+        margin-bottom: $spacing-md;
+
+        h2 {
+          font-size: 18px;
+          font-weight: 500;
+          margin: 0;
+        }
+      }
+
+      .chart-container {
+        height: 300px;
+        position: relative;
+      }
+    }
+  }
+
+  &__recent {
+    @include card;
+    h3 {
+      font-size: 1.125rem;
+      margin-bottom: $spacing-md;
+      color: $admin-text;
+    }
+    table {
+      @include table;
+    }
+  }
+}
+
+.dashboard {
+  width: 100%; // Add this to ensure full width
+  min-height: 100%;
+  padding: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+
+    .spinner {
+      animation: spin 1s linear infinite;
+      font-size: 2rem;
+      color: $admin-primary;
+    }
+  }
+
+  &__header {
+    padding: 24px;
+    margin-bottom: 32px; // Increased spacing
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    .dashboard__title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+      white-space: nowrap; // Prevent title wrapping
+    }
+
+    .dashboard__time-filter {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px; // Add spacing between title and filters
+    }
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+    width: 100%; // Add this to ensure full width
+
+    @media (max-width: 1440px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px; // Increased padding
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      &__icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 16px;
+
+        &.customers {
+          background: #e0f2fe;
+          color: #0284c7;
+        }
+        &.bookings {
+          background: #dcfce7;
+          color: #16a34a;
+        }
+        &.revenue {
+          background: #fef9c3;
+          color: #ca8a04;
+        }
+        &.completion {
+          background: #f3e8ff;
+          color: #7e22ce;
+        }
+      }
+
+      &__info {
+        h3 {
+          color: #64748b;
+          font-size: 14px;
+          margin-bottom: 8px;
+        }
+
+        p {
+          color: #1e293b;
+          font-size: 24px;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+
+        .trend {
+          font-size: 12px;
+          color: #16a34a;
+          background: #dcfce7;
+          padding: 4px 8px;
+          border-radius: 12px;
+        }
+      }
+    }
+  }
+
+  &__charts {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+    width: 100%; // Add this to ensure full width
+
+    @media (max-width: 1280px) {
+      grid-template-columns: 1fr;
+    }
+
+    .chart-container {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      width: 100%; // Add this
+      min-height: 400px;
+
+      h3 {
+        margin-bottom: 24px;
+        color: #1e293b;
+        font-size: 18px; // Increased font size
+        font-weight: 500;
+      }
+
+      canvas {
+        width: 100% !important; // Add this to ensure charts scale properly
+        height: 100% !important;
+      }
+
+      &.status-chart {
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+
+        canvas {
+          flex: 1;
+          min-height: 300px;
+        }
+
+        .chart-js-doughnut {
+          // New color scheme
+          --chart-color-1: #0ea5e9; // Blue
+          --chart-color-2: #10b981; // Green
+          --chart-color-3: #8b5cf6; // Purple
+          --chart-color-4: #ef4444; // Red
+
+          // Add legend styling
+          .chartjs-legend {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+
+            li {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-size: 14px;
+              color: #64748b;
+
+              &::before {
+                content: "";
+                width: 12px;
+                height: 12px;
+                border-radius: 2px;
+                background: var(--color);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &__insights {
+    width: 100%; // Add this
+    margin-bottom: 32px;
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      width: 100%; // Add this
+
+      @media (max-width: 1280px) {
+        grid-template-columns: 1fr;
+      }
+
+      .customer-type,
+      .popular-services {
+        padding: 24px;
+        height: 350px; // Increased height for better visibility
+      }
+    }
+  }
+
+  &__recent {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden; // Add this to contain the table
+
+    .header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e2e8f0;
+
+      h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+      }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th,
+      td {
+        padding: 16px 24px; // Increased padding
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap; // Prevent text wrapping
+      }
+
+      th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      td {
+        color: #1e293b;
+        font-size: 14px;
+        vertical-align: middle; // Center content vertically
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+
+        &--pending {
+          background: #fef3c7;
+          color: #92400e;
+        }
+
+        &--confirmed {
+          background: #dcfce7;
+          color: #166534;
+        }
+
+        &--completed {
+          background: #dbeafe;
+          color: #1e40af;
+        }
+
+        &--cancelled {
+          background: #fee2e2;
+          color: #991b1b;
+        }
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+
+        .view-btn {
+          padding: 6px 12px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          color: #64748b;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            background: #f1f5f9;
+            color: #3b82f6;
+            border-color: #3b82f6;
+          }
+        }
+      }
+    }
+
+    // Add responsive table
+    @media (max-width: 1024px) {
+      .table-container {
+        overflow-x: auto;
+        margin: 0 -24px;
+        padding: 0 24px;
+      }
+
+      table {
+        min-width: 800px; // Ensure table doesn't shrink too much
+      }
+    }
+  }
+
+  // Time range styles
+  &__time-range {
+    margin-bottom: $spacing-lg;
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  &__time-btn {
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid $admin-border;
+    background: $admin-bg;
+    border-radius: $spacing-xs;
+    color: $text-secondary;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: darken($admin-bg, 5%);
+    }
+
+    &.active {
+      background: $admin-primary;
+      color: white;
+      border-color: $admin-primary;
+    }
+  }
+}
+
+@media (max-width: 1280px) {
+  .dashboard {
+    &__stats {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    &__charts {
+      grid-template-columns: 1fr;
+    }
+
+    &__insights .stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard {
+    &__stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    &__charts {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 16px;
+    padding-top: 86px;
+
+    &__stats {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard {
+    padding: 16px;
+    padding-top: 86px;
+
+    &__stats {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Update admin page styles
+.admin-page {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+
+  &__content {
+    width: 100%;
+    padding: 24px;
+    box-sizing: border-box;
+  }
+}
+
+// Update shared layout styles in _shared.scss
+.admin-layout {
+  &__main {
+    flex: 1;
+    width: calc(100% - 250px); // Add this
+    margin-left: 250px;
+    transition: all 0.3s ease;
+
+    &.sidebar-collapsed {
+      width: calc(100% - 70px); // Add this
+      margin-left: 70px;
+    }
+  }
+
+  &__content {
+    width: 100%;
+    padding: 24px;
+    box-sizing: border-box;
+  }
+}
