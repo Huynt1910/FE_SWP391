@@ -1,14 +1,13 @@
-import { useSignIn } from "@auth/hook/useSinginHook";
-import { SocialLogin } from "@components/shared/SocialLogin/SocialLogin";
+import { useStaffSignIn } from "@auth/hook/useStaffSignInHook";
 import { showToast } from "@utils/toast";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 
-export const Login = () => {
+export const StaffLogin = () => {
   const router = useRouter();
   
   useEffect(() => {
-    console.log("Login component mounted");
+    console.log("StaffLogin component mounted");
     // Clear any existing auth tokens to prevent redirect loops
     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     document.cookie = "userRole=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -20,7 +19,7 @@ export const Login = () => {
     rememberMe: false,
   });
 
-  const { signIn, isPending } = useSignIn();
+  const { staffSignIn, isPending } = useStaffSignIn();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -34,19 +33,19 @@ export const Login = () => {
     e.preventDefault();
 
     try {
-      await signIn({
+      await staffSignIn({
         username: formData.username,
         password: formData.password,
       });
     } catch (error) {
       showToast.error("An error occurred during login. Please try again.");
-      console.error("Login error:", error);
+      console.error("Staff login error:", error);
     }
   };
 
   return (
     <>
-      {/* <!-- BEGIN LOGIN --> */}
+      {/* <!-- BEGIN STAFF LOGIN --> */}
       <div className="login">
         <div className="wrapper">
           <div
@@ -54,15 +53,14 @@ export const Login = () => {
             style={{ backgroundImage: `url('/assets/img/login-form__bg.png')` }}
           >
             <form onSubmit={handleSubmit}>
-              <h3>Customer Login</h3>
-              <SocialLogin />
-
+              <h3>Staff Login</h3>
+              
               <div className="box-field">
                 <input
                   type="text"
                   name="username"
                   className="form-control"
-                  placeholder="Enter your username"
+                  placeholder="Enter your staff username"
                   value={formData.username}
                   onChange={handleInputChange}
                   required
@@ -90,25 +88,15 @@ export const Login = () => {
                 Remember me
               </label>
               <button className="btn" type="submit" disabled={isPending}>
-                {isPending ? "Logging in..." : "Log in"}
+                {isPending ? "Logging in..." : "Staff Log in"}
               </button>
               <div className="login-form__bottom">
                 <span>
-                  No account?{" "}
-                  <a href="/registration">Register</a>
+                  <a href="/login-selection">Back to role selection</a>
                 </span>
                 <a href="/forgot-password">
                   Lost your password?
                 </a>
-              </div>
-              
-              <div className="login-form__other-options mt-4">
-                <p>Not a customer?</p>
-                <div className="other-login-options">
-                  <a href="/login-selection" className="btn btn-sm btn-outline">
-                    Back to Role Selection
-                  </a>
-                </div>
               </div>
             </form>
           </div>
@@ -119,7 +107,7 @@ export const Login = () => {
           alt=""
         />
       </div>
-      {/* <!-- LOGIN EOF   --> */}
+      {/* <!-- STAFF LOGIN EOF   --> */}
     </>
   );
-};
+}; 

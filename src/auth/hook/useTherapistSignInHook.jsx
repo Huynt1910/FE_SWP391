@@ -5,43 +5,43 @@ import { setCookie } from "cookies-next";
 import { showToast } from "@utils/toast";
 import { useRouter } from "next/router";
 
-export function useSignIn() {
+export function useTherapistSignIn() {
   const router = useRouter();
 
-  const { mutateAsync: signIn, isPending } = useMutation({
+  const { mutateAsync: therapistSignIn, isPending } = useMutation({
     mutationFn: async (params) => {
       try {
-        console.log("Attempting customer login with:", params);
+        console.log("Attempting therapist login with:", params);
         const { result } = await APIClient.invoke({
-          action: ACTIONS.SIGN_IN,
+          action: ACTIONS.THERAPIST_SIGN_IN,
           data: params,
         });
 
-        console.log("Customer login result:", result);
+        console.log("Therapist login result:", result);
 
         if (result && result.success == true) {
           const { token } = result;
 
           // Set cookies
           setCookie("token", token);
-          setCookie("userRole", "customer");
+          setCookie("userRole", "therapist");
           
-          showToast.success("Successfully signed in!");
+          showToast.success("Successfully signed in as therapist!");
           
           // Use window.location for more reliable navigation
-          console.log("Redirecting to home page");
+          console.log("Redirecting to therapist dashboard");
           setTimeout(() => {
-            window.location.href = "/";
+            window.location.href = "/therapist/dashboard";
           }, 500);
         } else {
-          showToast.error("Invalid credentials!");
+          showToast.error("Invalid therapist credentials!");
         }
       } catch (error) {
-        console.error("Login error:", error);
+        console.error("Therapist login error:", error);
         showToast.error("An error occurred during login. Please try again.");
       }
     },
   });
 
-  return { signIn, isPending };
-}
+  return { therapistSignIn, isPending };
+} 

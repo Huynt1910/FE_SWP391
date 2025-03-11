@@ -7,6 +7,8 @@ export const RequestMethod = {
   
   export const END_POINTS = {
     signIn: { path: "/authentication/log-in", method: "POST" },
+    staffSignIn: { path: "/authentication/staff-login", method: "POST" },
+    therapistSignIn: { path: "/authentication/therapist-login", method: "POST" },
     signUp: { path: "/users", method: "POST" },
     myInfo: { path: "/users/myInfo", method: "GET", secure: true },
     forgotpassword: {
@@ -47,6 +49,8 @@ export const RequestMethod = {
   
   export const ACTIONS = {
     SIGN_IN: "signIn",
+    STAFF_SIGN_IN: "staffSignIn",
+    THERAPIST_SIGN_IN: "therapistSignIn",
     SIGN_UP: "signUp",
     MY_INFO: "myInfo",
     FORGOT_PASSWORD: "forgotpassword",

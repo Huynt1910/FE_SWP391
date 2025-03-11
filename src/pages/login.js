@@ -2,8 +2,9 @@ import { Login } from "@components/Login/Login";
 import { Subscribe } from "@components/shared/Subscribe/Subscribe";
 import { PublicLayout } from "@/layout/PublicLayout";
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { showToast } from "@/utils/toast";
+import { deleteCookie } from "cookies-next";
 
 const breadcrumbsData = [
   {
@@ -11,7 +12,7 @@ const breadcrumbsData = [
     path: "/",
   },
   {
-    label: "Log In",
+    label: "Customer Log In",
     path: "/login",
   },
 ];
@@ -19,6 +20,13 @@ const breadcrumbsData = [
 const LoginPage = () => {
   const router = useRouter();
   const { returnUrl } = router.query;
+  
+  useEffect(() => {
+    console.log("Customer login page mounted");
+    // Clear any existing auth tokens to prevent redirect loops
+    deleteCookie("token");
+    deleteCookie("userRole");
+  }, []);
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,6 +42,7 @@ const LoginPage = () => {
       
       // On successful login:
       localStorage.setItem('authToken', 'your-auth-token'); // Store the token
+      localStorage.setItem('userRole', 'customer'); // Store the role
       
       showToast.success('Login successful!');
       
@@ -41,7 +50,7 @@ const LoginPage = () => {
       if (returnUrl) {
         router.push(returnUrl);
       } else {
-        router.push('/home');
+        router.push('/');
       }
     } catch (error) {
       showToast.error('Login failed. Please check your credentials.');
@@ -51,7 +60,7 @@ const LoginPage = () => {
   };
 
   return (
-    <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Log In">
+    <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Customer Log In">
       <Login />
       <Subscribe />
     </PublicLayout>
