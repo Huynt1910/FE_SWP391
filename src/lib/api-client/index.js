@@ -16,37 +16,50 @@ export class APIClient {
     };
 
     const fullUrl = `${url}${queryParams ? `?${queryParams}` : ""}`;
-    console.log("Request URL:", fullUrl);
-    console.log("Request data:", data);
+    console.log("fullUrl", fullUrl);
 
     const response = await fetch(fullUrl, options);
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
-    }
     return response.json();
   }
 
   static async invoke(params) {
-    const { action, data, query, headers = {} } = params;
+    const { action, data, query } = params;
 
     if (!END_POINTS[action]) {
       throw new Error(`Invalid action: ${action}`);
     }
 
-    const endpoint = END_POINTS[action];
-    console.log("Endpoint config:", endpoint);
+    console.log("endpointwaction", END_POINTS[action]);
 
-    const token = getCookie("token");
-    if (endpoint.secure && token) {
-      headers["Authorization"] = `Bearer ${token}`;
+    const { path, method, secure, parameterized } = END_POINTS[action];
+
+    const headers = {};
+    if (secure) {
+      // Add access token to headers
+      const token = getCookie("token");
+      // console.log(token);
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
     }
 
-    const url = `${API_URL}${endpoint.path}`;
-    console.log("Final URL:", url);
+    // Handle parameterized paths
+    let finalPath = path;
+    let requestData = { ...data };
+    
+    if (parameterized && data) {
+      Object.keys(data).forEach(key => {
+        const placeholder = `:${key}`;
+        if (finalPath.includes(placeholder)) {
+          finalPath = finalPath.replace(placeholder, data[key]);
+          // Remove the parameter from data to avoid duplication
+          delete requestData[key];
+        }
+      });
+    }
 
-    return this.request(url, endpoint.method, data, headers, query);
+    const url = `${API_URL}${finalPath}`;
+
+    return this.request(url, method, Object.keys(requestData).length > 0 ? requestData : null, headers, query);
   }
 }

@@ -1,6 +1,6 @@
+import { ForgotPassword } from "@components/ForgotPassword/ForgotPassword";
 import { Subscribe } from "@components/shared/Subscribe/Subscribe";
 import { PublicLayout } from "@/layout/PublicLayout";
-import ForgotPasswordForm from "@/components/ForgotPassword/ForgotPassword";
 
 const breadcrumbsData = [
   {
@@ -19,8 +19,7 @@ const ForgotPasswordPage = () => {
       breadcrumb={breadcrumbsData}
       breadcrumbTitle="Forgot Password"
     >
-      <ForgotPasswordForm />
-      <Subscribe />
+      <ForgotPassword />
     </PublicLayout>
   );
 };

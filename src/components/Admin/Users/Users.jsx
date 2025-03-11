@@ -312,7 +312,6 @@ function Users() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (modalMode === "add") {
       // Add new user
       const newUser = {
@@ -333,7 +332,6 @@ function Users() {
       const updatedUsers = users.filter((user) => user.id !== currentUser.id);
       setUsers(updatedUsers);
     }
-
     closeModal();
   };
 
