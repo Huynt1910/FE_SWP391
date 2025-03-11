@@ -11,8 +11,8 @@ export const Banner = () => {
             <h1 className="main-text">Beauty &amp; Care</h1>
             <h2>✨ Fast – Convenient – Effective ✨</h2>
             <p>Start your skincare journey today!</p>
-            <Link href="/shop" className="btn">
-              Book now
+            <Link href="/booking" className="btn">
+              Book Appointment
             </Link>
           </div>
         </div>
