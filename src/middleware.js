@@ -78,4 +78,4 @@ export const config = {
     '/profile',
     '/checkout'
   ],
-};
+}
