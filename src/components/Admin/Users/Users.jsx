@@ -12,6 +12,8 @@ import {
   FaSort,
   FaSortUp,
   FaSortDown,
+  FaPlus,
+  FaCircle,
 } from "react-icons/fa";
 
 function Users() {
@@ -23,10 +25,13 @@ function Users() {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
-  const [sortConfig, setSortConfig] = useState({ key: "id", direction: "ascending" });
+  const [sortConfig, setSortConfig] = useState({
+    key: "id",
+    direction: "ascending",
+  });
   const [showModal, setShowModal] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [modalMode, setModalMode] = useState("view"); // view, edit, add, delete
+  const [modalMode, setModalMode] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // Form state for adding/editing users
   const [formData, setFormData] = useState({
@@ -255,44 +260,40 @@ function Users() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   // Modal handlers
-  const openViewModal = (user) => {
-    setCurrentUser(user);
-    setModalMode("view");
+  const handleOpenModal = (mode, user = null) => {
+    setModalMode(mode);
+    setSelectedUser(user);
+    if (user && (mode === "edit" || mode === "view")) {
+      setFormData({
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        status: user.status,
+      });
+    } else {
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        role: "user",
+        status: "active",
+      });
+    }
     setShowModal(true);
   };
 
-  const openEditModal = (user) => {
-    setCurrentUser(user);
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setModalMode("");
+    setSelectedUser(null);
     setFormData({
-      fullName: user.fullName,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      status: user.status,
-      avatar: user.avatar,
-    });
-    setModalMode("edit");
-    setShowModal(true);
-  };
-
-  const openAddModal = () => {
-    setCurrentUser(null);
-    setFormData({
-      fullName: "",
+      name: "",
       email: "",
       phone: "",
       role: "user",
       status: "active",
-      avatar: "",
     });
-    setModalMode("add");
-    setShowModal(true);
-  };
-
-  const openDeleteModal = (user) => {
-    setCurrentUser(user);
-    setModalMode("delete");
-    setShowModal(true);
   };
 
   const closeModal = () => {
@@ -311,7 +312,6 @@ function Users() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
     if (modalMode === "add") {
       // Add new user
       const newUser = {
@@ -332,7 +332,6 @@ function Users() {
       const updatedUsers = users.filter((user) => user.id !== currentUser.id);
       setUsers(updatedUsers);
     }
-    
     closeModal();
   };
 
@@ -340,9 +339,14 @@ function Users() {
   const toggleUserStatus = (userId) => {
     const updatedUsers = users.map((user) => {
       if (user.id === userId) {
-        const newStatus = user.status === "active" ? "inactive" : 
-                         user.status === "inactive" ? "active" : 
-                         user.status === "blocked" ? "active" : "blocked";
+        const newStatus =
+          user.status === "active"
+            ? "inactive"
+            : user.status === "inactive"
+            ? "active"
+            : user.status === "blocked"
+            ? "active"
+            : "blocked";
         return { ...user, status: newStatus };
       }
       return user;
@@ -396,377 +400,286 @@ function Users() {
   };
 
   return (
-    <div className="users-management">
-      <div className="users-management__header">
-        <h1>Quản lý người dùng</h1>
-        <div className="users-management__actions">
-          <button className="btn btn-primary" onClick={openAddModal}>
-            <FaUserPlus /> Thêm người dùng
-          </button>
-          <button className="btn btn-secondary" onClick={exportUsersData}>
-            <FaDownload /> Xuất dữ liệu
+    <div className="admin-page">
+      {/* Header Section */}
+      <div className="admin-page__header">
+        <div className="admin-page__header-title">
+          <h1>Quản lý người dùng</h1>
+          <p>Quản lý thông tin và phân quyền người dùng</p>
+        </div>
+        <div className="admin-page__header-actions">
+          <button
+            className="btn btn-primary"
+            onClick={() => handleOpenModal("add")}
+          >
+            <FaPlus /> Thêm người dùng
           </button>
         </div>
       </div>
 
-      <div className="users-management__filters">
+      {/* Filters Section */}
+      <div className="admin-page__filters">
         <div className="search-box">
+          <FaSearch />
           <input
             type="text"
-            placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+            placeholder="Tìm kiếm theo tên, email hoặc số điện thoại..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <FaSearch className="search-icon" />
         </div>
-
         <div className="filter-group">
           <div className="filter">
-            <label>Vai trò:</label>
+            <label>Vai trò</label>
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
             >
-              <option value="all">Tất cả</option>
+              <option value="all">Tất cả vai trò</option>
               <option value="admin">Admin</option>
-              <option value="staff">Nhân viên</option>
-              <option value="user">Người dùng</option>
+              <option value="user">User</option>
             </select>
           </div>
-
           <div className="filter">
-            <label>Trạng thái:</label>
+            <label>Trạng thái</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
             >
-              <option value="all">Tất cả</option>
-              <option value="active">Hoạt động</option>
-              <option value="inactive">Không hoạt động</option>
-              <option value="blocked">Bị chặn</option>
+              <option value="all">Tất cả trạng thái</option>
+              <option value="active">Đang hoạt động</option>
+              <option value="inactive">Bị khóa</option>
             </select>
           </div>
         </div>
       </div>
 
-      {loading ? (
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Đang tải dữ liệu...</p>
-        </div>
-      ) : (
-        <>
-          <div className="users-table-container">
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th onClick={() => handleSort("id")}>
-                    ID {getSortIcon("id")}
-                  </th>
-                  <th onClick={() => handleSort("fullName")}>
-                    Họ tên {getSortIcon("fullName")}
-                  </th>
-                  <th onClick={() => handleSort("email")}>
-                    Email {getSortIcon("email")}
-                  </th>
-                  <th onClick={() => handleSort("phone")}>
-                    Số điện thoại {getSortIcon("phone")}
-                  </th>
-                  <th onClick={() => handleSort("role")}>
-                    Vai trò {getSortIcon("role")}
-                  </th>
-                  <th onClick={() => handleSort("status")}>
-                    Trạng thái {getSortIcon("status")}
-                  </th>
-                  <th onClick={() => handleSort("lastLogin")}>
-                    Đăng nhập cuối {getSortIcon("lastLogin")}
-                  </th>
-                  <th>Thao tác</th>
+      {/* Table Section */}
+      <div className="admin-page__table">
+        <table>
+          <thead>
+            <tr>
+              <th onClick={() => handleSort("fullName")}>
+                Họ tên {getSortIcon("fullName")}
+              </th>
+              <th onClick={() => handleSort("phone")}>
+                Số điện thoại {getSortIcon("phone")}
+              </th>
+              <th onClick={() => handleSort("email")}>
+                Email {getSortIcon("email")}
+              </th>
+              <th onClick={() => handleSort("role")}>
+                Vai trò {getSortIcon("role")}
+              </th>
+              <th onClick={() => handleSort("status")}>
+                Trạng thái {getSortIcon("status")}
+              </th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentUsers.length > 0 ? (
+              currentUsers.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.fullName}</td>
+                  <td>{user.phone}</td>
+                  <td>{user.email}</td>
+                  <td>{renderRoleBadge(user.role)}</td>
+                  <td>{renderStatusBadge(user.status)}</td>
+                  <td>
+                    <div className="action-buttons">
+                      <button
+                        className="view-btn"
+                        onClick={() => handleOpenModal("view", user)}
+                        title="Xem chi tiết"
+                      >
+                        <FaEye />
+                      </button>
+                      <button
+                        className="edit-btn"
+                        onClick={() => handleOpenModal("edit", user)}
+                        title="Chỉnh sửa"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        className="status-btn"
+                        onClick={() => toggleUserStatus(user.id)}
+                        title={
+                          user.status === "active"
+                            ? "Khóa tài khoản"
+                            : "Mở khóa"
+                        }
+                      >
+                        {user.status === "active" ? <FaLock /> : <FaUnlock />}
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(user.id)}
+                        title="Xóa"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {currentUsers.length > 0 ? (
-                  currentUsers.map((user) => (
-                    <tr key={user.id}>
-                      <td>{user.id}</td>
-                      <td className="user-name-cell">
-                        <img
-                          src={user.avatar}
-                          alt={user.fullName}
-                          className="user-avatar"
-                        />
-                        {user.fullName}
-                      </td>
-                      <td>{user.email}</td>
-                      <td>{user.phone}</td>
-                      <td>{renderRoleBadge(user.role)}</td>
-                      <td>{renderStatusBadge(user.status)}</td>
-                      <td>{user.lastLogin}</td>
-                      <td className="actions-cell">
-                        <button
-                          className="action-btn view-btn"
-                          onClick={() => openViewModal(user)}
-                          title="Xem chi tiết"
-                        >
-                          <FaEye />
-                        </button>
-                        <button
-                          className="action-btn edit-btn"
-                          onClick={() => openEditModal(user)}
-                          title="Chỉnh sửa"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          className="action-btn status-btn"
-                          onClick={() => toggleUserStatus(user.id)}
-                          title={user.status === "active" ? "Khóa tài khoản" : "Mở khóa tài khoản"}
-                        >
-                          {user.status === "active" ? <FaLock /> : <FaUnlock />}
-                        </button>
-                        <button
-                          className="action-btn delete-btn"
-                          onClick={() => openDeleteModal(user)}
-                          title="Xóa"
-                        >
-                          <FaTrash />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="8" className="no-data">
-                      Không tìm thấy người dùng nào
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="8" className="no-data">
+                  Không tìm thấy người dùng nào
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-          {/* Pagination */}
-          {filteredUsers.length > 0 && (
-            <div className="pagination">
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="pagination-btn"
-              >
-                &laquo; Trước
-              </button>
-              
-              <div className="pagination-info">
-                Trang {currentPage} / {totalPages}
-              </div>
-              
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="pagination-btn"
-              >
-                Sau &raquo;
-              </button>
-            </div>
-          )}
-        </>
+      {/* Pagination */}
+      {filteredUsers.length > 0 && (
+        <div className="admin-page__pagination">
+          <button
+            className="pagination-btn"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            &laquo; Trước
+          </button>
+
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              className={`pagination-btn ${
+                currentPage === index + 1 ? "active" : ""
+              }`}
+              onClick={() => setCurrentPage(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+
+          <button
+            className="pagination-btn"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Sau &raquo;
+          </button>
+        </div>
       )}
 
       {/* User Modal */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <div className="modal-header">
+        <div className="admin-page__modal">
+          <div className="admin-page__modal-content">
+            <div className="admin-page__modal-content-header">
               <h2>
                 {modalMode === "view"
                   ? "Chi tiết người dùng"
                   : modalMode === "edit"
                   ? "Chỉnh sửa người dùng"
-                  : modalMode === "add"
-                  ? "Thêm người dùng mới"
-                  : "Xóa người dùng"}
+                  : "Thêm người dùng mới"}
               </h2>
-              <button className="close-btn" onClick={closeModal}>
-                &times;
+              <button className="close-btn" onClick={handleCloseModal}>
+                ×
               </button>
             </div>
-            
-            <div className="modal-content">
-              {modalMode === "delete" ? (
-                <div className="delete-confirmation">
-                  <p>
-                    Bạn có chắc chắn muốn xóa người dùng{" "}
-                    <strong>{currentUser.fullName}</strong>?
-                  </p>
-                  <p>Hành động này không thể hoàn tác.</p>
-                  
-                  <div className="modal-actions">
-                    <button
-                      className="btn btn-secondary"
-                      onClick={closeModal}
-                    >
-                      Hủy
-                    </button>
-                    <button
-                      className="btn btn-danger"
-                      onClick={handleSubmit}
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              ) : modalMode === "view" ? (
+
+            <div className="admin-page__modal-content-body">
+              {modalMode === "view" ? (
                 <div className="user-details">
-                  <div className="user-profile-header">
-                    <img
-                      src={currentUser.avatar}
-                      alt={currentUser.fullName}
-                      className="user-profile-avatar"
-                    />
-                    <div className="user-profile-info">
-                      <h3>{currentUser.fullName}</h3>
-                      <p>{currentUser.email}</p>
-                      <div className="user-badges">
-                        {renderRoleBadge(currentUser.role)}
-                        {renderStatusBadge(currentUser.status)}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="user-details-content">
-                    <div className="detail-item">
-                      <span className="detail-label">ID:</span>
-                      <span className="detail-value">{currentUser.id}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Số điện thoại:</span>
-                      <span className="detail-value">{currentUser.phone}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Ngày đăng ký:</span>
-                      <span className="detail-value">{currentUser.registeredDate}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Đăng nhập cuối:</span>
-                      <span className="detail-value">{currentUser.lastLogin}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="modal-actions">
-                    <button
-                      className="btn btn-secondary"
-                      onClick={closeModal}
-                    >
-                      Đóng
-                    </button>
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => {
-                        closeModal();
-                        openEditModal(currentUser);
-                      }}
-                    >
-                      Chỉnh sửa
-                    </button>
-                  </div>
+                  <p>
+                    <strong>Họ tên:</strong> {selectedUser.name}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {selectedUser.email}
+                  </p>
+                  <p>
+                    <strong>Số điện thoại:</strong> {selectedUser.phone}
+                  </p>
+                  <p>
+                    <strong>Vai trò:</strong>{" "}
+                    {selectedUser.role === "admin" ? "Admin" : "User"}
+                  </p>
+                  <p>
+                    <strong>Trạng thái:</strong>{" "}
+                    {selectedUser.status === "active"
+                      ? "Đang hoạt động"
+                      : "Bị khóa"}
+                  </p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="user-form">
+                <form onSubmit={handleSubmit}>
                   <div className="form-group">
-                    <label htmlFor="fullName">Họ tên:</label>
+                    <label>Họ tên</label>
                     <input
                       type="text"
-                      id="fullName"
-                      name="fullName"
-                      value={formData.fullName}
+                      name="name"
+                      value={formData.name}
                       onChange={handleInputChange}
                       required
                     />
                   </div>
-                  
+
                   <div className="form-group">
-                    <label htmlFor="email">Email:</label>
+                    <label>Email</label>
                     <input
                       type="email"
-                      id="email"
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
                       required
                     />
                   </div>
-                  
+
                   <div className="form-group">
-                    <label htmlFor="phone">Số điện thoại:</label>
+                    <label>Số điện thoại</label>
                     <input
                       type="tel"
-                      id="phone"
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
                       required
                     />
                   </div>
-                  
+
                   <div className="form-group">
-                    <label htmlFor="role">Vai trò:</label>
+                    <label>Vai trò</label>
                     <select
-                      id="role"
                       name="role"
                       value={formData.role}
                       onChange={handleInputChange}
                     >
+                      <option value="user">User</option>
                       <option value="admin">Admin</option>
-                      <option value="staff">Nhân viên</option>
-                      <option value="user">Người dùng</option>
                     </select>
                   </div>
-                  
+
                   <div className="form-group">
-                    <label htmlFor="status">Trạng thái:</label>
+                    <label>Trạng thái</label>
                     <select
-                      id="status"
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
                     >
-                      <option value="active">Hoạt động</option>
-                      <option value="inactive">Không hoạt động</option>
-                      <option value="blocked">Bị chặn</option>
+                      <option value="active">Đang hoạt động</option>
+                      <option value="inactive">Bị khóa</option>
                     </select>
                   </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="avatar">URL Ảnh đại diện:</label>
-                    <input
-                      type="text"
-                      id="avatar"
-                      name="avatar"
-                      value={formData.avatar}
-                      onChange={handleInputChange}
-                    />
-                    {formData.avatar && (
-                      <img
-                        src={formData.avatar}
-                        alt="Avatar preview"
-                        className="avatar-preview"
-                      />
-                    )}
-                  </div>
-                  
-                  <div className="modal-actions">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={closeModal}
-                    >
-                      Hủy
-                    </button>
-                    <button type="submit" className="btn btn-primary">
-                      {modalMode === "add" ? "Thêm" : "Lưu"}
-                    </button>
-                  </div>
                 </form>
+              )}
+            </div>
+
+            <div className="admin-page__modal-content-footer">
+              <button className="btn-secondary" onClick={handleCloseModal}>
+                Đóng
+              </button>
+              {modalMode !== "view" && (
+                <button className="btn-primary" onClick={handleSubmit}>
+                  {modalMode === "add" ? "Thêm người dùng" : "Lưu thay đổi"}
+                </button>
               )}
             </div>
           </div>

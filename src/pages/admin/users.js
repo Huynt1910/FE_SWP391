@@ -1,4 +1,4 @@
-import { AdminLayout } from "@/layout/AdminLayout";
+import { AdminLayout } from "@/components/Admin/AdminLayout";
 import Users from "@/components/Admin/Users/Users";
 
 const breadcrumbsData = [

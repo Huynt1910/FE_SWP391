@@ -1,12 +1,13 @@
 /* reset */
-$min-width: 320px; 
+
+$min-width: 320px;
 $max-width: 1220px;
-$base-bg: #FFF; 
-$base-font-size: 16px; 
-$base-line-height: 18px; 
-$base-font-family: 'Lato', sans-serif; 
-$custom-font-family: 'Lato', sans-serif; 
-$link-color: #D05278;
+$base-bg: #fff;
+$base-font-size: 16px;
+$base-line-height: 18px;
+$base-font-family: "Lato", sans-serif;
+$custom-font-family: "Lato", sans-serif;
+$link-color: #d05278;
 $transition: all 0.3s linear;
 
 /* main variables */
@@ -22,3 +23,95 @@ $font-size-h2: 54px;
 $line-height-h2: 54px;
 $font-size-h3: 40px;
 $line-height-h3: 56px;
+
+// Color variables
+$admin-primary: #4299e1;
+$admin-secondary: #718096;
+$admin-success: #48bb78;
+$admin-danger: #e53e3e;
+$admin-warning: #ecc94b;
+$admin-info: #4299e1;
+
+$admin-bg: #f7fafc;
+$admin-bg-dark: #2c3e50;
+$admin-text: #2d3748;
+$admin-text-light: #a0aec0;
+$admin-border: #e2e8f0;
+$admin-shadow: rgba(0, 0, 0, 0.1) !default;
+
+// Text colors
+$text-primary: #1e293b;
+$text-secondary: #64748b;
+$text-success: $admin-success !default;
+$text-danger: $admin-danger !default;
+$text-warning: $admin-warning !default;
+$text-bg: $admin-bg !default;
+$text-text: $admin-text !default;
+$text-border: $admin-border !default;
+$text-shadow: $admin-shadow !default;
+
+// Spacing variables
+$spacing-xs: 4px !default;
+$spacing-sm: 8px !default;
+$spacing-md: 16px !default;
+$spacing-lg: 24px !default;
+$spacing-xl: 32px !default;
+
+// Layout
+$sidebar-width: 260px;
+$sidebar-collapsed-width: 70px;
+$navbar-height: 70px;
+
+// Colors
+$primary-color: #3498db;
+$secondary-color: #2ecc71;
+$background-color: #f8fafc;
+
+// Breakpoints
+$mobile-breakpoint: 768px;
+$tablet-breakpoint: 1024px;
+
+// Transitions
+$transition-speed: 0.3s;
+
+// Services specific variables
+$services-card-radius: 8px !default;
+$services-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05) !default;
+$services-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07) !default;
+
+// Status colors
+$status-active-bg: rgba($admin-success, 0.1) !default;
+$status-active-text: $admin-success !default;
+$status-inactive-bg: rgba($admin-warning, 0.1) !default;
+$status-inactive-text: $admin-warning !default;
+
+// Table specific
+$table-header-bg: #f7fafc !default;
+$table-border: #e2e8f0 !default;
+$table-hover-bg: rgba($admin-primary, 0.02) !default;
+$table-row-inactive-bg: rgba($admin-secondary, 0.05) !default;
+
+// Action buttons
+$action-btn-size: 32px !default;
+$action-btn-radius: 4px !default;
+$action-btn-spacing: 4px !default;
+
+// Input fields
+$input-height: 40px !default;
+$input-radius: 6px !default;
+$input-border: #d9d9d9 !default;
+$input-focus-shadow: rgba($admin-primary, 0.1) !default;
+
+// Modal
+$modal-overlay-bg: rgba(0, 0, 0, 0.5) !default;
+$modal-width: 90% !default;
+$modal-max-width: 800px !default;
+$modal-max-height: 90vh !default;
+
+// Responsive breakpoints
+$mobile-width: 768px !default;
+$tablet-width: 1024px !default;
+
+// Animation
+$transition-duration: 0.3s !default;
+$transition-timing: ease !default;

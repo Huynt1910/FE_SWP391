@@ -1,0 +1,353 @@
+@import "../../utils/variables";
+@import "../../utils/mixins";
+
+.navbar {
+  &-left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+
+    .toggle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+      }
+    }
+
+    .search-bar {
+      position: relative;
+      width: 400px;
+
+      input {
+        width: 100%;
+        height: 42px;
+        padding: 0 20px 0 45px;
+        border: 1px solid #e2e8f0;
+        border-radius: 21px;
+        background: #f8fafc;
+        font-size: 14px;
+        transition: all 0.3s;
+
+        &:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          background: #fff;
+        }
+      }
+
+      svg {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+      }
+    }
+  }
+
+  &-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .notification-btn {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+      }
+
+      .badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    .user-menu {
+      position: relative;
+
+      .user-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 12px;
+        border: none;
+        border-radius: 20px;
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background: #f1f5f9;
+        }
+
+        img {
+          width: 32px;
+          height: 32px;
+          border-radius: 16px;
+          object-fit: cover;
+        }
+
+        span {
+          font-weight: 500;
+          color: #1e293b;
+        }
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        min-width: 200px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 8px 0;
+        margin-top: 8px;
+        z-index: 1000;
+
+        a {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          color: #1e293b;
+          text-decoration: none;
+          transition: all 0.2s;
+
+          svg {
+            color: #64748b;
+            font-size: 16px;
+          }
+
+          &:hover {
+            background: #f1f5f9;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive styles
+@media (max-width: 1024px) {
+  .navbar {
+    left: 70px;
+
+    &.sidebar-collapsed {
+      left: 0;
+    }
+
+    .search-bar {
+      width: 280px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 16px;
+
+    .search-bar {
+      display: none;
+    }
+  }
+}
+
+.search-box {
+  position: relative;
+  width: 300px;
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $admin-secondary;
+  }
+
+  input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid $admin-border;
+    border-radius: 20px;
+    background-color: $admin-bg;
+
+    &:focus {
+      outline: none;
+      border-color: $admin-primary;
+    }
+  }
+}
+
+.notification-btn {
+  position: relative;
+  background: none;
+  border: none;
+  color: $admin-secondary;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: $admin-danger;
+    color: white;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+
+  &:hover {
+    background-color: rgba($admin-secondary, 0.1);
+  }
+}
+
+.user-profile {
+  position: relative;
+
+  .profile-btn {
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: $admin-secondary;
+    cursor: pointer;
+    border-radius: 20px;
+
+    &:hover {
+      background-color: rgba($admin-secondary, 0.1);
+    }
+  }
+
+  .profile-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    margin-top: 8px;
+
+    a {
+      display: block;
+      padding: 8px 16px;
+      color: $admin-text;
+      text-decoration: none;
+
+      &:hover {
+        background-color: $admin-bg;
+      }
+    }
+  }
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 200px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+  margin-top: 8px;
+  z-index: 1000;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: #1e293b;
+    text-decoration: none;
+    transition: all 0.2s;
+
+    svg {
+      color: #64748b;
+      font-size: 16px;
+    }
+
+    &:hover {
+      background: #f1f5f9;
+    }
+  }
+}
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+
+  .admin-main {
+    padding-top: 70px; // Height of navbar
+    margin-left: 250px;
+    transition: margin-left 0.3s ease;
+
+    &.sidebar-collapsed {
+      margin-left: 70px;
+    }
+  }
+
+  .admin-content {
+    padding: 24px;
+    min-height: calc(100vh - $navbar-height);
+  }
+}
+
+@media (max-width: $mobile-breakpoint) {
+  .admin-layout {
+    .admin-main {
+      margin-left: 0;
+
+      &.sidebar-collapsed {
+        margin-left: 0;
+      }
+    }
+  }
+}

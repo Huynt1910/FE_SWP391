@@ -12,6 +12,8 @@ export function middleware(request) {
   }
 
   const cookieStore = cookies();
+export async function middleware(request) {
+  const cookieStore = await cookies();
   const authToken = cookieStore.get("token");
   const userRole = cookieStore.get("userRole");
 
@@ -56,6 +58,11 @@ export function middleware(request) {
   if (pathname.startsWith('/therapist') && pathname !== '/therapist-login' && 
       (!authToken || userRole?.value !== 'therapist')) {
     return NextResponse.redirect(new URL("/therapist-login", request.url));
+  }
+
+  // If the user is not authenticated and tries to access a protected route, redirect to /login
+  if (!authToken && request.nextUrl.pathname !== "/login") {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
