@@ -105,9 +105,9 @@ export const Login = () => {
               <div className="login-form__other-options mt-4">
                 <p>Not a customer?</p>
                 <div className="other-login-options">
-                  <a href="/login-selection" className="btn btn-sm btn-outline">
-                    Back to Role Selection
-                  </a>
+                <span>
+                  <a href="/login-selection">Back to role selection</a>
+                </span>
                 </div>
               </div>
             </form>

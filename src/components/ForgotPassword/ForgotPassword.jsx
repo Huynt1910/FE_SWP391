@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { showToast } from "@utils/toast";
 import router from "next/router";
 import { useForgotPassword } from "@auth/hook/useForgotPasswordHook";
-import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaArrowLeft, FaSpinner } from "react-icons/fa";
 
 export const ForgotPassword = () => {
   const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
@@ -14,6 +14,7 @@ export const ForgotPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
   
   const { 
     verifyEmail, 
@@ -48,9 +49,23 @@ export const ForgotPassword = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const goBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
+ 
+
+
+  const handleResendOtp = async () => {
+    try {
+      setIsResendingOtp(true);
+      showToast.loading("Sending new verification code...");
+      
+      const result = await verifyEmail(email);
+      if (result.success) {
+        showToast.success("New verification code sent successfully!");
+        setOtp(""); // Clear the previous OTP input
+      }
+    } catch (error) {
+      showToast.error("Failed to send verification code. Please try again.");
+    } finally {
+      setIsResendingOtp(false);
     }
   };
 
@@ -146,7 +161,13 @@ export const ForgotPassword = () => {
       </div>
       
       <button className="btn" type="submit" disabled={isVerifyingEmail}>
-        {isVerifyingEmail ? "Sending..." : "Send Verification Code"}
+        {isVerifyingEmail ? (
+          <>
+            <FaSpinner className="icon-spinner spin" /> Sending...
+          </>
+        ) : (
+          "Send Verification Code"
+        )}
       </button>
       
       <div className="forgot-password-form__bottom">
@@ -160,9 +181,6 @@ export const ForgotPassword = () => {
 
   const renderOtpForm = () => (
     <form onSubmit={handleOtpSubmit} className="forgot-password-form">
-      <div className="back-button" onClick={goBack}>
-        <FaArrowLeft /> <span>Back</span>
-      </div>
       
       <h3 className="form-title">Verify OTP</h3>
       <p className="form-subtitle">Enter the verification code sent to {email}</p>
@@ -179,23 +197,42 @@ export const ForgotPassword = () => {
       </div>
       
       <button className="btn" type="submit" disabled={isVerifyingOtp}>
-        {isVerifyingOtp ? "Verifying..." : "Verify Code"}
+        {isVerifyingOtp ? (
+          <>
+            <FaSpinner className="icon-spinner spin" /> Verifying...
+          </>
+        ) : (
+          "Verify Code"
+        )}
       </button>
       
       <div className="resend-otp">
         <span>
           Didn't receive the code?{" "}
-          <a onClick={() => verifyEmail(email)}>Resend</a>
+          <button
+            type="button"
+            className="resend-button"
+            onClick={handleResendOtp}
+            disabled={isResendingOtp}
+          >
+            {isResendingOtp ? (
+              <>
+                <FaSpinner className="icon-spinner spin" /> Sending...
+              </>
+            ) : (
+              "Resend Code"
+            )}
+          </button>
         </span>
+        <p className="resend-tip">
+          Click 'Resend Code' to get a new verification code in your email
+        </p>
       </div>
     </form>
   );
 
   const renderPasswordForm = () => (
     <form onSubmit={handlePasswordSubmit} className="forgot-password-form">
-      <div className="back-button" onClick={goBack}>
-        <FaArrowLeft /> <span>Back</span>
-      </div>
       
       <h3 className="form-title">Reset Password</h3>
       <p className="form-subtitle">Create a new password for your account</p>
@@ -239,7 +276,13 @@ export const ForgotPassword = () => {
       </div>
       
       <button className="btn" type="submit" disabled={isChangingPassword}>
-        {isChangingPassword ? "Resetting..." : "Reset Password"}
+        {isChangingPassword ? (
+          <>
+            <FaSpinner className="icon-spinner spin" /> Resetting...
+          </>
+        ) : (
+          "Reset Password"
+        )}
       </button>
     </form>
   );

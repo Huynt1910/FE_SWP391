@@ -19,6 +19,16 @@ export const navItem = [
     auth: false,
   },
   {
+    title: "Book Appointment",
+    path: "/booking",
+    auth: true,
+  },
+  {
+    title: "Survey",
+    path: "/survey",
+    auth: true,
+  },
+  {
     title: "Information",
     path: "",
     auth: false,
