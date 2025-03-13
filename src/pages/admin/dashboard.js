@@ -1,5 +1,7 @@
-import { AdminLayout } from "@/layout/AdminLayout";
-import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
+import { AdminLayout } from "@/components/Admin/AdminLayout";
+import { SystemAuthGuard } from "@/auth/AUTHGUARD/SystemAuthGuard";
+import Dashboard from "@/components/Admin/Dashboard/Dashboard";
+import { getCookie } from "cookies-next";
 
 const breadcrumbsData = [
   {
@@ -16,32 +18,22 @@ const breadcrumbsData = [
   },
 ];
 
-const StaffDashboardPage = () => {
+const DashboardPage = () => {
+  const userRole = getCookie("userRole");
+  const dashboardTitle = `${
+    userRole?.charAt(0).toUpperCase() + userRole?.slice(1)
+  } Dashboard`;
+
   return (
-    <AuthGuard requiredRole="staff">
-      <AdminLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Staff Dashboard">
-        <div className="staff-dashboard">
-          <h1>Welcome to Staff Dashboard</h1>
-          <p>You are logged in as a staff member.</p>
-          
-          <div className="dashboard-stats">
-            <div className="stat-card">
-              <h3>Total Appointments</h3>
-              <p className="stat-number">125</p>
-            </div>
-            <div className="stat-card">
-              <h3>Active Therapists</h3>
-              <p className="stat-number">12</p>
-            </div>
-            <div className="stat-card">
-              <h3>New Customers</h3>
-              <p className="stat-number">48</p>
-            </div>
-          </div>
-        </div>
+    <SystemAuthGuard>
+      <AdminLayout
+        breadcrumb={breadcrumbsData}
+        breadcrumbTitle={dashboardTitle}
+      >
+        <Dashboard />
       </AdminLayout>
-    </AuthGuard>
+    </SystemAuthGuard>
   );
 };
 
-export default StaffDashboardPage; 
+export default DashboardPage;

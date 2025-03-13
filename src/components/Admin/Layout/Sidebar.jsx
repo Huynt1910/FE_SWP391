@@ -1,16 +1,49 @@
 import React from "react";
 import Link from "next/link";
+import { getCookie } from "cookies-next";
 import {
   FaTachometerAlt,
   FaCalendarAlt,
   FaUsers,
   FaBoxOpen,
-  FaShoppingCart,
   FaCog,
-  FaChartBar,
 } from "react-icons/fa";
 
+const menuConfig = {
+  admin: [
+    { path: "/admin/dashboard", icon: <FaTachometerAlt />, label: "Dashboard" },
+    { path: "/admin/users", icon: <FaUsers />, label: "Quản lý người dùng" },
+    { path: "/admin/services", icon: <FaBoxOpen />, label: "Quản lý dịch vụ" },
+    {
+      path: "/admin/bookings",
+      icon: <FaCalendarAlt />,
+      label: "Quản lý lịch hẹn",
+    },
+    { path: "/admin/settings", icon: <FaCog />, label: "Cài đặt" },
+  ],
+  staff: [
+    { path: "/admin/dashboard", icon: <FaTachometerAlt />, label: "Dashboard" },
+    { path: "/admin/services", icon: <FaBoxOpen />, label: "Quản lý dịch vụ" },
+    {
+      path: "/admin/bookings",
+      icon: <FaCalendarAlt />,
+      label: "Quản lý lịch hẹn",
+    },
+  ],
+  therapist: [
+    { path: "/admin/dashboard", icon: <FaTachometerAlt />, label: "Dashboard" },
+    {
+      path: "/admin/bookings",
+      icon: <FaCalendarAlt />,
+      label: "Quản lý lịch hẹn",
+    },
+  ],
+};
+
 const Sidebar = ({ isCollapsed }) => {
+  const userRole = getCookie("userRole");
+  const menuItems = menuConfig[userRole] || [];
+
   return (
     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="sidebar__brand">
@@ -19,47 +52,12 @@ const Sidebar = ({ isCollapsed }) => {
       </div>
 
       <nav className="menu">
-        <div className="menu__section">
-          <div className="section__title">Tổng quan</div>
-          <Link href="/admin" className="menu__link">
-            <span className="menu__icon">
-              <FaTachometerAlt />
-            </span>
-            <span className="menu__text">Dashboard</span>
+        {menuItems.map((item) => (
+          <Link key={item.path} href={item.path} className="menu__link">
+            <span className="menu__icon">{item.icon}</span>
+            <span className="menu__text">{item.label}</span>
           </Link>
-        </div>
-
-        <div className="menu__section">
-          <div className="section__title">Quản lý</div>
-          <Link href="/admin/bookings" className="menu__link">
-            <span className="menu__icon">
-              <FaCalendarAlt />
-            </span>
-            <span className="menu__text">Lịch hẹn</span>
-          </Link>
-          <Link href="/admin/users" className="menu__link">
-            <span className="menu__icon">
-              <FaUsers />
-            </span>
-            <span className="menu__text">Người dùng</span>
-          </Link>
-          <Link href="/admin/services" className="menu__link">
-            <span className="menu__icon">
-              <FaChartBar />
-            </span>
-            <span className="menu__text">Dịch vụ</span>
-          </Link>
-        </div>
-
-        <div className="menu__section">
-          <div className="section__title">Cài đặt</div>
-          <Link href="/admin/settings" className="menu__link">
-            <span className="menu__icon">
-              <FaCog />
-            </span>
-            <span className="menu__text">Thiết lập</span>
-          </Link>
-        </div>
+        ))}
       </nav>
     </aside>
   );

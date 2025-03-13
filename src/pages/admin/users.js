@@ -1,4 +1,5 @@
 import { AdminLayout } from "@/components/Admin/AdminLayout";
+import { SystemAuthGuard } from "@/auth/AUTHGUARD/SystemAuthGuard";
 import Users from "@/components/Admin/Users/Users";
 
 const breadcrumbsData = [
@@ -14,12 +15,14 @@ const breadcrumbsData = [
 
 const UsersPage = () => {
   return (
-    <AdminLayout
-      breadcrumb={breadcrumbsData}
-      breadcrumbTitle="Quản lý người dùng"
-    >
-      <Users />
-    </AdminLayout>
+    <SystemAuthGuard requiredRole="admin">
+      <AdminLayout
+        breadcrumb={breadcrumbsData}
+        breadcrumbTitle="Quản lý người dùng"
+      >
+        <Users />
+      </AdminLayout>
+    </SystemAuthGuard>
   );
 };
 

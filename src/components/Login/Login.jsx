@@ -3,17 +3,10 @@ import { SocialLogin } from "@components/shared/SocialLogin/SocialLogin";
 import { showToast } from "@utils/toast";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import { setCookie } from "cookies-next";
 
 export const Login = () => {
   const router = useRouter();
-  
-  useEffect(() => {
-    console.log("Login component mounted");
-    // Clear any existing auth tokens to prevent redirect loops
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "userRole=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-  }, []);
-  
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -34,12 +27,29 @@ export const Login = () => {
     e.preventDefault();
 
     try {
-      await signIn({
+      const response = await signIn({
         username: formData.username,
         password: formData.password,
       });
+
+      if (response.result.success) {
+        const { token, role } = response.result;
+
+        // Set auth cookies
+        setCookie("token", token);
+        setCookie("userRole", role);
+
+        // Redirect based on role
+        if (role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/"); // Customer goes to home page
+        }
+
+        showToast.success("Login successful!");
+      }
     } catch (error) {
-      showToast.error("An error occurred during login. Please try again.");
+      showToast.error("Invalid credentials");
       console.error("Login error:", error);
     }
   };
@@ -94,21 +104,9 @@ export const Login = () => {
               </button>
               <div className="login-form__bottom">
                 <span>
-                  No account?{" "}
-                  <a href="/registration">Register</a>
+                  No account? <a href="/registration">Register</a>
                 </span>
-                <a href="/forgot-password">
-                  Lost your password?
-                </a>
-              </div>
-              
-              <div className="login-form__other-options mt-4">
-                <p>Not a customer?</p>
-                <div className="other-login-options">
-                  <a href="/login-selection" className="btn btn-sm btn-outline">
-                    Back to Role Selection
-                  </a>
-                </div>
+                <a href="/forgot-password">Lost your password?</a>
               </div>
             </form>
           </div>
