@@ -636,6 +636,23 @@ function Services() {
                   </div>
 
                   <div className="form-group">
+                    <label>Danh mục</label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="">Chọn danh mục</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
                     <label>Trạng thái</label>
                     <select
                       name="active"

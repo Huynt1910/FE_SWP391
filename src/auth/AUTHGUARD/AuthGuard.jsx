@@ -1,37 +1,19 @@
-import { useSelf } from "@/store/self.store";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { getCookie } from "cookies-next";
 
-export const AuthGuard = ({ children, requiredRole }) => {
+export const SystemAuthGuard = ({ children }) => {
   const router = useRouter();
-  const { self } = useSelf();
+  const token = getCookie("token");
   const userRole = getCookie("userRole");
 
   useEffect(() => {
-    if (!self) {
-      router.push("/login-selection");
-      return;
+    if (!token || userRole !== "admin") {
+      router.push("/login");
     }
+  }, [token, userRole, router]);
 
-    // If a specific role is required and user doesn't have it
-    if (requiredRole && userRole !== requiredRole) {
-      if (userRole === 'staff') {
-        router.push("/admin/dashboard");
-      } else if (userRole === 'therapist') {
-        router.push("/therapist/dashboard");
-      } else {
-        router.push("/");
-      }
-    }
-  }, [self, router, requiredRole, userRole]);
-
-  if (!self) {
-    return null;
-  }
-
-  // If a specific role is required and user doesn't have it
-  if (requiredRole && userRole !== requiredRole) {
+  if (!token || userRole !== "admin") {
     return null;
   }
 

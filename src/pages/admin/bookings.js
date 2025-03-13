@@ -1,5 +1,6 @@
 import { AdminLayout } from "@/components/Admin/AdminLayout";
-import BookingSchedule from "@/components/Admin/Booking/BookingSchedule";
+import { SystemAuthGuard } from "@/auth/AUTHGUARD/SystemAuthGuard";
+import Bookings from "@/components/Admin/Bookings/Bookings";
 
 const breadcrumbsData = [
   {
@@ -14,12 +15,14 @@ const breadcrumbsData = [
 
 const BookingsPage = () => {
   return (
-    <AdminLayout
-      breadcrumb={breadcrumbsData}
-      breadcrumbTitle="Quản lý lịch hẹn"
-    >
-      <BookingSchedule />
-    </AdminLayout>
+    <SystemAuthGuard requiredRole="therapist">
+      <AdminLayout
+        breadcrumb={breadcrumbsData}
+        breadcrumbTitle="Quản lý lịch hẹn"
+      >
+        <Bookings />
+      </AdminLayout>
+    </SystemAuthGuard>
   );
 };
 

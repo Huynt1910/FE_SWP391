@@ -1,7 +1,13 @@
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import Dashboard from "@/components/Admin/Dashboard/Dashboard";
+import { SystemAuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
+import { getCookie } from "cookies-next";
 
 const breadcrumbsData = [
+  {
+    label: "Home",
+    path: "/",
+  },
   {
     label: "Admin",
     path: "/admin",
@@ -9,10 +15,15 @@ const breadcrumbsData = [
 ];
 
 const AdminPage = () => {
+  const userRole = getCookie("userRole");
+
   return (
-    <AdminLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Dashboard">
-      <Dashboard />
-    </AdminLayout>
+    <AuthGuard>
+      <AdminLayout
+        breadcrumb={breadcrumbsData}
+        breadcrumbTitle={`${userRole} Dashboard`}
+      ></AdminLayout>
+    </AuthGuard>
   );
 };
 

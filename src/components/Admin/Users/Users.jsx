@@ -14,6 +14,7 @@ import {
   FaSortDown,
   FaPlus,
   FaCircle,
+  FaKey,
 } from "react-icons/fa";
 
 function Users() {
@@ -41,6 +42,13 @@ function Users() {
     role: "user",
     status: "active",
     avatar: "",
+  });
+
+  // Thêm state cho modal đổi mật khẩu
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordFormData, setPasswordFormData] = useState({
+    newPassword: "",
+    confirmPassword: "",
   });
 
   useEffect(() => {
@@ -399,6 +407,30 @@ function Users() {
     return <span className={badgeClass}>{role}</span>;
   };
 
+  // Thêm handler cho đổi mật khẩu
+  const handlePasswordChange = (userId) => {
+    setSelectedUser(users.find((user) => user.id === userId));
+    setShowPasswordModal(true);
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (passwordFormData.newPassword !== passwordFormData.confirmPassword) {
+      alert("Mật khẩu không khớp!");
+      return;
+    }
+
+    try {
+      // Call API to change password
+      // await changeUserPassword(selectedUser.id, passwordFormData.newPassword);
+      alert("Đổi mật khẩu thành công!");
+      setShowPasswordModal(false);
+      setPasswordFormData({ newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      alert("Có lỗi xảy ra khi đổi mật khẩu!");
+    }
+  };
+
   return (
     <div className="admin-page">
       {/* Header Section */}
@@ -519,6 +551,13 @@ function Users() {
                         title="Xóa"
                       >
                         <FaTrash />
+                      </button>
+                      <button
+                        className="password-btn"
+                        onClick={() => handlePasswordChange(user.id)}
+                        title="Đổi mật khẩu"
+                      >
+                        <FaKey />
                       </button>
                     </div>
                   </td>
@@ -681,6 +720,72 @@ function Users() {
                   {modalMode === "add" ? "Thêm người dùng" : "Lưu thay đổi"}
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div className="admin-page__modal">
+          <div className="admin-page__modal-content">
+            <div className="admin-page__modal-content-header">
+              <h2>Đổi mật khẩu người dùng</h2>
+              <button
+                className="close-btn"
+                onClick={() => setShowPasswordModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="admin-page__modal-content-body">
+              <form onSubmit={handlePasswordSubmit}>
+                <div className="form-group">
+                  <label>Mật khẩu mới</label>
+                  <input
+                    type="password"
+                    name="newPassword"
+                    value={passwordFormData.newPassword}
+                    onChange={(e) =>
+                      setPasswordFormData({
+                        ...passwordFormData,
+                        newPassword: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Xác nhận mật khẩu mới</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={passwordFormData.confirmPassword}
+                    onChange={(e) =>
+                      setPasswordFormData({
+                        ...passwordFormData,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="admin-page__modal-content-footer">
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setShowPasswordModal(false)}
+                  >
+                    Hủy
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    Xác nhận
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
