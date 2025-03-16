@@ -45,7 +45,7 @@ export const RequestMethod = {
       method: "PUT",
       secure: true,
     },
-    getActiveTherapists: { path: "/therapists/activeTherapists", method: "GET" },
+    getActiveTherapists: { path: "/therapists/activeTherapists", method: "GET", secure: true },
     getAllTherapists: { path: "/therapists", method: "GET" },
     getTherapistById: { path: "/therapists/:id", method: "GET", parameterized: true },
     getAvailableSlots: { path: "/slot/:date", method: "GET", parameterized: true },
@@ -56,6 +56,40 @@ export const RequestMethod = {
       parameterized: true 
     },
     getAllSlots: { path: "/slot/getAllSlot", method: "GET" },
+    
+    // Therapist Schedule Endpoints
+    createTherapistSchedule: { 
+      path: "/schedule/therapist", 
+      method: "POST", 
+      secure: true 
+    },
+    getTherapistScheduleByDate: { 
+      path: "/schedule/therapist/:date", 
+      method: "GET", 
+      parameterized: true 
+    },
+    getTherapistScheduleById: { 
+      path: "/schedule/therapist/getById/:id", 
+      method: "GET", 
+      parameterized: true 
+    },
+    updateTherapistSchedule: { 
+      path: "/schedule/therapist/update/:id", 
+      method: "PUT", 
+      parameterized: true, 
+      secure: true 
+    },
+    deleteTherapistSchedule: { 
+      path: "/schedule/therapist/:id", 
+      method: "DELETE", 
+      parameterized: true, 
+      secure: true 
+    },
+    getTherapistScheduleByMonth: { 
+      path: "/schedule/therapist/month/:therapistId/:month", 
+      method: "GET", 
+      parameterized: true 
+    },
   };
   
   export const ACTIONS = {

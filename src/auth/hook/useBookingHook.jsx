@@ -43,12 +43,9 @@ export const useBookingHook = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      console.log("Calling getAllTherapists API...");
       const response = await APIClient.invoke({
         action: ACTIONS.GET_ALL_THERAPISTS
       });
-      console.log("API response:", response);
       
       // Check if response has data property and it's an array
       if (response && Array.isArray(response)) {
@@ -66,7 +63,7 @@ export const useBookingHook = () => {
     } catch (error) {
       console.error("Error fetching all therapists:", error);
       setError(error.message || "Failed to fetch therapists");
-      throw error; // Re-throw to allow component to handle it
+      return [];
     } finally {
       setLoading(false);
     }
