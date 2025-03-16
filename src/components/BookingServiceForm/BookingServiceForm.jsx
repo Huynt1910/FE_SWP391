@@ -1,85 +1,8 @@
 import { useState, useEffect } from "react";
-import router from "next/router";
-import { showToast } from "@/utils/toast"; // Adjust path as needed
-import { FaArrowLeft, FaArrowRight, FaCheck, FaCreditCard, FaMoneyBill, FaTicketAlt } from "react-icons/fa";
-
-// Sample data (replace with API calls in a real app)
-const servicePackages = [
-  { 
-    id: 1, 
-    name: "Basic Massage", 
-    duration: "30 mins", 
-    price: 50,
-    description: "A gentle massage to relieve mild tension and promote relaxation.",
-    image: "/assets/img/services/massage-1.jpg"
-  },
-  { 
-    id: 2, 
-    name: "Deep Tissue", 
-    duration: "60 mins", 
-    price: 80,
-    description: "Intense massage targeting deep muscle layers to relieve chronic pain.",
-    image: "/assets/img/services/massage-2.jpg"
-  },
-  { 
-    id: 3, 
-    name: "Aromatherapy", 
-    duration: "90 mins", 
-    price: 120,
-    description: "Relaxing massage with essential oils to enhance physical and mental wellbeing.",
-    image: "/assets/img/services/massage-3.jpg"
-  },
-  { 
-    id: 4, 
-    name: "Hot Stone Therapy", 
-    duration: "75 mins", 
-    price: 100,
-    description: "Heated stones placed on key points to melt away tension and stress.",
-    image: "/assets/img/services/massage-4.jpg"
-  },
-];
-
-const therapists = [
-  { 
-    id: 1, 
-    name: "Dr. Alice Smith", 
-    specialization: "Sports Therapy",
-    experience: "8 years",
-    rating: 4.8,
-    image: "/assets/img/therapists/therapist-1.jpg"
-  },
-  { 
-    id: 2, 
-    name: "Dr. Bob Johnson", 
-    specialization: "Rehabilitation",
-    experience: "12 years",
-    rating: 4.9,
-    image: "/assets/img/therapists/therapist-2.jpg"
-  },
-  { 
-    id: 3, 
-    name: "Dr. Clara Lee", 
-    specialization: "Aromatherapy",
-    experience: "5 years",
-    rating: 4.7,
-    image: "/assets/img/therapists/therapist-3.jpg"
-  },
-  { 
-    id: 4, 
-    name: "Dr. David Wang", 
-    specialization: "Deep Tissue",
-    experience: "10 years",
-    rating: 4.9,
-    image: "/assets/img/therapists/therapist-4.jpg"
-  },
-];
-
-// Sample vouchers
-const availableVouchers = [
-  { id: 1, code: "WELCOME10", discount: 10, type: "percent", description: "10% off for new customers" },
-  { id: 2, code: "SAVE20", discount: 20, type: "fixed", description: "$20 off your booking" },
-  { id: 3, code: "SUMMER25", discount: 25, type: "percent", description: "25% off summer special" },
-];
+import { useRouter } from "next/router";
+import { showToast } from "@/utils/toast";
+import { FaArrowLeft, FaArrowRight, FaCheck, FaCreditCard, FaMoneyBill } from "react-icons/fa";
+import useBookingHook from "@/auth/hook/useBookingHook";
 
 // Payment methods
 const paymentMethods = [
@@ -88,22 +11,131 @@ const paymentMethods = [
 ];
 
 export const BookingServiceForm = () => {
+  // Initialize router and booking hook
+  const router = useRouter();
+  const { therapistId } = router.query;
+  const bookingHook = useBookingHook();
+  
   // Step tracking
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 3; // Reduced to 3 steps: Therapist, Schedule, Payment/Confirm
 
   // Form state
-  const [selectedPackage, setSelectedPackage] = useState(null);
   const [selectedTherapist, setSelectedTherapist] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [availableTimes, setAvailableTimes] = useState([]);
-  const [voucherCode, setVoucherCode] = useState("");
-  const [appliedVoucher, setAppliedVoucher] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [customerNotes, setCustomerNotes] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [bookingDetails, setBookingDetails] = useState(null);
+
+  // API data state
+  const [therapists, setTherapists] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch active therapists on component mount
+  useEffect(() => {
+    const fetchTherapists = async () => {
+      try {
+        setLoading(true);
+        const data = await bookingHook.getActiveTherapists();
+        setTherapists(Array.isArray(data) ? data : []);
+        
+        // If therapistId is provided in the URL, select that therapist
+        if (therapistId && Array.isArray(data)) {
+          const preSelectedTherapist = data.find(t => 
+            t.id === Number(therapistId) || 
+            t.id === therapistId || 
+            t.id.toString() === therapistId.toString()
+          );
+          
+          if (preSelectedTherapist) {
+            setSelectedTherapist(preSelectedTherapist);
+            // If a therapist is pre-selected, move to the next step
+            setCurrentStep(2);
+          } else {
+            showToast.error("Selected therapist not found");
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching therapists:", err);
+        setError("Failed to load therapists");
+        showToast.error("Failed to load therapists");
+        setTherapists([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (router.isReady) {
+      fetchTherapists();
+    }
+  }, [router.isReady, therapistId]);
+
+  // Fetch available slots when date is selected
+  useEffect(() => {
+    const fetchAvailableSlots = async () => {
+      if (!selectedDate) return;
+
+      try {
+        setLoading(true);
+        const data = await bookingHook.getAvailableSlots(selectedDate);
+        setAvailableSlots(data);
+        
+        // Format time slots for display
+        if (data && data.length > 0) {
+          const formattedTimes = data.map(slot => {
+            // Assuming slot.startTime is in format "HH:MM:SS"
+            const time = new Date(`2000-01-01T${slot.startTime}`);
+            return {
+              id: slot.id,
+              displayTime: time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+              startTime: slot.startTime
+            };
+          });
+          setAvailableTimes(formattedTimes);
+        } else {
+          setAvailableTimes([]);
+        }
+        
+        setSelectedTime(""); // Reset time when date changes
+      } catch (err) {
+        setError("Failed to load available slots");
+        showToast.error("Failed to load available slots");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAvailableSlots();
+  }, [selectedDate]);
+
+  // Fetch therapist schedule when therapist and date are selected
+  useEffect(() => {
+    const fetchTherapistSchedule = async () => {
+      if (!selectedTherapist || !selectedDate) return;
+
+      try {
+        setLoading(true);
+        const data = await bookingHook.getTherapistSchedule(selectedDate);
+        // Filter available slots based on therapist schedule
+        const filteredSlots = availableSlots.filter(slot => 
+          data.some(schedule => schedule.slotId === slot.id)
+        );
+        setAvailableSlots(filteredSlots);
+      } catch (err) {
+        setError("Failed to load therapist schedule");
+        showToast.error("Failed to load therapist schedule");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTherapistSchedule();
+  }, [selectedTherapist, selectedDate]);
 
   // Generate available dates (next 7 days)
   const getAvailableDates = () => {
@@ -129,42 +161,6 @@ export const BookingServiceForm = () => {
     return dates;
   };
 
-  // Generate time slots based on selected date
-  useEffect(() => {
-    if (selectedDate) {
-      // In a real app, this would be an API call to get available times for the selected date and therapist
-      const times = [
-        "09:00 AM",
-        "10:00 AM",
-        "11:00 AM",
-        "01:00 PM",
-        "02:00 PM",
-        "03:00 PM",
-        "04:00 PM",
-      ];
-      
-      // Simulate some times being unavailable
-      const dayOfWeek = new Date(selectedDate).getDay();
-      const availableTimes = times.filter((_, index) => {
-        return (index + dayOfWeek) % 3 !== 0; // Just a simple algorithm to vary available times
-      });
-      
-      setAvailableTimes(availableTimes);
-      setSelectedTime(""); // Reset time when date changes
-    }
-  }, [selectedDate, selectedTherapist]);
-
-  // Handle package selection
-  const handlePackageSelect = (pkg) => {
-    setSelectedPackage(pkg);
-    // Reset subsequent selections
-    setSelectedTherapist(null);
-    setSelectedDate("");
-    setSelectedTime("");
-    setAppliedVoucher(null);
-    setVoucherCode("");
-  };
-
   // Handle therapist selection
   const handleTherapistSelect = (therapist) => {
     setSelectedTherapist(therapist);
@@ -180,27 +176,8 @@ export const BookingServiceForm = () => {
   };
 
   // Handle time selection
-  const handleTimeSelect = (time) => {
-    setSelectedTime(time);
-  };
-
-  // Handle voucher application
-  const handleApplyVoucher = () => {
-    if (!voucherCode.trim()) {
-      showToast.error("Please enter a voucher code");
-      return;
-    }
-
-    const voucher = availableVouchers.find(
-      (v) => v.code.toLowerCase() === voucherCode.toLowerCase()
-    );
-
-    if (voucher) {
-      setAppliedVoucher(voucher);
-      showToast.success(`Voucher ${voucher.code} applied successfully!`);
-    } else {
-      showToast.error("Invalid voucher code");
-    }
+  const handleTimeSelect = (timeSlot) => {
+    setSelectedTime(timeSlot);
   };
 
   // Handle payment method selection
@@ -208,59 +185,35 @@ export const BookingServiceForm = () => {
     setPaymentMethod(method);
   };
 
-  // Calculate total price
-  const calculateTotal = () => {
-    if (!selectedPackage) return 0;
-
-    let total = selectedPackage.price;
-
-    if (appliedVoucher) {
-      if (appliedVoucher.type === "percent") {
-        total = total * (1 - appliedVoucher.discount / 100);
-      } else if (appliedVoucher.type === "fixed") {
-        total = Math.max(0, total - appliedVoucher.discount);
-      }
-    }
-
-    return total;
-  };
-
   // Navigate to next step
   const nextStep = () => {
     if (currentStep < totalSteps) {
       // Validate current step before proceeding
-      if (currentStep === 1 && !selectedPackage) {
-        showToast.error("Please select a service package");
-        return;
-      }
-      if (currentStep === 2 && !selectedTherapist) {
+      if (currentStep === 1 && !selectedTherapist) {
         showToast.error("Please select a therapist");
         return;
       }
-      if (currentStep === 3 && (!selectedDate || !selectedTime)) {
+      if (currentStep === 2 && (!selectedDate || !selectedTime)) {
         showToast.error("Please select both date and time");
-        return;
-      }
-      if (currentStep === 4 && !paymentMethod) {
-        showToast.error("Please select a payment method");
         return;
       }
 
       setCurrentStep(currentStep + 1);
 
       // If moving to final step, prepare booking details
-      if (currentStep === 4) {
+      if (currentStep === 2) {
+        // Generate a random booking ID
+        const bookingId = `BK${Date.now().toString().slice(-6)}`;
+        
         setBookingDetails({
-          package: selectedPackage,
+          bookingId,
           therapist: selectedTherapist,
           date: selectedDate,
           time: selectedTime,
-          voucher: appliedVoucher,
-          paymentMethod: paymentMethod,
+          paymentMethod: paymentMethod || paymentMethods[0], // Default to first payment method if none selected
           notes: customerNotes,
-          totalPrice: calculateTotal(),
-          bookingId: `BK${Math.floor(100000 + Math.random() * 900000)}`, // Generate random booking ID
-          bookingDate: new Date().toLocaleDateString()
+          totalPrice: 50, // Fixed price
+          serviceName: "Skin Care Consultation"
         });
       }
     }
@@ -277,6 +230,17 @@ export const BookingServiceForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    if (!bookingDetails) {
+      showToast.error("Booking details not found");
+      return;
+    }
+
+    // Validate payment method
+    if (!paymentMethod) {
+      showToast.error("Please select a payment method");
+      return;
+    }
+
     setIsPending(true);
     try {
       // Simulate API call to book appointment
@@ -297,11 +261,9 @@ export const BookingServiceForm = () => {
   // Render step indicators
   const renderStepIndicators = () => {
     const steps = [
-      { number: 1, label: "Package" },
-      { number: 2, label: "Therapist" },
-      { number: 3, label: "Schedule" },
-      { number: 4, label: "Payment" },
-      { number: 5, label: "Confirm" }
+      { number: 1, label: "Therapist" },
+      { number: 2, label: "Schedule" },
+      { number: 3, label: "Payment & Confirm" }
     ];
 
     return (
@@ -321,67 +283,45 @@ export const BookingServiceForm = () => {
     );
   };
 
-  // Render package selection step
-  const renderPackageSelection = () => {
-    return (
-      <div className="booking-section">
-        <h4>Choose a Service Package</h4>
-        <div className="package-grid">
-          {servicePackages.map((pkg) => (
-            <div
-              key={pkg.id}
-              className={`package-card ${
-                selectedPackage?.id === pkg.id ? "selected" : ""
-              }`}
-              onClick={() => handlePackageSelect(pkg)}
-            >
-              <div className="package-image">
-                <img src={pkg.image} alt={pkg.name} />
-              </div>
-              <div className="package-details">
-                <h5>{pkg.name}</h5>
-                <p className="package-duration">{pkg.duration}</p>
-                <p className="package-price">${pkg.price}</p>
-                <p className="package-description">{pkg.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   // Render therapist selection step
   const renderTherapistSelection = () => {
     return (
       <div className="booking-section">
         <h4>Choose Your Therapist</h4>
-        <div className="therapist-grid">
-          {therapists.map((therapist) => (
-            <div
-              key={therapist.id}
-              className={`therapist-card ${
-                selectedTherapist?.id === therapist.id ? "selected" : ""
-              }`}
-              onClick={() => handleTherapistSelect(therapist)}
-            >
-              <div className="therapist-image">
-                <img src={therapist.image} alt={therapist.name} />
-              </div>
-              <div className="therapist-details">
-                <h5>{therapist.name}</h5>
-                <p className="therapist-specialization">{therapist.specialization}</p>
-                <p className="therapist-experience">{therapist.experience} experience</p>
-                <div className="therapist-rating">
-                  {Array(5).fill().map((_, i) => (
-                    <span key={i} className={i < Math.floor(therapist.rating) ? "star filled" : "star"}>★</span>
-                  ))}
-                  <span className="rating-value">{therapist.rating}</span>
+        {loading ? (
+          <div className="loading-indicator">Loading therapists...</div>
+        ) : Array.isArray(therapists) && therapists.length > 0 ? (
+          <div className="therapist-grid">
+            {therapists.map((therapist) => (
+              <div
+                key={therapist.id}
+                className={`therapist-card ${
+                  selectedTherapist?.id === therapist.id ? "selected" : ""
+                }`}
+                onClick={() => handleTherapistSelect(therapist)}
+              >
+                <div className="therapist-image">
+                  <img src={therapist.image || "/assets/img/therapists/default.jpg"} alt={therapist.name || 'Therapist'} />
+                </div>
+                <div className="therapist-details">
+                  <h5>{therapist.fullName || therapist.name || 'Unnamed Therapist'}</h5>
+                  <p className="therapist-specialization">{therapist.specialization || "Skin Care Specialist"}</p>
+                  <p className="therapist-experience">{therapist.yearExperience || 0} years experience</p>
+                  <div className="therapist-rating">
+                    {Array(5).fill().map((_, i) => (
+                      <span key={i} className={i < Math.floor(therapist.rating || 4.5) ? "star filled" : "star"}>★</span>
+                    ))}
+                    <span className="rating-value">{therapist.rating || 4.5}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="no-data">
+            {error ? `Error: ${error}` : "No therapists available"}
+          </div>
+        )}
       </div>
     );
   };
@@ -414,108 +354,63 @@ export const BookingServiceForm = () => {
         {selectedDate && (
           <div className="time-selection">
             <h5>Available Times</h5>
-            <div className="time-grid">
-              {availableTimes.map((time) => (
-                <div
-                  key={time}
-                  className={`time-card ${
-                    selectedTime === time ? "selected" : ""
-                  }`}
-                  onClick={() => handleTimeSelect(time)}
-                >
-                  <p>{time}</p>
-                </div>
-              ))}
-            </div>
+            {loading ? (
+              <div className="loading-indicator">Loading available times...</div>
+            ) : availableTimes.length > 0 ? (
+              <div className="time-grid">
+                {availableTimes.map((timeSlot) => (
+                  <div
+                    key={timeSlot.id}
+                    className={`time-card ${
+                      selectedTime?.id === timeSlot.id ? "selected" : ""
+                    }`}
+                    onClick={() => handleTimeSelect(timeSlot)}
+                  >
+                    <p>{timeSlot.displayTime}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-data">No available times for this date</div>
+            )}
           </div>
         )}
       </div>
     );
   };
 
-  // Render payment step
-  const renderPaymentStep = () => {
+  // Render payment and confirmation step
+  const renderPaymentAndConfirmation = () => {
     return (
       <div className="booking-section">
-        <h4>Payment Details</h4>
+        <h4>Payment & Confirmation</h4>
         
         <div className="booking-summary">
           <h5>Booking Summary</h5>
           <div className="summary-item">
             <span>Service:</span>
-            <span>{selectedPackage.name}</span>
+            <span>Skin Care Consultation</span>
           </div>
           <div className="summary-item">
             <span>Duration:</span>
-            <span>{selectedPackage.duration}</span>
+            <span>30 mins</span>
           </div>
           <div className="summary-item">
             <span>Therapist:</span>
-            <span>{selectedTherapist.name}</span>
+            <span>{selectedTherapist ? (selectedTherapist.fullName || selectedTherapist.name) : 'No therapist selected'}</span>
           </div>
           <div className="summary-item">
             <span>Date:</span>
-            <span>{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <span>{selectedDate ? new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'No date selected'}</span>
           </div>
           <div className="summary-item">
             <span>Time:</span>
-            <span>{selectedTime}</span>
+            <span>{selectedTime ? selectedTime.displayTime : 'No time selected'}</span>
           </div>
           <div className="summary-item">
             <span>Price:</span>
-            <span>${selectedPackage.price}</span>
+            <span>$50.00</span>
           </div>
-          
-          {appliedVoucher && (
-            <div className="summary-item discount">
-              <span>Discount:</span>
-              <span>
-                {appliedVoucher.type === "percent"
-                  ? `-${appliedVoucher.discount}%`
-                  : `-$${appliedVoucher.discount}`}
-              </span>
-            </div>
-          )}
-          
-          <div className="summary-item total">
-            <span>Total:</span>
-            <span>${calculateTotal().toFixed(2)}</span>
-          </div>
-        </div>
-        
-        <div className="voucher-section">
-          <h5>Have a Voucher?</h5>
-          <div className="voucher-input">
-            <input
-              type="text"
-              placeholder="Enter voucher code"
-              value={voucherCode}
-              onChange={(e) => setVoucherCode(e.target.value)}
-              disabled={appliedVoucher !== null}
-            />
-            <button
-              type="button"
-              onClick={handleApplyVoucher}
-              disabled={appliedVoucher !== null}
-              className="btn-apply"
-            >
-              Apply
-            </button>
-          </div>
-          
-          {appliedVoucher && (
-            <div className="applied-voucher">
-              <FaTicketAlt />
-              <span>{appliedVoucher.description}</span>
-              <button
-                type="button"
-                onClick={() => setAppliedVoucher(null)}
-                className="btn-remove"
-              >
-                Remove
-              </button>
-            </div>
-          )}
         </div>
         
         <div className="payment-method-section">
@@ -545,94 +440,14 @@ export const BookingServiceForm = () => {
             rows={3}
           ></textarea>
         </div>
-      </div>
-    );
-  };
-
-  // Render confirmation step
-  const renderConfirmationStep = () => {
-    if (!bookingDetails) return null;
-    
-    return (
-      <div className="booking-section">
-        <div className="confirmation-header">
-          <h4>Booking Confirmation</h4>
-          <div className="booking-id">Booking ID: {bookingDetails.bookingId}</div>
-        </div>
         
-        <div className="confirmation-details">
-          <div className="confirmation-section">
-            <h5>Service Details</h5>
-            <div className="confirmation-item">
-              <span>Service Package:</span>
-              <span>{bookingDetails.package.name}</span>
-            </div>
-            <div className="confirmation-item">
-              <span>Duration:</span>
-              <span>{bookingDetails.package.duration}</span>
-            </div>
-            <div className="confirmation-item">
-              <span>Therapist:</span>
-              <span>{bookingDetails.therapist.name}</span>
-            </div>
-          </div>
-          
-          <div className="confirmation-section">
-            <h5>Appointment Details</h5>
-            <div className="confirmation-item">
-              <span>Date:</span>
-              <span>{new Date(bookingDetails.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-            </div>
-            <div className="confirmation-item">
-              <span>Time:</span>
-              <span>{bookingDetails.time}</span>
-            </div>
-          </div>
-          
-          <div className="confirmation-section">
-            <h5>Payment Details</h5>
-            <div className="confirmation-item">
-              <span>Payment Method:</span>
-              <span>{bookingDetails.paymentMethod.name}</span>
-            </div>
-            <div className="confirmation-item">
-              <span>Original Price:</span>
-              <span>${bookingDetails.package.price.toFixed(2)}</span>
-            </div>
-            
-            {bookingDetails.voucher && (
-              <div className="confirmation-item">
-                <span>Discount:</span>
-                <span>
-                  {bookingDetails.voucher.type === "percent"
-                    ? `-${bookingDetails.voucher.discount}%`
-                    : `-$${bookingDetails.voucher.discount}`}
-                  ({bookingDetails.voucher.code})
-                </span>
-              </div>
-            )}
-            
-            <div className="confirmation-item total">
-              <span>Total Amount:</span>
-              <span>${bookingDetails.totalPrice.toFixed(2)}</span>
-            </div>
-          </div>
-          
-          {bookingDetails.notes && (
-            <div className="confirmation-section">
-              <h5>Additional Notes</h5>
-              <p className="notes-text">{bookingDetails.notes}</p>
-            </div>
-          )}
-          
-          <div className="confirmation-section policies">
-            <h5>Booking Policies</h5>
-            <ul>
-              <li>Please arrive 15 minutes before your appointment time.</li>
-              <li>Cancellations must be made at least 24 hours in advance for a full refund.</li>
-              <li>Late arrivals may result in shortened service time.</li>
-            </ul>
-          </div>
+        <div className="confirmation-section policies">
+          <h5>Booking Policies</h5>
+          <ul>
+            <li>Please arrive 15 minutes before your appointment time.</li>
+            <li>Cancellations must be made at least 24 hours in advance for a full refund.</li>
+            <li>Late arrivals may result in shortened service time.</li>
+          </ul>
         </div>
       </div>
     );
@@ -642,15 +457,11 @@ export const BookingServiceForm = () => {
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 1:
-        return renderPackageSelection();
-      case 2:
         return renderTherapistSelection();
-      case 3:
+      case 2:
         return renderScheduleSelection();
-      case 4:
-        return renderPaymentStep();
-      case 5:
-        return renderConfirmationStep();
+      case 3:
+        return renderPaymentAndConfirmation();
       default:
         return null;
     }

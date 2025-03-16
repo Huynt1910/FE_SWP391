@@ -45,6 +45,17 @@ export const RequestMethod = {
       method: "PUT",
       secure: true,
     },
+    getActiveTherapists: { path: "/therapists/activeTherapists", method: "GET" },
+    getAllTherapists: { path: "/therapists", method: "GET" },
+    getTherapistById: { path: "/therapists/:id", method: "GET", parameterized: true },
+    getAvailableSlots: { path: "/slot/:date", method: "GET", parameterized: true },
+    getTherapistSchedule: { path: "/schedule/therapist/:date", method: "GET", parameterized: true },
+    getTherapistMonthlySchedule: { 
+      path: "/schedule/therapist/month/:therapistId/:month", 
+      method: "GET", 
+      parameterized: true 
+    },
+    getAllSlots: { path: "/slot/getAllSlot", method: "GET" },
   };
   
   export const ACTIONS = {
@@ -60,6 +71,13 @@ export const RequestMethod = {
     GET_SURVEY_QUESTIONS: "getSurveyQuestions",
     UPDATE_INFO: "updateInfo",
     CHANGE_PASSWORD: "changePassword",
+    GET_ACTIVE_THERAPISTS: "getActiveTherapists",
+    GET_ALL_THERAPISTS: "getAllTherapists",
+    GET_THERAPIST_BY_ID: "getTherapistById",
+    GET_AVAILABLE_SLOTS: "getAvailableSlots",
+    GET_THERAPIST_SCHEDULE: "getTherapistSchedule",
+    GET_THERAPIST_MONTHLY_SCHEDULE: "getTherapistMonthlySchedule",
+    GET_ALL_SLOTS: "getAllSlots",
   };
   
   export const API_URL =

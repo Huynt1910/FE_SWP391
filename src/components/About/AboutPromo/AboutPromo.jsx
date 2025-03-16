@@ -14,9 +14,9 @@ export const AboutPromo = () => {
       <section className="promo-video">
         <div className="wrapper">
           <SectionTitle
-            title="Welcome to BeShope"
+            title="Welcome to BamboSpa"
             subTitle="Promotion video"
-            body={`Today we can offer our customers exclusive products of 108 brands marked "only in BeShope"`}
+            body={`Today we can offer our customers exclusive products of 108 brands marked "only in BamboSpa"`}
           />
 
           <div className="promo-video__block">

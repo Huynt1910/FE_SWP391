@@ -1,0 +1,307 @@
+.therapists-page {
+  padding: 60px 0;
+  background-color: #f9f9f9;
+}
+
+.therapist-list-container {
+  padding: 40px 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  
+  .therapist-list-header {
+    text-align: center;
+    margin-bottom: 40px;
+    
+    h2 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+    
+    p {
+      font-size: 16px;
+      color: #666;
+      max-width: 700px;
+      margin: 0 auto 30px;
+    }
+    
+    .therapist-filters {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      
+      .search-box {
+        flex: 1;
+        max-width: 300px;
+        
+        input {
+          width: 100%;
+          padding: 10px 15px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          font-size: 14px;
+          
+          &:focus {
+            outline: none;
+            border-color: #ff4f6f;
+          }
+        }
+      }
+      
+      .experience-filter,
+      .status-filter {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        
+        label {
+          font-size: 14px;
+          font-weight: 500;
+          color: #555;
+        }
+        
+        select {
+          padding: 10px 15px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          font-size: 14px;
+          background-color: white;
+          cursor: pointer;
+          
+          &:focus {
+            outline: none;
+            border-color: #ff4f6f;
+          }
+        }
+      }
+    }
+  }
+  
+  .loading-indicator {
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+    color: #666;
+  }
+  
+  .error-message {
+    text-align: center;
+    padding: 20px;
+    background-color: #fff5f5;
+    border: 1px solid #ffcccc;
+    border-radius: 8px;
+    color: #e53e3e;
+    margin: 20px 0;
+  }
+  
+  .no-results {
+    text-align: center;
+    padding: 40px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    
+    p {
+      font-size: 16px;
+      color: #666;
+    }
+  }
+  
+  .therapist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    
+    .therapist-card {
+      background-color: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+      }
+      
+      &.inactive {
+        opacity: 0.8;
+        background-color: #f9f9f9;
+        
+        &:hover {
+          transform: none;
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .therapist-details h3 {
+          color: #777;
+        }
+      }
+      
+      .therapist-image {
+        height: 220px;
+        position: relative;
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .therapist-status {
+          position: absolute;
+          top: 15px;
+          right: 15px;
+          background-color: rgba(255, 255, 255, 0.9);
+          border-radius: 20px;
+          padding: 5px 12px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 500;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          
+          .status-active {
+            color: #4caf50;
+          }
+          
+          .status-inactive {
+            color: #f44336;
+          }
+          
+          span {
+            color: #333;
+          }
+        }
+      }
+      
+      .therapist-details {
+        padding: 20px;
+        
+        h3 {
+          font-size: 20px;
+          font-weight: 600;
+          margin-bottom: 10px;
+          color: #333;
+        }
+        
+        .therapist-info {
+          margin-bottom: 15px;
+          
+          .specialization {
+            font-size: 14px;
+            color: #ff4f6f;
+            font-weight: 500;
+            margin-bottom: 5px;
+          }
+          
+          .experience {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+          }
+          
+          .rating {
+            display: flex;
+            align-items: center;
+            
+            .star {
+              color: #ddd;
+              margin-right: 2px;
+              
+              &.filled {
+                color: #ffc107;
+              }
+            }
+            
+            .rating-value {
+              margin-left: 5px;
+              font-size: 14px;
+              font-weight: 500;
+              color: #666;
+            }
+          }
+        }
+        
+        .therapist-bio {
+          margin-bottom: 20px;
+          
+          p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+          }
+        }
+        
+        .book-button {
+          width: 100%;
+          padding: 12px;
+          background-color: #ff4f6f;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          
+          &:hover {
+            background-color: darken(#ff4f6f, 10%);
+          }
+          
+          &.disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            
+            &:hover {
+              background-color: #ccc;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  @media (max-width: 1200px) {
+    padding: 0 20px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 30px 15px;
+    
+    .therapist-list-header {
+      margin-bottom: 30px;
+      
+      h2 {
+        font-size: 26px;
+      }
+      
+      .therapist-filters {
+        flex-direction: column;
+        align-items: center;
+        
+        .search-box {
+          max-width: 100%;
+          width: 100%;
+          margin-bottom: 15px;
+        }
+        
+        .experience-filter,
+        .status-filter {
+          width: 100%;
+          justify-content: space-between;
+          margin-bottom: 10px;
+        }
+      }
+    }
+    
+    .therapist-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+} 

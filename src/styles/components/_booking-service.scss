@@ -1,0 +1,458 @@
+.booking-service {
+  padding: 60px 0;
+  background-color: #f5f5f5;
+  
+  .wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+}
+
+.booking-service-form {
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+  
+  h3 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-align: center;
+    color: #333;
+  }
+  
+  // Step indicators
+  .booking-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    position: relative;
+    
+    &:before {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: #e0e0e0;
+      z-index: 1;
+    }
+    
+    .booking-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      
+      .step-number {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        border: 2px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 18px;
+        color: #777;
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+      }
+      
+      .step-label {
+        font-size: 14px;
+        color: #777;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+      
+      &.active {
+        .step-number {
+          background-color: #ff4f6f;
+          border-color: #ff4f6f;
+          color: white;
+          box-shadow: 0 4px 10px rgba(255, 79, 111, 0.3);
+        }
+        
+        .step-label {
+          color: #ff4f6f;
+          font-weight: 600;
+        }
+      }
+      
+      &.completed {
+        .step-number {
+          background-color: #4caf50;
+          border-color: #4caf50;
+          color: white;
+        }
+        
+        .step-label {
+          color: #4caf50;
+        }
+      }
+    }
+  }
+  
+  // Therapist selection
+  .therapist-selection {
+    margin-bottom: 30px;
+    
+    h4 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    
+    .therapist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      
+      .therapist-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        &.selected {
+          border-color: #ff4f6f;
+          box-shadow: 0 8px 15px rgba(255, 79, 111, 0.15);
+        }
+        
+        .therapist-image {
+          height: 180px;
+          
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+        
+        .therapist-info {
+          padding: 15px;
+          
+          h5 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+          }
+          
+          .specialization {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+          }
+          
+          .therapist-rating {
+            display: flex;
+            align-items: center;
+            
+            .star {
+              color: #ddd;
+              font-size: 16px;
+              margin-right: 2px;
+              
+              &.filled {
+                color: #ffc107;
+              }
+            }
+            
+            .rating-value {
+              margin-left: 5px;
+              font-weight: 600;
+              color: #555;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Date and time selection
+  .date-selection, 
+  .time-selection {
+    margin-bottom: 25px;
+    
+    h4 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #333;
+    }
+  }
+  
+  .date-grid, 
+  .time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+    
+    .date-card, 
+    .time-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background-color: #f9f9f9;
+      }
+      
+      &.selected {
+        background-color: #ff4f6f;
+        border-color: #ff4f6f;
+        color: white;
+        
+        p {
+          color: white !important;
+        }
+      }
+      
+      &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: #f5f5f5;
+        
+        &:hover {
+          background-color: #f5f5f5;
+        }
+      }
+      
+      p {
+        margin: 0;
+        font-size: 14px;
+        color: #555;
+        
+        &.date-day {
+          font-weight: 600;
+          font-size: 16px;
+          margin-bottom: 5px;
+        }
+      }
+    }
+  }
+  
+  // Service selection
+  .service-selection {
+    margin-bottom: 30px;
+    
+    h4 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    
+    .service-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      
+      .service-option {
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        &.selected {
+          border-color: #ff4f6f;
+          background-color: rgba(255, 79, 111, 0.05);
+        }
+        
+        h5 {
+          font-size: 18px;
+          font-weight: 600;
+          margin-bottom: 10px;
+          color: #333;
+        }
+        
+        .service-description {
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 15px;
+        }
+        
+        .service-price {
+          font-size: 18px;
+          font-weight: 600;
+          color: #ff4f6f;
+        }
+      }
+    }
+  }
+  
+  // Booking confirmation
+  .booking-confirmation {
+    .confirmation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      
+      h4 {
+        font-size: 22px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+      }
+      
+      .booking-id {
+        background-color: #f0f0f0;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #555;
+      }
+    }
+    
+    .confirmation-details {
+      .confirmation-section {
+        margin-bottom: 25px;
+        
+        h5 {
+          margin-bottom: 15px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #eee;
+        }
+        
+        .confirmation-item {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 10px;
+          
+          span:first-child {
+            color: #666;
+            font-size: 14px;
+          }
+          
+          span:last-child {
+            font-weight: 500;
+            color: #333;
+            text-align: right;
+          }
+          
+          &.total {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #eee;
+            font-size: 18px;
+            font-weight: 600;
+            
+            span:last-child {
+              color: #ff4f6f;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Navigation buttons
+  .booking-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      
+      &.btn-secondary {
+        background-color: #f0f0f0;
+        color: #555;
+        
+        &:hover {
+          background-color: #e0e0e0;
+        }
+      }
+      
+      &.btn-primary {
+        background-color: #ff4f6f;
+        color: white;
+        
+        &:hover {
+          background-color: darken(#ff4f6f, 10%);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(255, 79, 111, 0.3);
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .booking-service-form {
+    padding: 25px 20px;
+    
+    h3 {
+      font-size: 24px;
+    }
+    
+    .booking-steps {
+      .booking-step {
+        .step-number {
+          width: 36px;
+          height: 36px;
+          font-size: 14px;
+        }
+        
+        .step-label {
+          font-size: 12px;
+        }
+      }
+    }
+    
+    .therapist-grid,
+    .service-options {
+      grid-template-columns: 1fr;
+    }
+    
+    .date-grid, 
+    .time-grid {
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 10px;
+    }
+    
+    .booking-navigation {
+      button {
+        padding: 10px 16px;
+        font-size: 14px;
+      }
+    }
+  }
+} 

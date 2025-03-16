@@ -29,6 +29,11 @@ export const navItem = [
     auth: true,
   },
   {
+    title: "Therapists",
+    path: "/therapists",
+    auth: false,
+  },
+  {
     title: "Information",
     path: "",
     auth: false,
@@ -55,4 +60,5 @@ export const navItem = [
       },
     ],
   },
+  
 ];

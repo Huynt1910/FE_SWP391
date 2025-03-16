@@ -7,19 +7,41 @@ export const AuthGuard = ({ children, requiredRole }) => {
   const router = useRouter();
   const { self } = useSelf();
   const userRole = getCookie("userRole");
+  
+  console.log("AuthGuard checking role:", userRole);
+  console.log("AuthGuard required role:", requiredRole);
 
   useEffect(() => {
     if (!self) {
-      router.push("/login-selection");
+      router.push("/login");
+      return;
+    }
+    
+    // Admin can access everything
+    if (userRole === 'admin') {
       return;
     }
 
-    // If a specific role is required and user doesn't have it
-    if (requiredRole && userRole !== requiredRole) {
+    // Handle admin routes - only admin, staff and therapists can access
+    if (requiredRole === 'admin' && userRole !== 'admin' && userRole !== 'staff' && userRole !== 'therapist') {
+      router.push("/");
+      return;
+    }
+
+    // Handle therapist routes - only therapists and admins can access
+    if (requiredRole === 'therapist' && userRole !== 'therapist' && userRole !== 'admin') {
       if (userRole === 'staff') {
         router.push("/admin/dashboard");
-      } else if (userRole === 'therapist') {
-        router.push("/therapist/dashboard");
+      } else {
+        router.push("/");
+      }
+      return;
+    }
+
+    // For other specific role requirements
+    if (requiredRole && requiredRole !== 'admin' && requiredRole !== 'therapist' && userRole !== requiredRole) {
+      if (userRole === 'admin' || userRole === 'staff' || userRole === 'therapist') {
+        router.push("/admin/dashboard");
       } else {
         router.push("/");
       }
@@ -29,9 +51,24 @@ export const AuthGuard = ({ children, requiredRole }) => {
   if (!self) {
     return null;
   }
+  
+  // Admin can access everything
+  if (userRole === 'admin') {
+    return <>{children}</>;
+  }
 
-  // If a specific role is required and user doesn't have it
-  if (requiredRole && userRole !== requiredRole) {
+  // Handle admin routes - only admin, staff and therapists can access
+  if (requiredRole === 'admin' && userRole !== 'admin' && userRole !== 'staff' && userRole !== 'therapist') {
+    return null;
+  }
+
+  // Handle therapist routes - only therapists and admins can access
+  if (requiredRole === 'therapist' && userRole !== 'therapist' && userRole !== 'admin') {
+    return null;
+  }
+
+  // For other specific role requirements
+  if (requiredRole && requiredRole !== 'admin' && requiredRole !== 'therapist' && userRole !== requiredRole) {
     return null;
   }
 

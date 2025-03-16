@@ -54,7 +54,7 @@ export const Login = () => {
             style={{ backgroundImage: `url('/assets/img/login-form__bg.png')` }}
           >
             <form onSubmit={handleSubmit}>
-              <h3>Customer Login</h3>
+              <h3>Login</h3>
               <SocialLogin />
 
               <div className="box-field">
@@ -100,15 +100,6 @@ export const Login = () => {
                 <a href="/forgot-password">
                   Lost your password?
                 </a>
-              </div>
-              
-              <div className="login-form__other-options mt-4">
-                <p>Not a customer?</p>
-                <div className="other-login-options">
-                <span>
-                  <a href="/login-selection">Back to role selection</a>
-                </span>
-                </div>
               </div>
             </form>
           </div>
