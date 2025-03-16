@@ -108,16 +108,6 @@ const surveyQuestions = [
     validation: (value) => Array.isArray(value) && value.length > 0,
     name: "skin_concerns",
     icon: "⚠️"
-  },
-  {
-    id: 5,
-    title: "Additional Information",
-    text: "Please share any additional information about your skin that might be helpful.",
-    type: "textarea",
-    placeholder: "For example: allergies, previous treatments, specific areas of concern...",
-    validation: (value) => true, // Optional field
-    name: "additional_info",
-    icon: "📝"
   }
 ];
 
@@ -152,14 +142,6 @@ function SurveyForm() {
         [questionName]: newValues
       };
     });
-  };
-
-  // Handle textarea input change
-  const handleTextareaChange = (questionName, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [questionName]: value
-    }));
   };
 
   // Navigate to next step
@@ -307,22 +289,6 @@ function SurveyForm() {
     );
   };
 
-  // Render textarea question
-  const renderTextareaQuestion = (question) => {
-    return (
-      <div className="survey-question">
-        <h4>{question.text}</h4>
-        <textarea
-          placeholder={question.placeholder}
-          value={formData[question.name] || ""}
-          onChange={(e) => handleTextareaChange(question.name, e.target.value)}
-          rows={5}
-          className="survey-textarea"
-        />
-      </div>
-    );
-  };
-
   // Render current question based on type
   const renderCurrentQuestion = () => {
     if (currentStep > surveyQuestions.length) {
@@ -336,8 +302,6 @@ function SurveyForm() {
         return renderRadioQuestion(question);
       case "checkbox":
         return renderCheckboxQuestion(question);
-      case "textarea":
-        return renderTextareaQuestion(question);
       default:
         return null;
     }
@@ -352,7 +316,7 @@ function SurveyForm() {
           <div className="survey-id">Survey ID: SV{Math.floor(100000 + Math.random() * 900000)}</div>
         </div>
         
-        <Recommendation answers={formData} />
+        {/* <Recommendation answers={formData} /> */}
         
         <div className="results-summary">
           <h5>Your Survey Responses</h5>
@@ -362,8 +326,6 @@ function SurveyForm() {
             
             if (question.type === "checkbox" && formData[question.name]) {
               answerDisplay = formData[question.name].join(", ");
-            } else if (question.type === "textarea") {
-              answerDisplay = formData[question.name] || "No additional information provided";
             } else {
               answerDisplay = formData[question.name] || "Not answered";
             }
@@ -465,7 +427,7 @@ function SurveyForm() {
               </div>
 
               <div className="survey-form__bottom">
-                <a onClick={() => window.location.href = "/home"}>Cancel and return to Home</a>
+                <a onClick={() => window.location.href = "/"}>Cancel and return to Home</a>
               </div>
             </form>
           </div>

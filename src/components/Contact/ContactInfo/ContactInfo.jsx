@@ -14,9 +14,9 @@ export const ContactInfo = () => {
                 Email us if you have any questions, we will be sure to contact
                 you and find a solution. Also, our managers will help you choose
                 the product that suits you best, at the best price. From year to
-                year, the BeShop network develops and improves, taking into
+                year, the BamboSpa network develops and improves, taking into
                 account all consumer needs and market trends. But for us, the
-                concern remains that when coming to the BeShop store, customers
+                concern remains that when coming to the BamboSpa store, customers
                 do not have questions about the convenience and comfort of
                 shopping, product quality and the level of professionalism of
                 sales consultants.

@@ -64,7 +64,7 @@ export const Login = () => {
             style={{ backgroundImage: `url('/assets/img/login-form__bg.png')` }}
           >
             <form onSubmit={handleSubmit}>
-              <h3>Customer Login</h3>
+              <h3>Login</h3>
               <SocialLogin />
 
               <div className="box-field">
@@ -106,7 +106,9 @@ export const Login = () => {
                 <span>
                   No account? <a href="/registration">Register</a>
                 </span>
-                <a href="/forgot-password">Lost your password?</a>
+                <a href="/forgot-password">
+                  Lost your password?
+                </a>
               </div>
             </form>
           </div>

@@ -68,13 +68,13 @@ export const Footer = () => {
                 </li>
                 <li>
                   <i className="icon-mail"></i>
-                  <a href="mailto:info@beshop.com">info@beshop.com</a>
+                  <a href="mailto:info@BamboSpa.com">info@BamboSpa.com</a>
                 </li>
               </ul>
             </div>
           </div>
           <div className="footer-copy">
-            <span>&copy; All rights reserved. BeShop 2020</span>
+            <span>&copy; All rights reserved. BamboSpa 2020</span>
           </div>
         </div>
       </footer>

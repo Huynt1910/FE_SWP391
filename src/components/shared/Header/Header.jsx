@@ -25,6 +25,7 @@ export const Header = () => {
 
   const logOut = async () => {
     deleteCookie("token");
+    deleteCookie("userRole");
     window.location.reload();
   };
 
@@ -99,7 +100,7 @@ export const Header = () => {
                   <li key={index}>
                     {option.isLogout ? (
                       <button className="signout-btn" onClick={logOut}>
-                        Signout
+                        Logout
                       </button>
                     ) : (
                       option?.path && (
