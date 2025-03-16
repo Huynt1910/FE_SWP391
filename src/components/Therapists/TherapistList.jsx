@@ -179,11 +179,7 @@ const TherapistList = () => {
         </div>
       ) : (
         <div className="no-results">
-          <p>
-            {searchTerm || filterExperience > 0 || filterStatus !== "all" 
-              ? "No therapists found matching your criteria. Try adjusting your filters."
-              : "No therapists available at the moment. Please check back later."}
-          </p>
+          <p>No therapists found matching your criteria.</p>
         </div>
       )}
     </div>

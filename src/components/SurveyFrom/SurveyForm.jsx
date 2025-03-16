@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaArrowLeft, FaArrowRight, FaCheck, FaClipboardList } from "react-icons/fa";
 import { showToast } from "@/utils/toast"; // Adjust path as needed
-import Recommendation from "./Recommendation";
+
 
 // Enhanced survey questions with more details
 const surveyQuestions = [
@@ -142,6 +142,14 @@ function SurveyForm() {
         [questionName]: newValues
       };
     });
+  };
+
+  // Handle textarea input change
+  const handleTextareaChange = (questionName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [questionName]: value
+    }));
   };
 
   // Navigate to next step
@@ -289,6 +297,22 @@ function SurveyForm() {
     );
   };
 
+  // Render textarea question
+  const renderTextareaQuestion = (question) => {
+    return (
+      <div className="survey-question">
+        <h4>{question.text}</h4>
+        <textarea
+          placeholder={question.placeholder}
+          value={formData[question.name] || ""}
+          onChange={(e) => handleTextareaChange(question.name, e.target.value)}
+          rows={5}
+          className="survey-textarea"
+        />
+      </div>
+    );
+  };
+
   // Render current question based on type
   const renderCurrentQuestion = () => {
     if (currentStep > surveyQuestions.length) {
@@ -326,6 +350,8 @@ function SurveyForm() {
             
             if (question.type === "checkbox" && formData[question.name]) {
               answerDisplay = formData[question.name].join(", ");
+            } else if (question.type === "textarea") {
+              answerDisplay = formData[question.name] || "No additional information provided";
             } else {
               answerDisplay = formData[question.name] || "Not answered";
             }
