@@ -1,8 +1,9 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { isAuthenticated, getUserRole, redirectToLogin } from "@/utils/auth";
+import { useSelf } from "@/store/self.store";
 
-export const SystemAuthGuard = ({ children }) => {
+export const SystemAuthGuard = ({ children, requiredRole }) => {
   const router = useRouter();
   const { self, error } = useSelf();
   const authenticated = isAuthenticated();
@@ -10,7 +11,7 @@ export const SystemAuthGuard = ({ children }) => {
   
   console.log("AuthGuard checking authentication:", authenticated ? "Authenticated" : "Not authenticated");
   console.log("AuthGuard checking role:", userRole);
-  console.log("AuthGuard required role:", requiredRole);
+  console.log("AuthGuard required role:", requiredRole || "none");
 
   useEffect(() => {
     // Check if authenticated

@@ -567,23 +567,44 @@
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  max-width: 600px;
+  margin: 40px auto;
+  
+  h3 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+  }
   
   p {
     font-size: 16px;
     color: #666;
     margin-bottom: 8px;
     max-width: 500px;
+  }
+  
+  .contact-info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    border-left: 4px solid #ff4f6f;
+    text-align: left;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 25px;
     
-    &:first-child {
-      font-size: 18px;
-      font-weight: 500;
+    strong {
       color: #333;
-      margin-bottom: 12px;
     }
   }
   
   .retry-button {
-    margin-top: 20px;
+    margin-top: 10px;
     padding: 10px 20px;
     background-color: #ff4f6f;
     color: white;

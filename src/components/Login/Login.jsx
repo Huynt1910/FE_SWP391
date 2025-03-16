@@ -7,6 +7,8 @@ import { setCookie } from "cookies-next";
 
 export const Login = () => {
   const router = useRouter();
+  const { returnUrl } = router.query;
+  
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -32,22 +34,16 @@ export const Login = () => {
         password: formData.password,
       });
 
-      if (response.result.success) {
-        const { token, role } = response.result;
-
-        // Set auth cookies
-        setCookie("token", token);
-        setCookie("userRole", role);
-
-        // Redirect based on role
-        if (role === "admin") {
-          router.push("/admin");
-        } else {
-          router.push("/"); // Customer goes to home page
-        }
-
-        showToast.success("Login successful!");
+      // The signIn hook already handles success messages and token storage
+      console.log("Login response:", response);
+      
+      // If there's a returnUrl, redirect to it after successful login
+      if (returnUrl) {
+        const decodedUrl = decodeURIComponent(returnUrl);
+        router.push(decodedUrl);
       }
+      // Otherwise, the default redirection in the signIn hook will handle it
+      
     } catch (error) {
       showToast.error("Invalid credentials");
       console.error("Login error:", error);
@@ -65,6 +61,11 @@ export const Login = () => {
           >
             <form onSubmit={handleSubmit}>
               <h3>Login</h3>
+              {returnUrl && (
+                <div className="login-form__message">
+                  <p>Please log in to continue to your requested page</p>
+                </div>
+              )}
               <SocialLogin />
 
               <div className="box-field">

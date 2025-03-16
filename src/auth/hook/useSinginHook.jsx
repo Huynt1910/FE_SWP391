@@ -76,9 +76,7 @@ export function useSignIn() {
         }
       } catch (error) {
         console.error("Login error:", error);
-        const errorMessage = error.message || "Login failed. Please try again.";
-        showToast.error(errorMessage);
-        return { success: false, error: errorMessage };
+        showToast.error("An error occurred during login. Please try again.");
       }
     },
   });

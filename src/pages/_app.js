@@ -4,7 +4,7 @@ import "../styles/styles.scss";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { ToastContainer } from "react-toastify";
-import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
+import { SystemAuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
 import { protectedRoutes } from "@/auth/AUTHGUARD/protectedRoute";
 import { isAuthenticated, handleAuthError } from "@/utils/auth";
 
@@ -52,16 +52,28 @@ const MyApp = ({ Component, pageProps }) => {
   }
   
   // Check if current route requires authentication
-  const requiresAuth = protectedRoutes.includes(router.pathname);
+  const isProtectedRoute = () => {
+    // Check if the current path starts with any of the protected routes
+    return protectedRoutes.some(route => 
+      router.pathname === route || 
+      router.pathname.startsWith(`${route}/`)
+    );
+  };
+  
+  const requiresAuth = isProtectedRoute();
   const authenticated = isAuthenticated();
+  
+  console.log("Current path:", router.pathname);
+  console.log("Is protected route:", requiresAuth);
+  console.log("Is authenticated:", authenticated);
   
   return (
     <QueryClientProvider client={queryClient}>
       <CartContext.Provider value={{ cart, setCart }}>
         {requiresAuth ? (
-          <AuthGuard>
+          <SystemAuthGuard requiredRole={router.pathname.includes('/admin') ? 'admin' : undefined}>
             <Component {...pageProps} />
-          </AuthGuard>
+          </SystemAuthGuard>
         ) : (
           <Component {...pageProps} />
         )}
