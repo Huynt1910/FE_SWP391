@@ -32,25 +32,18 @@ export const Login = () => {
         password: formData.password,
       });
 
-      if (response.result.success) {
-        const { token, role } = response.result;
-
-        // Set auth cookies
-        setCookie("token", token);
-        setCookie("userRole", role);
+      if (response.success) {
+        showToast.success("Login successful!");
 
         // Redirect based on role
-        if (role === "admin") {
+        if (response.role === "ADMIN") {
           router.push("/admin");
         } else {
-          router.push("/"); // Customer goes to home page
+          router.push("/");
         }
-
-        showToast.success("Login successful!");
       }
     } catch (error) {
-      showToast.error("Invalid credentials");
-      console.error("Login error:", error);
+      showToast.error("Invalid username or password");
     }
   };
 

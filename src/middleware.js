@@ -1,37 +1,29 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function middleware(request) {
   const pathname = request.nextUrl.pathname;
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token");
-  const userRole = cookieStore.get("userRole")?.value;
+  const token = request.cookies.get("token");
+  const userRole = request.cookies.get("userRole");
 
-  // Public paths that don't require authentication
-  if (pathname === "/login") {
-    if (token) {
-      // If already logged in, redirect based on role
-      return NextResponse.redirect(
-        new URL(userRole === "admin" ? "/admin" : "/", request.url)
-      );
-    }
-    return NextResponse.next();
-  }
-
-  // Protect admin routes
+  // Handle admin routes
   if (pathname.startsWith("/admin")) {
-    if (!token) {
+    // No token or not admin -> redirect to login
+    if (!token || userRole?.value !== "ADMIN") {
       return NextResponse.redirect(new URL("/login", request.url));
     }
+  }
 
-    if (userRole !== "admin") {
-      return NextResponse.redirect(new URL("/", request.url));
+  // Logged in users trying to access login page
+  if (pathname === "/login" && token) {
+    if (userRole?.value === "ADMIN") {
+      return NextResponse.redirect(new URL("/admin", request.url));
     }
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/login", "/admin/:path*"],
+  matcher: ["/admin/:path*", "/login"],
 };

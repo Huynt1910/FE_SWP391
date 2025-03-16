@@ -1,7 +1,6 @@
 import { AdminLayout } from "@/components/Admin/AdminLayout";
+import ScheduleTherapist from "@/components/Admin/ScheduleTherapist/ScheduleTherapist";
 import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
-
-import BookingSchedule from "@/components/Admin/Booking/BookingSchedule";
 
 const breadcrumbsData = [
   {
@@ -9,22 +8,22 @@ const breadcrumbsData = [
     path: "/admin",
   },
   {
-    label: "Lịch hẹn",
-    path: "/admin/bookings",
+    label: "Quản lý lịch làm việc",
+    path: "/admin/schedules",
   },
 ];
 
-const BookingsPage = () => {
+const SchedulesPage = () => {
   return (
     <AuthGuard>
       <AdminLayout
         breadcrumb={breadcrumbsData}
-        breadcrumbTitle="Quản lý lịch hẹn"
+        breadcrumbTitle="Quản lý lịch làm việc"
       >
-        <BookingSchedule />
+        <ScheduleTherapist />
       </AdminLayout>
     </AuthGuard>
   );
 };
 
-export default BookingsPage;
+export default SchedulesPage;

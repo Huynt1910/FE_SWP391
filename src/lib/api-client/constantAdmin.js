@@ -14,10 +14,40 @@ export const END_POINTS = {
     method: "GET",
     secure: true,
   },
+  getAllUsers: {
+    path: "/users",
+    method: "GET",
+    secure: true,
+  },
+  getAllTherapists: {
+    path: "/therapists",
+    method: "GET",
+    secure: true,
+  },
+  getAllStaffs: {
+    path: "/staffs",
+    method: "GET",
+    secure: true,
+  },
+  getAllServices: {
+    path: "/services",
+    method: "GET",
+    secure: true,
+  },
+  createService: {
+    path: "/services",
+    method: "POST",
+    secure: true,
+  },
 };
 export const ACTIONS = {
   SYSTEM_LOGIN: "systemLogin",
   GET_SYSTEM_USER_INFO: "getSystemUserInfo",
+  GET_ALL_USERS: "getAllUsers",
+  GET_ALL_THERAPISTS: "getAllTherapists",
+  GET_ALL_STAFFS: "getAllStaffs",
+  GET_ALL_SERVICES: "getAllServices",
+  CREATE_SERVICE: "createService",
 };
 
 export const USER_ROLES = {

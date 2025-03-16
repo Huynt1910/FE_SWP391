@@ -7,6 +7,7 @@ import {
   FaUsers,
   FaBoxOpen,
   FaCog,
+  FaUserClock,
 } from "react-icons/fa";
 
 const menuConfig = {
@@ -19,36 +20,25 @@ const menuConfig = {
       icon: <FaCalendarAlt />,
       label: "Quản lý lịch hẹn",
     },
+    {
+      path: "/admin/schedules",
+      icon: <FaUserClock />,
+      label: "Quản lý lịch làm việc",
+    },
     { path: "/admin/settings", icon: <FaCog />, label: "Cài đặt" },
-  ],
-  staff: [
-    { path: "/admin/dashboard", icon: <FaTachometerAlt />, label: "Dashboard" },
-    { path: "/admin/services", icon: <FaBoxOpen />, label: "Quản lý dịch vụ" },
-    {
-      path: "/admin/bookings",
-      icon: <FaCalendarAlt />,
-      label: "Quản lý lịch hẹn",
-    },
-  ],
-  therapist: [
-    { path: "/admin/dashboard", icon: <FaTachometerAlt />, label: "Dashboard" },
-    {
-      path: "/admin/bookings",
-      icon: <FaCalendarAlt />,
-      label: "Quản lý lịch hẹn",
-    },
   ],
 };
 
 const Sidebar = ({ isCollapsed }) => {
-  const userRole = getCookie("userRole");
-  const menuItems = menuConfig[userRole] || [];
+  // Temporarily set userRole to admin
+  const userRole = "admin";
+  const menuItems = menuConfig[userRole];
 
   return (
     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="sidebar__brand">
-        <img src="/logo.png" alt="Logo" />
-        <span>BeShop Admin</span>
+        <img src="/assets/img/logo-admin.png" alt="Logo" />
+        <span>BamboSpa Admin</span>
       </div>
 
       <nav className="menu">

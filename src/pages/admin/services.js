@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/components/Admin/AdminLayout";
-import { SystemAuthGuard } from "@/auth/AUTHGUARD/SystemAuthGuard";
+import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
 import Services from "@/components/Admin/Services/Services";
 
 const breadcrumbsData = [
@@ -15,14 +15,14 @@ const breadcrumbsData = [
 
 const ServicesPage = () => {
   return (
-    <SystemAuthGuard requiredRole="staff">
+    <AuthGuard>
       <AdminLayout
         breadcrumb={breadcrumbsData}
         breadcrumbTitle="Quản lý dịch vụ"
       >
         <Services />
       </AdminLayout>
-    </SystemAuthGuard>
+    </AuthGuard>
   );
 };
 
