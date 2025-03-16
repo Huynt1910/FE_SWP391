@@ -3,6 +3,9 @@ import { useRouter } from "next/router";
 import { showToast } from "@/utils/toast";
 import { FaArrowLeft, FaArrowRight, FaCheck, FaCreditCard, FaMoneyBill } from "react-icons/fa";
 import useBookingHook from "@/auth/hook/useBookingHook";
+import TherapistSelection from "./TherapistSelection";
+import ScheduleSelection from "./ScheduleSelection";
+import PaymentConfirmation from "./PaymentConfirmation";
 
 // Payment methods
 const paymentMethods = [
@@ -48,32 +51,26 @@ export const BookingServiceForm = () => {
         if (therapistId && Array.isArray(data)) {
           const preSelectedTherapist = data.find(t => 
             t.id === Number(therapistId) || 
-            t.id === therapistId || 
-            t.id.toString() === therapistId.toString()
+            t.id === therapistId
           );
           
           if (preSelectedTherapist) {
             setSelectedTherapist(preSelectedTherapist);
-            // If a therapist is pre-selected, move to the next step
-            setCurrentStep(2);
-          } else {
-            showToast.error("Selected therapist not found");
+            // Optionally move to next step if therapist is pre-selected
+            // setCurrentStep(2);
           }
         }
-      } catch (err) {
-        console.error("Error fetching therapists:", err);
-        setError("Failed to load therapists");
-        showToast.error("Failed to load therapists");
-        setTherapists([]);
+      } catch (error) {
+        console.error("Error fetching therapists:", error);
+        setError("Failed to load therapists. Please try again later.");
+        showToast("error", "Failed to load therapists");
       } finally {
         setLoading(false);
       }
     };
 
-    if (router.isReady) {
-      fetchTherapists();
-    }
-  }, [router.isReady, therapistId]);
+    fetchTherapists();
+  }, [therapistId]);
 
   // Fetch available slots when date is selected
   useEffect(() => {
@@ -103,8 +100,21 @@ export const BookingServiceForm = () => {
         
         setSelectedTime(""); // Reset time when date changes
       } catch (err) {
+        console.error("Error fetching available slots:", err);
         setError("Failed to load available slots");
-        showToast.error("Failed to load available slots");
+        
+        // Check if the error is due to expired session
+        if (err.message && (
+            err.message.includes("expired") || 
+            err.message.includes("unauthorized") || 
+            err.message.includes("401")
+          )) {
+          showToast("error", "Your session has expired. Please log in again.");
+          // Optionally redirect to login page
+          // setTimeout(() => router.push("/login"), 2000);
+        } else {
+          showToast("error", "Failed to load available slots");
+        }
       } finally {
         setLoading(false);
       }
@@ -127,8 +137,21 @@ export const BookingServiceForm = () => {
         );
         setAvailableSlots(filteredSlots);
       } catch (err) {
+        console.error("Error fetching therapist schedule:", err);
         setError("Failed to load therapist schedule");
-        showToast.error("Failed to load therapist schedule");
+        
+        // Check if the error is due to expired session
+        if (err.message && (
+            err.message.includes("expired") || 
+            err.message.includes("unauthorized") || 
+            err.message.includes("401")
+          )) {
+          showToast("error", "Your session has expired. Please log in again.");
+          // Optionally redirect to login page
+          // setTimeout(() => router.push("/login"), 2000);
+        } else {
+          showToast("error", "Failed to load therapist schedule");
+        }
       } finally {
         setLoading(false);
       }
@@ -162,7 +185,7 @@ export const BookingServiceForm = () => {
   };
 
   // Handle therapist selection
-  const handleTherapistSelect = (therapist) => {
+  const handleSelectTherapist = (therapist) => {
     setSelectedTherapist(therapist);
     // Reset subsequent selections
     setSelectedDate("");
@@ -185,16 +208,16 @@ export const BookingServiceForm = () => {
     setPaymentMethod(method);
   };
 
-  // Navigate to next step
-  const nextStep = () => {
+  // Handle next step
+  const handleNextStep = () => {
     if (currentStep < totalSteps) {
       // Validate current step before proceeding
       if (currentStep === 1 && !selectedTherapist) {
-        showToast.error("Please select a therapist");
+        showToast("error", "Please select a therapist");
         return;
       }
       if (currentStep === 2 && (!selectedDate || !selectedTime)) {
-        showToast.error("Please select both date and time");
+        showToast("error", "Please select both date and time");
         return;
       }
 
@@ -219,42 +242,10 @@ export const BookingServiceForm = () => {
     }
   };
 
-  // Navigate to previous step
-  const prevStep = () => {
+  // Handle previous step
+  const handlePrevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-    }
-  };
-
-  // Handle final submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!bookingDetails) {
-      showToast.error("Booking details not found");
-      return;
-    }
-
-    // Validate payment method
-    if (!paymentMethod) {
-      showToast.error("Please select a payment method");
-      return;
-    }
-
-    setIsPending(true);
-    try {
-      // Simulate API call to book appointment
-      setTimeout(() => {
-        showToast.success(
-          `Booking confirmed! Your booking ID is ${bookingDetails.bookingId}`
-        );
-        setIsPending(false);
-        // Redirect to confirmation page
-        router.push("/booking-confirmation");
-      }, 1500);
-    } catch (error) {
-      showToast.error("Error processing your booking");
-      setIsPending(false);
     }
   };
 
@@ -267,264 +258,132 @@ export const BookingServiceForm = () => {
     ];
 
     return (
-      <div className="booking-steps">
+      <div className="book-appointment__steps">
         {steps.map((step) => (
           <div 
             key={step.number} 
-            className={`booking-step ${currentStep === step.number ? 'active' : ''} ${currentStep > step.number ? 'completed' : ''}`}
+            className="book-appointment__step"
           >
-            <div className="step-number">
-              {currentStep > step.number ? <FaCheck /> : step.number}
+            <div className={`book-appointment__step-number ${currentStep === step.number ? 'active' : ''}`}>
+              {step.number}
             </div>
-            <div className="step-label">{step.label}</div>
+            <div className={`book-appointment__step-label ${currentStep === step.number ? 'active' : ''}`}>
+              {step.label}
+            </div>
           </div>
         ))}
       </div>
     );
   };
 
-  // Render therapist selection step
-  const renderTherapistSelection = () => {
-    return (
-      <div className="booking-section">
-        <h4>Choose Your Therapist</h4>
-        {loading ? (
-          <div className="loading-indicator">Loading therapists...</div>
-        ) : Array.isArray(therapists) && therapists.length > 0 ? (
-          <div className="therapist-grid">
-            {therapists.map((therapist) => (
-              <div
-                key={therapist.id}
-                className={`therapist-card ${
-                  selectedTherapist?.id === therapist.id ? "selected" : ""
-                }`}
-                onClick={() => handleTherapistSelect(therapist)}
-              >
-                <div className="therapist-image">
-                  <img src={therapist.image || "/assets/img/therapists/default.jpg"} alt={therapist.name || 'Therapist'} />
-                </div>
-                <div className="therapist-details">
-                  <h5>{therapist.fullName || therapist.name || 'Unnamed Therapist'}</h5>
-                  <p className="therapist-specialization">{therapist.specialization || "Skin Care Specialist"}</p>
-                  <p className="therapist-experience">{therapist.yearExperience || 0} years experience</p>
-                  <div className="therapist-rating">
-                    {Array(5).fill().map((_, i) => (
-                      <span key={i} className={i < Math.floor(therapist.rating || 4.5) ? "star filled" : "star"}>★</span>
-                    ))}
-                    <span className="rating-value">{therapist.rating || 4.5}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="no-data">
-            {error ? `Error: ${error}` : "No therapists available"}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Render date and time selection step
-  const renderScheduleSelection = () => {
-    const availableDates = getAvailableDates();
+  // Generate sample time slots for testing if no real data is available
+  const generateSampleTimeSlots = () => {
+    if (availableTimes && availableTimes.length > 0) {
+      return availableTimes;
+    }
     
-    return (
-      <div className="booking-section">
-        <h4>Select Date & Time</h4>
-        
-        <div className="date-selection">
-          <h5>Available Dates</h5>
-          <div className="date-grid">
-            {availableDates.map((dateObj) => (
-              <div
-                key={dateObj.value}
-                className={`date-card ${
-                  selectedDate === dateObj.value ? "selected" : ""
-                }`}
-                onClick={() => handleDateSelect(dateObj.value)}
-              >
-                <p>{dateObj.date}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {selectedDate && (
-          <div className="time-selection">
-            <h5>Available Times</h5>
-            {loading ? (
-              <div className="loading-indicator">Loading available times...</div>
-            ) : availableTimes.length > 0 ? (
-              <div className="time-grid">
-                {availableTimes.map((timeSlot) => (
-                  <div
-                    key={timeSlot.id}
-                    className={`time-card ${
-                      selectedTime?.id === timeSlot.id ? "selected" : ""
-                    }`}
-                    onClick={() => handleTimeSelect(timeSlot)}
-                  >
-                    <p>{timeSlot.displayTime}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="no-data">No available times for this date</div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Render payment and confirmation step
-  const renderPaymentAndConfirmation = () => {
-    return (
-      <div className="booking-section">
-        <h4>Payment & Confirmation</h4>
-        
-        <div className="booking-summary">
-          <h5>Booking Summary</h5>
-          <div className="summary-item">
-            <span>Service:</span>
-            <span>Skin Care Consultation</span>
-          </div>
-          <div className="summary-item">
-            <span>Duration:</span>
-            <span>30 mins</span>
-          </div>
-          <div className="summary-item">
-            <span>Therapist:</span>
-            <span>{selectedTherapist ? (selectedTherapist.fullName || selectedTherapist.name) : 'No therapist selected'}</span>
-          </div>
-          <div className="summary-item">
-            <span>Date:</span>
-            <span>{selectedDate ? new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'No date selected'}</span>
-          </div>
-          <div className="summary-item">
-            <span>Time:</span>
-            <span>{selectedTime ? selectedTime.displayTime : 'No time selected'}</span>
-          </div>
-          <div className="summary-item">
-            <span>Price:</span>
-            <span>$50.00</span>
-          </div>
-        </div>
-        
-        <div className="payment-method-section">
-          <h5>Select Payment Method</h5>
-          <div className="payment-methods">
-            {paymentMethods.map((method) => (
-              <div
-                key={method.id}
-                className={`payment-method ${
-                  paymentMethod?.id === method.id ? "selected" : ""
-                }`}
-                onClick={() => handlePaymentMethodSelect(method)}
-              >
-                <div className="payment-icon">{method.icon}</div>
-                <span>{method.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="notes-section">
-          <h5>Additional Notes</h5>
-          <textarea
-            placeholder="Any special requests or information for your therapist?"
-            value={customerNotes}
-            onChange={(e) => setCustomerNotes(e.target.value)}
-            rows={3}
-          ></textarea>
-        </div>
-        
-        <div className="confirmation-section policies">
-          <h5>Booking Policies</h5>
-          <ul>
-            <li>Please arrive 15 minutes before your appointment time.</li>
-            <li>Cancellations must be made at least 24 hours in advance for a full refund.</li>
-            <li>Late arrivals may result in shortened service time.</li>
-          </ul>
-        </div>
-      </div>
-    );
+    // Generate sample time slots from 9 AM to 5 PM
+    const sampleSlots = [];
+    for (let hour = 9; hour <= 17; hour++) {
+      const displayHour = hour > 12 ? hour - 12 : hour;
+      const amPm = hour >= 12 ? 'PM' : 'AM';
+      sampleSlots.push({
+        id: `slot-${hour}`,
+        displayTime: `${displayHour}:00 ${amPm}`,
+        startTime: `${hour}:00:00`
+      });
+    }
+    return sampleSlots;
   };
 
   // Render the current step
-  const renderCurrentStep = () => {
+  const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return renderTherapistSelection();
+        return (
+          <TherapistSelection 
+            therapists={therapists}
+            selectedTherapist={selectedTherapist}
+            onSelectTherapist={handleSelectTherapist}
+            onNext={handleNextStep}
+            onPrev={() => router.push("/")}
+          />
+        );
       case 2:
-        return renderScheduleSelection();
+        return (
+          <ScheduleSelection
+            selectedTherapist={selectedTherapist}
+            selectedDate={selectedDate}
+            selectedTime={selectedTime}
+            onSelectDate={handleDateSelect}
+            onSelectTime={handleTimeSelect}
+            onPrev={handlePrevStep}
+            onNext={handleNextStep}
+            availableDates={getAvailableDates()}
+            availableTimes={generateSampleTimeSlots()}
+          />
+        );
       case 3:
-        return renderPaymentAndConfirmation();
+        return (
+          <PaymentConfirmation
+            selectedTherapist={selectedTherapist}
+            selectedDate={selectedDate}
+            selectedTime={selectedTime}
+            paymentMethod={paymentMethod}
+            customerNotes={customerNotes}
+            setCustomerNotes={setCustomerNotes}
+            onSelectPaymentMethod={handlePaymentMethodSelect}
+            onPrev={handlePrevStep}
+            onSubmit={handleSubmit}
+            isPending={isPending}
+            paymentMethods={paymentMethods}
+          />
+        );
       default:
         return null;
     }
   };
 
-  return (
-    <>
-      <div className="booking-service">
-        <div className="wrapper">
-          <div
-            className="booking-service-form js-img"
-            style={{
-              backgroundImage: `url('/assets/img/booking-form__bg.png')`,
-            }}
-          >
-            <form onSubmit={handleSubmit}>
-              <h3>Book Your Appointment</h3>
-              
-              {/* Step indicators */}
-              {renderStepIndicators()}
-              
-              {/* Current step content */}
-              {renderCurrentStep()}
-              
-              {/* Navigation buttons */}
-              <div className="booking-navigation">
-                {currentStep > 1 && (
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={prevStep}
-                  >
-                    <FaArrowLeft /> Back
-                  </button>
-                )}
-                
-                {currentStep < totalSteps ? (
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={nextStep}
-                  >
-                    Next <FaArrowRight />
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="btn btn-success"
-                    disabled={isPending}
-                  >
-                    {isPending ? "Processing..." : "Confirm Booking"}
-                  </button>
-                )}
-              </div>
+  // Handle final submission
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    
+    if (!bookingDetails) {
+      showToast("error", "Booking details not found");
+      return;
+    }
 
-              <div className="booking-service-form__bottom">
-                <a onClick={() => router.push("/home")}>Cancel and return to Home</a>
-              </div>
-            </form>
-          </div>
+    // Validate payment method
+    if (!paymentMethod) {
+      showToast("error", "Please select a payment method");
+      return;
+    }
+
+    setIsPending(true);
+    try {
+      // Simulate API call to book appointment
+      setTimeout(() => {
+        showToast("success", `Booking confirmed! Your booking ID is ${bookingDetails.bookingId}`);
+        setIsPending(false);
+        // Redirect to confirmation page
+        router.push("/booking-confirmation");
+      }, 1500);
+    } catch (error) {
+      showToast("error", "Error processing your booking");
+      setIsPending(false);
+    }
+  };
+
+  return (
+    <div className="booking-service">
+      <div className="wrapper">
+        <div className="book-appointment">
+          <h1 className="book-appointment__title">Book Your Appointment</h1>
+          {renderStepIndicators()}
+          {renderStep()}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

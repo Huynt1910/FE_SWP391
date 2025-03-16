@@ -1,19 +1,36 @@
 import { useSelf } from "@/store/self.store";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { getCookie } from "cookies-next";
+import { isAuthenticated, getUserRole, redirectToLogin } from "@/utils/auth";
 
 export const AuthGuard = ({ children, requiredRole }) => {
   const router = useRouter();
-  const { self } = useSelf();
-  const userRole = getCookie("userRole");
+  const { self, error } = useSelf();
+  const authenticated = isAuthenticated();
+  const userRole = getUserRole();
   
+  console.log("AuthGuard checking authentication:", authenticated ? "Authenticated" : "Not authenticated");
   console.log("AuthGuard checking role:", userRole);
   console.log("AuthGuard required role:", requiredRole);
 
   useEffect(() => {
+    // Check if authenticated
+    if (!authenticated) {
+      console.log("Not authenticated, redirecting to login");
+      redirectToLogin();
+      return;
+    }
+    
+    // Check if there was an authentication error
+    if (error) {
+      console.error("Authentication error:", error);
+      redirectToLogin("Authentication error. Please log in again.");
+      return;
+    }
+
+    // Check if user data exists
     if (!self) {
-      router.push("/login");
+      console.log("No user data found, may be loading or error");
       return;
     }
     
@@ -46,8 +63,14 @@ export const AuthGuard = ({ children, requiredRole }) => {
         router.push("/");
       }
     }
-  }, [self, router, requiredRole, userRole]);
+  }, [self, router, requiredRole, userRole, authenticated, error]);
 
+  // Show loading or redirect if not authenticated or authentication error
+  if (!authenticated || error) {
+    return null;
+  }
+  
+  // Show loading while fetching user data
   if (!self) {
     return null;
   }

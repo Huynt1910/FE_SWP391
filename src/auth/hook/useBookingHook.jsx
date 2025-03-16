@@ -12,19 +12,30 @@ export const useBookingHook = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log("Fetching active therapists...");
+      
       const response = await APIClient.invoke({
         action: ACTIONS.GET_ACTIVE_THERAPISTS
       });
       
+      console.log("API response for getActiveTherapists:", response);
+      
+      // Check for success property first (our API standard)
+      if (response && response.success === true && response.result) {
+        setData(response.result);
+        return response.result;
+      }
       // Check if response has data property and it's an array
-      if (response && response.data && Array.isArray(response.data)) {
-        setData(response.data);
-        return response.data;
-      } else if (response && Array.isArray(response)) {
-        // Some APIs might return the array directly
+      else if (response && Array.isArray(response)) {
         setData(response);
         return response;
-      } else {
+      } 
+      // Some APIs might return the data in a data property
+      else if (response && response.data && Array.isArray(response.data)) {
+        setData(response.data);
+        return response.data;
+      } 
+      else {
         console.error("Unexpected API response format:", response);
         setError("Invalid response format from API");
         return [];
@@ -43,19 +54,30 @@ export const useBookingHook = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log("Fetching all therapists...");
+      
       const response = await APIClient.invoke({
         action: ACTIONS.GET_ALL_THERAPISTS
       });
       
+      console.log("API response for getAllTherapists:", response);
+      
+      // Check for success property first (our API standard)
+      if (response && response.success === true && response.result) {
+        setData(response.result);
+        return response.result;
+      }
       // Check if response has data property and it's an array
-      if (response && Array.isArray(response)) {
+      else if (response && Array.isArray(response)) {
         setData(response);
         return response;
-      } else if (response && response.data && Array.isArray(response.data)) {
-        // Some APIs might return the data in a data property
+      } 
+      // Some APIs might return the data in a data property
+      else if (response && response.data && Array.isArray(response.data)) {
         setData(response.data);
         return response.data;
-      } else {
+      } 
+      else {
         console.error("Unexpected API response format:", response);
         setError("Invalid response format from API");
         return [];
@@ -74,18 +96,31 @@ export const useBookingHook = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log("Fetching therapist by ID:", id);
+      
       const response = await APIClient.invoke({
         action: ACTIONS.GET_THERAPIST_BY_ID,
         data: { id }
       });
       
-      if (response && response.data) {
-        setData(response.data);
-        return response.data;
-      } else if (response) {
+      console.log("API response for getTherapistById:", response);
+      
+      // Check for success property first (our API standard)
+      if (response && response.success === true && response.result) {
+        setData(response.result);
+        return response.result;
+      }
+      // Check if response is the therapist object directly
+      else if (response && response.id) {
         setData(response);
         return response;
-      } else {
+      } 
+      // Some APIs might return the data in a data property
+      else if (response && response.data) {
+        setData(response.data);
+        return response.data;
+      } 
+      else {
         console.error("Unexpected API response format:", response);
         setError("Invalid response format from API");
         return null;

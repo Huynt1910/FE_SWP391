@@ -1,9 +1,9 @@
 import { ACTIONS } from "@lib/api-client/constant";
 import { APIClient } from "@lib/api-client";
 import { useMutation } from "@tanstack/react-query";
-import { setCookie } from "cookies-next";
 import { showToast } from "@utils/toast";
 import { useRouter } from "next/router";
+import { setAuthData } from "@/utils/auth";
 
 export function useSignIn() {
   const router = useRouter();
@@ -25,81 +25,60 @@ export function useSignIn() {
           let token = null;
           let userRole = "customer"; // Default role
           
-          // Case 1: Token and role directly in result object (admin login)
+          // Case 1: Token and role directly in result object
           if (response.result && response.result.token && response.result.role) {
             token = response.result.token;
             userRole = response.result.role.toLowerCase(); // Convert to lowercase for consistency
             console.log("Found token and role in result object:", { token: "Found", role: userRole });
           } 
-          // Case 2: Token in result, roles in user object (previous structure)
-          else if (response.result && response.result.token) {
+          // Case 2: Token in result, roles in user object
+          else if (response.result && response.result.token && response.result.user && response.result.user.role) {
             token = response.result.token;
+            userRole = response.result.user.role.toLowerCase();
+            console.log("Found token in result, role in user object:", { token: "Found", role: userRole });
+          }
+          // Case 3: Token and user in result
+          else if (response.result && response.result.token && response.result.user) {
+            token = response.result.token;
+            userRole = "customer"; // Default to customer if no role specified
+            console.log("Found token in result, no role specified:", { token: "Found", role: userRole });
+          }
+          // Case 4: Token directly in result (string)
+          else if (response.result && typeof response.result === 'string') {
+            token = response.result;
+            userRole = "customer"; // Default to customer if no role specified
+            console.log("Found token as string in result:", { token: "Found", role: userRole });
+          }
+          
+          if (token) {
+            // Store token and role in cookies
+            setAuthData(token, userRole);
             
-            // Check if user has roles array
-            if (response.result && response.result.roles && Array.isArray(response.result.roles) && response.result.roles.length > 0) {
-              // Check for ADMIN role first
-              for (const role of response.result.roles) {
-                if (role.name && role.name.toUpperCase() === "ADMIN") {
-                  userRole = "admin";
-                  break;
-                }
-              }
-              
-              // If not admin, check for other roles
-              if (userRole === "customer") {
-                for (const role of response.result.roles) {
-                  if (role.name && role.name.toUpperCase() === "STAFF") {
-                    userRole = "staff";
-                    break;
-                  } else if (role.name && role.name.toUpperCase() === "THERAPIST") {
-                    userRole = "therapist";
-                    break;
-                  }
-                }
-              }
+            showToast.success("Login successful!");
+            
+            // Redirect based on role
+            if (userRole === "admin" || userRole === "staff" || userRole === "therapist") {
+              router.push("/admin/dashboard");
+            } else {
+              router.push("/");
             }
-          }
-          // Case 3: Token directly in response
-          else if (response.token) {
-            token = response.token;
-          }
-          
-          if (!token) {
-            console.warn("No token found in response");
-            showToast.error("Authentication error. Please try again.");
-            return;
-          }
-
-          console.log("Final determined user role:", userRole);
-
-          // Set cookies
-          setCookie("token", token);
-          setCookie("userRole", userRole);
-          
-          // Show success message based on role
-          if (userRole === "admin" || userRole === "staff" || userRole === "therapist") {
-            showToast.success(`Successfully signed in as ${userRole}!`);
             
-            // Redirect to admin dashboard
-            console.log("Redirecting to admin dashboard");
-            setTimeout(() => {
-              window.location.href = "/admin/dashboard";
-            }, 500);
+            return { success: true };
           } else {
-            showToast.success("Successfully signed in!");
-            
-            // Redirect to home page
-            console.log("Redirecting to home page");
-            setTimeout(() => {
-              window.location.href = "/";
-            }, 500);
+            console.error("No token found in response:", response);
+            showToast.error("Login failed: No authentication token received");
+            return { success: false, error: "No authentication token received" };
           }
         } else {
-          showToast.error("Invalid credentials!");
+          const errorMessage = response?.message || "Login failed. Please check your credentials.";
+          showToast.error(errorMessage);
+          return { success: false, error: errorMessage };
         }
       } catch (error) {
         console.error("Login error:", error);
-        showToast.error("An error occurred during login. Please try again.");
+        const errorMessage = error.message || "Login failed. Please try again.";
+        showToast.error(errorMessage);
+        return { success: false, error: errorMessage };
       }
     },
   });

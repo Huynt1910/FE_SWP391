@@ -6,6 +6,10 @@ import { useRouter } from "next/router";
 import { ToastContainer } from "react-toastify";
 import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
 import { protectedRoutes } from "@/auth/AUTHGUARD/protectedRoute";
+import { isAuthenticated, handleAuthError } from "@/utils/auth";
+
+// Create cart context
+export const CartContext = createContext();
 
 const MyApp = ({ Component, pageProps }) => {
   const [queryClient] = useState(
@@ -15,6 +19,11 @@ const MyApp = ({ Component, pageProps }) => {
           queries: {
             retry: 1,
             refetchOnWindowFocus: false,
+            onError: (error) => {
+              console.error("Query error:", error);
+              // Handle authentication errors globally
+              handleAuthError(error);
+            }
           },
         },
       })
@@ -23,6 +32,7 @@ const MyApp = ({ Component, pageProps }) => {
 
   const [cart, setCart] = useState([]);
   const [mounted, setMounted] = useState(false);
+  
   // Handle client-side mounting
   useEffect(() => {
     setMounted(true);
@@ -40,10 +50,15 @@ const MyApp = ({ Component, pageProps }) => {
   if (!mounted) {
     return null;
   }
+  
+  // Check if current route requires authentication
+  const requiresAuth = protectedRoutes.includes(router.pathname);
+  const authenticated = isAuthenticated();
+  
   return (
     <QueryClientProvider client={queryClient}>
       <CartContext.Provider value={{ cart, setCart }}>
-        {protectedRoutes.includes(router.pathname) ? (
+        {requiresAuth ? (
           <AuthGuard>
             <Component {...pageProps} />
           </AuthGuard>
@@ -56,5 +71,4 @@ const MyApp = ({ Component, pageProps }) => {
   );
 };
 
-export const CartContext = createContext();
 export default MyApp;

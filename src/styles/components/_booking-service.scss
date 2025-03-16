@@ -455,4 +455,594 @@
       }
     }
   }
+}
+
+// Book Your Appointment section
+.book-appointment {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  
+  &__title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 40px;
+    color: #333;
+  }
+  
+  &__steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 50px;
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: #e0e0e0;
+      z-index: 1;
+    }
+  }
+  
+  &__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    
+    &-number {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #666;
+      transition: all 0.3s ease;
+      
+      &.active {
+        background-color: #ff5a5f;
+        color: white;
+      }
+    }
+    
+    &-label {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+      
+      &.active {
+        color: #ff5a5f;
+      }
+    }
+  }
+}
+
+// Choose Your Therapist section
+.choose-therapist {
+  margin-top: 40px;
+  
+  &__title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    color: #333;
+  }
+  
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  &__card {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    &.selected {
+      border-color: #ff5a5f;
+      box-shadow: 0 5px 15px rgba(255, 90, 95, 0.2);
+    }
+    
+    &-image {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      object-fit: cover;
+      margin-right: 15px;
+    }
+    
+    &-info {
+      flex: 1;
+    }
+    
+    &-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    
+    &-specialty {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+    
+    &-experience {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 5px;
+    }
+    
+    .stars {
+      display: flex;
+      align-items: center;
+      
+      .star {
+        color: #ffc107;
+        font-size: 14px;
+        margin-right: 2px;
+      }
+      
+      .rating-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        margin-left: 4px;
+      }
+    }
+  }
+}
+
+// Schedule selection styles
+.schedule-selection {
+  margin-top: 40px;
+  
+  &__title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    color: #333;
+  }
+  
+  &__error {
+    background-color: #fff3f3;
+    border: 1px solid #ffcdd2;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    text-align: center;
+    
+    .icon {
+      color: #f44336;
+      font-size: 32px;
+      margin-bottom: 15px;
+    }
+    
+    p {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    
+    .login-button {
+      background-color: #ff5a5f;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 12px 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background-color: darken(#ff5a5f, 10%);
+      }
+    }
+  }
+  
+  &__therapist {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #444;
+      margin: 0;
+    }
+  }
+  
+  &__dates {
+    margin-bottom: 30px;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #444;
+      display: flex;
+      align-items: center;
+      
+      .icon {
+        margin-right: 8px;
+        color: #ff5a5f;
+      }
+    }
+    
+    .date-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+    
+    .date-card {
+      background-color: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+      }
+      
+      &.selected {
+        background-color: #ff5a5f;
+        border-color: #ff5a5f;
+        color: white;
+        box-shadow: 0 5px 10px rgba(255, 90, 95, 0.2);
+      }
+      
+      .day {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 5px;
+      }
+      
+      .date {
+        font-size: 12px;
+      }
+    }
+  }
+  
+  &__times {
+    margin-bottom: 30px;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #444;
+      display: flex;
+      align-items: center;
+      
+      .icon {
+        margin-right: 8px;
+        color: #ff5a5f;
+      }
+    }
+    
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 10px;
+    }
+    
+    .time-card {
+      background-color: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+      }
+      
+      &.selected {
+        background-color: #ff5a5f;
+        border-color: #ff5a5f;
+        color: white;
+        box-shadow: 0 5px 10px rgba(255, 90, 95, 0.2);
+      }
+      
+      &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        
+        &:hover {
+          transform: none;
+          box-shadow: none;
+        }
+      }
+      
+      .time {
+        font-weight: 600;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+// Next button and cancel link
+.booking-actions {
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  &__prev {
+    background-color: #f0f0f0;
+    color: #555;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 30px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background-color: #e0e0e0;
+    }
+    
+    .icon {
+      margin-right: 8px;
+    }
+  }
+  
+  &__next {
+    background-color: #ff5a5f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 30px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background-color: darken(#ff5a5f, 10%);
+    }
+    
+    &:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .icon {
+      margin-left: 8px;
+    }
+  }
+  
+  &__cancel {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      color: #ff5a5f;
+      text-decoration: underline;
+    }
+  }
+}
+
+// Payment confirmation styles
+.payment-confirmation {
+  margin-top: 40px;
+  
+  &__title {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    color: #333;
+  }
+  
+  &__summary {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #444;
+    }
+    
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+      
+      &:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+      
+      span:first-child {
+        font-weight: 500;
+        color: #666;
+      }
+      
+      span:last-child {
+        font-weight: 600;
+        color: #333;
+      }
+    }
+  }
+  
+  &__methods {
+    margin-bottom: 30px;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #444;
+    }
+    
+    .payment-methods {
+      display: flex;
+      gap: 15px;
+      
+      .payment-method {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        &.selected {
+          border-color: #ff5a5f;
+          box-shadow: 0 5px 15px rgba(255, 90, 95, 0.1);
+        }
+        
+        .payment-icon {
+          font-size: 24px;
+          margin-bottom: 10px;
+          color: #555;
+        }
+        
+        span {
+          font-weight: 500;
+          color: #333;
+        }
+      }
+    }
+  }
+  
+  &__notes {
+    margin-bottom: 30px;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #444;
+    }
+    
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 14px;
+      
+      &:focus {
+        outline: none;
+        border-color: #ff5a5f;
+      }
+    }
+  }
+  
+  &__policies {
+    margin-bottom: 30px;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #444;
+    }
+    
+    ul {
+      list-style-type: disc;
+      padding-left: 20px;
+      
+      li {
+        margin-bottom: 8px;
+        color: #555;
+        font-size: 14px;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+}
+
+// Add confirm button style
+.booking-actions {
+  &__confirm {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 30px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background-color: darken(#4caf50, 10%);
+    }
+    
+    &:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .icon {
+      margin-left: 8px;
+    }
+  }
 } 

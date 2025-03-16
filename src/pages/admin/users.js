@@ -3,11 +3,15 @@ import Users from "@/components/Admin/Users/Users";
 
 const breadcrumbsData = [
   {
+    label: "Home",
+    path: "/",
+  },
+  {
     label: "Admin",
     path: "/admin",
   },
   {
-    label: "Quản lý người dùng",
+    label: "Users",
     path: "/admin/users",
   },
 ];
@@ -16,7 +20,7 @@ const UsersPage = () => {
   return (
     <AdminLayout
       breadcrumb={breadcrumbsData}
-      breadcrumbTitle="Quản lý người dùng"
+      breadcrumbTitle="Manage Users"
     >
       <Users />
     </AdminLayout>
