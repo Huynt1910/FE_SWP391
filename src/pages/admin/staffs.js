@@ -1,7 +1,6 @@
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
-
-import BookingSchedule from "@/components/Admin/Booking/BookingSchedule";
+import Staffs from "@/components/Admin/Staffs/Staffs";
 
 const breadcrumbsData = [
   {
@@ -9,22 +8,22 @@ const breadcrumbsData = [
     path: "/admin",
   },
   {
-    label: "Lịch hẹn",
-    path: "/admin/bookings",
+    label: "Quản lý nhân viên",
+    path: "/admin/staffs",
   },
 ];
 
-const BookingsPage = () => {
+const StaffsPage = () => {
   return (
-    <AuthGuard>
+    <AuthGuard requiredRole="ADMIN">
       <AdminLayout
         breadcrumb={breadcrumbsData}
-        breadcrumbTitle="Quản lý lịch hẹn"
+        breadcrumbTitle="Quản lý nhân viên"
       >
-        <BookingSchedule />
+        <Staffs />
       </AdminLayout>
     </AuthGuard>
   );
 };
 
-export default BookingsPage;
+export default StaffsPage;

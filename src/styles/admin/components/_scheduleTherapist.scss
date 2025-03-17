@@ -1,0 +1,497 @@
+@import "../components/shared";
+
+.staff-schedule {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  &__content {
+    .day-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+
+      h3 {
+        color: #1b4d3e;
+        margin-bottom: 1rem;
+        text-transform: capitalize;
+      }
+    }
+  }
+
+  .schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #1b4d3e;
+      font-weight: 500;
+    }
+
+    .therapist-info {
+      min-width: 200px;
+      text-align: left;
+      background: #f8fafc;
+
+      .therapist-name {
+        font-weight: 500;
+        color: #1b4d3e;
+      }
+
+      .therapist-spec {
+        font-size: 0.875rem;
+        color: #64748b;
+      }
+    }
+
+    .time-slot {
+      min-width: 120px;
+    }
+
+    .availability-select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      background: white;
+
+      &[value="available"] {
+        color: #2e7d32;
+      }
+
+      &[value="unavailable"] {
+        color: #dc2626;
+      }
+
+      &[value="booked"] {
+        color: #2563eb;
+      }
+    }
+  }
+}
+
+.schedule-therapist {
+  &__week {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .day-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+
+    h3 {
+      padding: 16px 24px;
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+  }
+
+  .admin-page__table {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+
+    table {
+      .therapist-info {
+        background: #f8fafc;
+        width: 200px;
+
+        .therapist-name {
+          font-weight: 500;
+          color: #1e293b;
+        }
+
+        .therapist-spec {
+          font-size: 13px;
+          color: #64748b;
+          margin-top: 4px;
+        }
+      }
+
+      .time-slot {
+        padding: 8px;
+
+        .form-select {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          font-size: 13px;
+          color: #1e293b;
+          background: white;
+          transition: all 0.2s;
+
+          &:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          }
+
+          option {
+            &[value="available"] {
+              color: #059669;
+            }
+            &[value="unavailable"] {
+              color: #dc2626;
+            }
+            &[value="booked"] {
+              color: #2563eb;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .time-slot {
+    position: relative;
+
+    .form-select {
+      &.status-available {
+        background-color: #dcfce7;
+        color: #15803d;
+      }
+
+      &.status-busy {
+        background-color: #fee2e2;
+        color: #dc2626;
+      }
+
+      &.status-break {
+        background-color: #f1f5f9;
+        color: #64748b;
+      }
+    }
+
+    .booking-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 4px;
+      font-size: 11px;
+
+      .customer-name {
+        display: block;
+        font-weight: 500;
+        color: #1e40af;
+      }
+
+      .service-name {
+        color: #3b82f6;
+      }
+    }
+  }
+}
+
+.schedule-controls {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .view-mode-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+
+    .view-mode-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: white;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.active {
+        background: #1e40af;
+        color: white;
+        border-color: #1e40af;
+      }
+    }
+  }
+
+  .date-navigator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .date-picker {
+      padding: 0.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    button {
+      padding: 0.5rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+
+      &:hover {
+        background: #f8fafc;
+      }
+    }
+  }
+
+  .schedule-filters {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+
+    .search-box {
+      flex: 1;
+      position: relative;
+
+      input {
+        width: 100%;
+        padding: 0.5rem 2rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+      }
+
+      svg {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+      }
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 0.5rem;
+
+      select {
+        padding: 0.5rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        color: #1e293b;
+      }
+    }
+  }
+}
+
+.schedule-grid {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+
+  .time-slots {
+    position: sticky;
+    left: 0;
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+
+    .slot-header {
+      height: 80px;
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .time-slot {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      border-top: 1px solid #e2e8f0;
+    }
+  }
+
+  .therapist-schedule {
+    display: flex;
+
+    .therapist-info {
+      width: 200px;
+      padding: 1rem;
+      background: #f8fafc;
+      border-right: 1px solid #e2e8f0;
+
+      h3 {
+        margin: 0;
+        font-size: 0.875rem;
+        color: #1e293b;
+      }
+
+      p {
+        margin: 0.25rem 0;
+        font-size: 0.75rem;
+        color: #64748b;
+      }
+
+      .experience,
+      .rating {
+        display: inline-block;
+        font-size: 0.75rem;
+        margin-right: 0.5rem;
+        color: #64748b;
+      }
+    }
+
+    .schedule-slot {
+      width: 150px;
+      height: 100px;
+      border: 1px solid #e2e8f0;
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.available {
+        background: #f0fdf4;
+
+        &:hover {
+          background: #dcfce7;
+        }
+
+        .available-icon {
+          color: #22c55e;
+          font-size: 1.25rem;
+        }
+      }
+
+      &.booked {
+        background: #eff6ff;
+
+        .booking-info {
+          p {
+            margin: 0;
+            font-size: 0.75rem;
+            color: #1e40af;
+
+            &:first-child {
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .booking-info {
+    padding: 0.5rem;
+
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+
+      .customer-name {
+        font-weight: 600;
+        color: #1e40af;
+      }
+
+      .payment-status {
+        font-size: 0.75rem;
+        padding: 0.125rem 0.375rem;
+        border-radius: 4px;
+
+        &.đã-thanh-toán {
+          background: #dcfce7;
+          color: #15803d;
+        }
+
+        &.chưa-thanh-toán {
+          background: #fee2e2;
+          color: #dc2626;
+        }
+
+        &.đã-đặt-cọc {
+          background: #fef3c7;
+          color: #d97706;
+        }
+      }
+    }
+
+    &__service {
+      font-size: 0.813rem;
+      color: #64748b;
+    }
+
+    &__note {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
+// Add styles for week view
+.schedule-grid-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1rem;
+  overflow-x: auto;
+
+  .day-column {
+    min-width: 200px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    h3 {
+      padding: 1rem;
+      margin: 0;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.875rem;
+      color: #1e40af;
+    }
+  }
+}
+
+// Add styles for therapist timeline
+.therapist-timeline {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+// Responsive styles
+@media (max-width: 1024px) {
+  .schedule-therapist {
+    .admin-page__table {
+      overflow-x: auto;
+
+      table {
+        min-width: 800px;
+      }
+    }
+  }
+}

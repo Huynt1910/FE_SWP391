@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { getCookie } from "cookies-next";
 import {
   FaUsers,
   FaCalendarCheck,
@@ -35,7 +34,6 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
-  const userRole = getCookie("userRole");
   const [timeRange, setTimeRange] = useState("day");
   const [statistics, setStatistics] = useState({
     totalCustomers: 0,
@@ -232,41 +230,6 @@ const Dashboard = () => {
     },
   ];
 
-  const getDashboardData = (role) => {
-    switch (role) {
-      case "admin":
-        return {
-          stats: [...quickStats],
-          showRevenue: true,
-          showCustomerAnalytics: true,
-        };
-      case "staff":
-        return {
-          stats: quickStats.filter(
-            (stat) => stat.title !== "Doanh thu hôm nay"
-          ),
-          showRevenue: false,
-          showCustomerAnalytics: true,
-        };
-      case "therapist":
-        return {
-          stats: quickStats.filter((stat) =>
-            ["Lịch hẹn hôm nay", "Tỉ lệ hoàn thành"].includes(stat.title)
-          ),
-          showRevenue: false,
-          showCustomerAnalytics: false,
-        };
-      default:
-        return {
-          stats: [],
-          showRevenue: false,
-          showCustomerAnalytics: false,
-        };
-    }
-  };
-
-  const dashboardConfig = getDashboardData(userRole);
-
   if (isLoading) {
     return (
       <div className="dashboard__loading">
@@ -323,7 +286,7 @@ const Dashboard = () => {
       <div className="admin-page__content">
         <div className="dashboard">
           <div className="dashboard__stats">
-            {dashboardConfig.stats.map((stat, index) => (
+            {quickStats.map((stat, index) => (
               <div className="stat-card" key={index}>
                 <div className={`stat-card__icon ${stat.color}`}>
                   {stat.icon}
@@ -337,40 +300,36 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {dashboardConfig.showRevenue && (
-            <div className="dashboard__charts">
-              <div className="chart-container revenue-chart">
-                <h3>Doanh thu 7 ngày gần nhất</h3>
-                <Line data={revenueData} options={revenueOptions} />
-              </div>
-
-              <div className="chart-container status-chart">
-                <h3>Trạng thái lịch hẹn</h3>
-                <Doughnut data={bookingStatusData} options={statusOptions} />
-              </div>
+          <div className="dashboard__charts">
+            <div className="chart-container revenue-chart">
+              <h3>Doanh thu 7 ngày gần nhất</h3>
+              <Line data={revenueData} options={revenueOptions} />
             </div>
-          )}
 
-          {dashboardConfig.showCustomerAnalytics && (
-            <div className="dashboard__insights">
-              <div className="customer-stats">
-                <h3>Phân tích khách hàng</h3>
-                <div className="stats-grid">
-                  <div className="customer-type">
-                    <Doughnut
-                      data={customerTypeData}
-                      options={customerTypeOptions}
-                    />
-                    <p>Tỉ lệ khách hàng mới/cũ</p>
-                  </div>
-                  <div className="popular-services">
-                    <Bar data={popularServicesData} options={servicesOptions} />
-                    <p>Top 5 dịch vụ phổ biến</p>
-                  </div>
+            <div className="chart-container status-chart">
+              <h3>Trạng thái lịch hẹn</h3>
+              <Doughnut data={bookingStatusData} options={statusOptions} />
+            </div>
+          </div>
+
+          <div className="dashboard__insights">
+            <div className="customer-stats">
+              <h3>Phân tích khách hàng</h3>
+              <div className="stats-grid">
+                <div className="customer-type">
+                  <Doughnut
+                    data={customerTypeData}
+                    options={customerTypeOptions}
+                  />
+                  <p>Tỉ lệ khách hàng mới/cũ</p>
+                </div>
+                <div className="popular-services">
+                  <Bar data={popularServicesData} options={servicesOptions} />
+                  <p>Top 5 dịch vụ phổ biến</p>
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

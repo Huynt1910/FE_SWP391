@@ -1,17 +1,10 @@
 import { AdminLayout } from "@/components/Admin/AdminLayout";
-import { SystemAuthGuard } from "@/auth/AUTHGUARD/SystemAuthGuard";
-import Dashboard from "@/components/Admin/Dashboard/Dashboard";
+import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
+
 import { getCookie } from "cookies-next";
+import Dashboard from "@/components/Admin/Dashboard/Dashboard";
 
 const breadcrumbsData = [
-  {
-    label: "Home",
-    path: "/",
-  },
-  {
-    label: "Admin",
-    path: "/admin",
-  },
   {
     label: "Dashboard",
     path: "/admin/dashboard",
@@ -25,14 +18,14 @@ const DashboardPage = () => {
   } Dashboard`;
 
   return (
-    <SystemAuthGuard>
+    <AuthGuard>
       <AdminLayout
         breadcrumb={breadcrumbsData}
         breadcrumbTitle={dashboardTitle}
       >
         <Dashboard />
       </AdminLayout>
-    </SystemAuthGuard>
+    </AuthGuard>
   );
 };
 
