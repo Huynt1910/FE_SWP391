@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { showToast } from "@/utils/toast";
-import { FaArrowLeft, FaArrowRight, FaCheck, FaCreditCard, FaMoneyBill } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaCheck, FaCreditCard, FaMoneyBill, FaLock } from "react-icons/fa";
 import useBookingHook from "@/auth/hook/useBookingHook";
 import TherapistSelection from "./TherapistSelection";
 import ScheduleSelection from "./ScheduleSelection";
@@ -17,7 +17,7 @@ export const BookingServiceForm = () => {
   // Initialize router and booking hook
   const router = useRouter();
   const { therapistId } = router.query;
-  const bookingHook = useBookingHook();
+  const { loading: bookingLoading, error: bookingError, data: therapistsData, authRequired, getActiveTherapists } = useBookingHook();
   
   // Step tracking
   const [currentStep, setCurrentStep] = useState(1);
@@ -208,27 +208,68 @@ export const BookingServiceForm = () => {
   // Handle therapist selection
   const handleSelectTherapist = (therapist) => {
     setSelectedTherapist(therapist);
-    // Reset subsequent selections
-    setSelectedDate("");
-    setSelectedTime("");
+    console.log("Selected therapist:", therapist);
   };
 
   // Handle date selection
   const handleDateSelect = (date) => {
     setSelectedDate(date);
-    setSelectedTime(""); // Reset time when date changes
+    console.log("Selected date:", date);
+    // When a date is selected, generate available time slots
+    setAvailableTimes(generateSampleTimeSlots());
   };
 
   // Handle time selection
-  const handleTimeSelect = (timeSlot) => {
-    setSelectedTime(timeSlot);
+  const handleTimeSelect = (time) => {
+    setSelectedTime(time);
+    console.log("Selected time:", time);
   };
 
   // Handle payment method selection
   const handlePaymentMethodSelect = (method) => {
     setPaymentMethod(method);
+    console.log("Selected payment method:", method);
   };
 
+  // Generate sample available dates (7 days from today)
+  const getAvailableDates = () => {
+    const dates = [];
+    const today = new Date();
+    
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      
+      const options = { weekday: 'short' };
+      const dayName = date.toLocaleDateString('en-US', options);
+      
+      const dateValue = date.toISOString().split('T')[0];
+      const dateDisplay = `${date.getDate()}/${date.getMonth() + 1}`;
+      
+      dates.push({
+        value: dateValue,
+        date: `${dayName}, ${dateDisplay}`
+      });
+    }
+    
+    return dates;
+  };
+
+  // Generate sample time slots
+  const generateSampleTimeSlots = () => {
+    return [
+      { id: 1, time: "09:00", displayTime: "9:00 AM" },
+      { id: 2, time: "10:00", displayTime: "10:00 AM" },
+      { id: 3, time: "11:00", displayTime: "11:00 AM" },
+      { id: 4, time: "12:00", displayTime: "12:00 PM" },
+      { id: 5, time: "13:00", displayTime: "1:00 PM" },
+      { id: 6, time: "14:00", displayTime: "2:00 PM" },
+      { id: 7, time: "15:00", displayTime: "3:00 PM" },
+      { id: 8, time: "16:00", displayTime: "4:00 PM" },
+      { id: 9, time: "17:00", displayTime: "5:00 PM" },
+    ];
+  };
+  
   // Handle next step
   const handleNextStep = () => {
     if (currentStep < totalSteps) {
@@ -297,25 +338,6 @@ export const BookingServiceForm = () => {
     );
   };
 
-  // Generate sample time slots for testing if no real data is available
-  const generateSampleTimeSlots = () => {
-    if (availableTimes && availableTimes.length > 0) {
-      return availableTimes;
-    }
-    
-    // Generate sample time slots from 9 AM to 5 PM
-    const sampleSlots = [];
-    for (let hour = 9; hour <= 17; hour++) {
-      const displayHour = hour > 12 ? hour - 12 : hour;
-      const amPm = hour >= 12 ? 'PM' : 'AM';
-      sampleSlots.push({
-        id: `slot-${hour}`,
-        displayTime: `${displayHour}:00 ${amPm}`,
-        startTime: `${hour}:00:00`
-      });
-    }
-    return sampleSlots;
-  };
 
   // Render the current step
   const renderStep = () => {

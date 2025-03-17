@@ -1,6 +1,6 @@
 import { PublicLayout } from "@/layout/PublicLayout";
 import { Subscribe } from "@components/shared/Subscribe/Subscribe";
-import { Shop } from "@components/Shop/Shop";
+import { Service } from "@components/Service/Service";
 
 const breadcrumbsData = [
   {
@@ -8,17 +8,18 @@ const breadcrumbsData = [
     path: "/",
   },
   {
-    label: "Shop",
-    path: "/shop",
+    label: "Services",
+    path: "/service",
   },
 ];
-const ShopPage = () => {
+
+const ServicePage = () => {
   return (
-    <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Shop">
-      <Shop />
+    <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Our Services">
+      <Service />
       <Subscribe />
     </PublicLayout>
   );
 };
 
-export default ShopPage;
+export default ServicePage; 

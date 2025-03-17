@@ -1,11 +1,20 @@
 import { useState } from "react";
 import { APIClient } from "@/lib/api-client";
 import { ACTIONS } from "@/lib/api-client/constant";
+import { isAuthenticated } from "@/utils/auth";
 
 export const useBookingHook = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
+  const [authRequired, setAuthRequired] = useState(false);
+
+  // Check if user is authenticated
+  const checkAuthentication = () => {
+    const authenticated = isAuthenticated();
+    setAuthRequired(!authenticated);
+    return authenticated;
+  };
 
   // Get all active therapists
   const getActiveTherapists = async () => {
@@ -20,7 +29,8 @@ export const useBookingHook = () => {
       console.log("Token available:", !!token);
       
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_ACTIVE_THERAPISTS
+        action: ACTIONS.GET_ACTIVE_THERAPISTS,
+        options: { preventRedirect: true }
       });
       
       console.log("API response for active therapists:", response);
@@ -98,8 +108,17 @@ export const useBookingHook = () => {
         return [];
       }
     } catch (error) {
-      console.error("Error fetching all therapists:", error);
-      setError(error.message || "Failed to fetch therapists");
+      console.error("Error fetching active therapists:", error);
+      
+      // Handle authentication errors specifically
+      if (error.status === 401 || error.message?.includes("Authentication required")) {
+        console.log("Authentication error caught");
+        setAuthRequired(true);
+        setError("Authentication required to book appointments. Please log in.");
+      } else {
+        setError(error.message || "Failed to fetch active therapists");
+      }
+      
       return [];
     } finally {
       setLoading(false);
@@ -292,13 +311,8 @@ export const useBookingHook = () => {
     loading,
     error,
     data,
-    getActiveTherapists,
-    getAllTherapists,
-    getTherapistById,
-    getAvailableSlots,
-    getTherapistSchedule,
-    getTherapistMonthlySchedule,
-    getAllSlots
+    authRequired,
+    getActiveTherapists
   };
 };
 

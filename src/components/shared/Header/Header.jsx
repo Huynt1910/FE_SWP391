@@ -6,10 +6,10 @@ import { useContext, useEffect, useState } from "react";
 import { Nav } from "./Nav/Nav";
 import { useSelf } from "@store/self.store";
 import { deleteCookie } from "cookies-next";
-import { CartContext } from "@/pages/_app";
+import { useCart } from "@/context/CartContext";
 
 export const Header = () => {
-  const { cart } = useContext(CartContext);
+  const { cart, cartCount } = useCart();
   const [promo, setPromo] = useState(true);
   const [fixedNav, setFixedNav] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
@@ -58,7 +58,7 @@ export const Header = () => {
       path: "/cart",
       icon: "icon-cart",
       auth: true,
-      badge: cart.length ?? "0",
+      badge: cartCount || "0",
     },
     { icon: "icon-logout", auth: true, isLogout: true },
     { icon: "icon-login", auth: true, isLogin: true },

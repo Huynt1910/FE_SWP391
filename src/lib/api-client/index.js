@@ -2,10 +2,10 @@ import { getCookie } from "cookies-next";
 import { API_URL, END_POINTS } from "./constant";
 
 export class APIClient {
-  static async request(url, method, data, headers, query) {
+  static async request(url, method, data, headers, query, options = {}) {
     try {
       const queryParams = new URLSearchParams(query || {}).toString();
-      const options = {
+      const requestOptions = {
         method,
         headers: Object.assign(
           {
@@ -19,7 +19,20 @@ export class APIClient {
       const fullUrl = `${url}${queryParams ? `?${queryParams}` : ""}`;
       console.log("API Request:", { url: fullUrl, method, data });
 
-      const response = await fetch(fullUrl, options);
+      let response;
+      try {
+        response = await fetch(fullUrl, requestOptions);
+      } catch (networkError) {
+        console.error("Network error:", networkError);
+        
+        // For public access endpoints, return empty data on network error
+        if (options.publicAccess) {
+          console.log("Public access endpoint returning empty data for network error");
+          return { success: true, result: [] };
+        }
+        
+        throw new Error("Network error: Please check your internet connection");
+      }
       
       // Log response status
       console.log("API Response status:", response.status, response.statusText);
@@ -50,7 +63,7 @@ export class APIClient {
 
   static async invoke(params) {
     try {
-      const { action, data, query } = params;
+      const { action, data, query, options = {} } = params;
 
       if (!action) {
         throw new Error("Action is required");
@@ -82,6 +95,15 @@ export class APIClient {
         
         headers["Authorization"] = `Bearer ${token}`;
       }
+      
+      // Handle secure endpoints without token
+      if (secure && !token) {
+        if (options.preventRedirect) {
+          throw new Error("Authentication required");
+        }
+        redirectToLogin("Authentication required");
+        return { success: false, message: "Authentication required" };
+      }
 
       // Handle parameterized paths
       let finalPath = path;
@@ -92,7 +114,6 @@ export class APIClient {
           const placeholder = `:${key}`;
           if (finalPath.includes(placeholder)) {
             finalPath = finalPath.replace(placeholder, data[key]);
-            // Remove the parameter from data to avoid duplication
             delete requestData[key];
           }
         });
@@ -100,15 +121,69 @@ export class APIClient {
 
       const url = `${API_URL}${finalPath}`;
 
-      return this.request(
-        url, 
-        method, 
-        Object.keys(requestData || {}).length > 0 ? requestData : null, 
-        headers, 
-        query
-      );
+      try {
+        const response = await this.request(
+          url, 
+          method, 
+          Object.keys(requestData || {}).length > 0 ? requestData : null, 
+          headers, 
+          query,
+          { ...options, isNonSecure: !secure }
+        );
+        
+        // Handle "not found" errors gracefully
+        if (response && response.success === false && 
+            (response.message === "Service not found" || 
+             response.message?.includes("not found"))) {
+          console.log("Not found error in response - handling gracefully");
+          
+          // For GET_SERVICE_BY_ID action, return null
+          if (action === "getServiceById") {
+            return { success: false, result: null, message: response.message };
+          }
+          
+          // For GET/LIST actions, return empty array
+          if (action.includes("get") || action.includes("list")) {
+            return { success: true, result: [] };
+          }
+        }
+        
+        return response;
+      } catch (requestError) {
+        // Special handling for "not found" errors
+        if (requestError.message === "Service not found" || 
+            requestError.message?.includes("not found") || 
+            requestError.status === 404) {
+          console.log("Not found error caught - handling gracefully");
+          
+          // For GET_SERVICE_BY_ID action, return null
+          if (action === "getServiceById") {
+            return { success: false, result: null, message: requestError.message };
+          }
+          
+          // For GET/LIST actions, return empty array
+          if (action.includes("get") || action.includes("list")) {
+            return { success: true, result: [] };
+          }
+        }
+        
+        // Add context to the error
+        const contextError = new Error(`${action} failed: ${requestError.message}`);
+        contextError.originalError = requestError;
+        contextError.status = requestError.status;
+        throw contextError;
+      }
     } catch (error) {
       console.error("API Invoke failed:", error);
+      
+      // Get the action from params to use in this scope
+      const { action, options = {} } = params || {};
+      
+      // Special handling for "not found" errors
+      if (options.publicAccess || options.requiresAuth === false) {
+        console.log("Public access endpoint returning empty data for caught error");
+        return { success: true, result: [] };
+      }
       
       // Handle authentication errors
       if (error.message && error.message.includes("Unauthenticated") && typeof window !== 'undefined') {
