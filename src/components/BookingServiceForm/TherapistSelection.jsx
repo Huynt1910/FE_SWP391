@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaUser, FaCircle } from 'react-icons/fa';
 import Link from 'next/link';
 
 const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, onNext, onPrev }) => {
@@ -31,11 +31,18 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
                 className={`choose-therapist__card ${selectedTherapist?.id === therapist.id ? 'selected' : ''}`}
                 onClick={() => onSelectTherapist(therapist)}
               >
-                <img 
-                  src={therapist.image || '/images/default-therapist.jpg'} 
-                  alt="Therapist" 
-                  className="choose-therapist__card-image" 
-                />
+                <div className="choose-therapist__card-image-container">
+                  <img 
+                    src={therapist.imgUrl || therapist.image || '/assets/img/therapists/default.jpg'} 
+                    alt={therapist.fullName || therapist.name || 'Therapist'} 
+                    className="choose-therapist__card-image"
+                    onError={(e) => {
+                      console.error(`Failed to load image for therapist:`, therapist.fullName, therapist.imgUrl);
+                      e.target.onerror = null;
+                      e.target.src = '/assets/img/therapists/default.jpg';
+                    }}
+                  />
+                </div>
                 <div className="choose-therapist__card-info">
                   <h3 className="choose-therapist__card-name">
                     {therapist.fullName || therapist.name || 'Unnamed Therapist'}

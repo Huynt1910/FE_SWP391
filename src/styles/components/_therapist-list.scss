@@ -1,13 +1,16 @@
+// Therapists page styles
 .therapists-page {
   padding: 60px 0;
   background-color: #f9f9f9;
 }
 
+// Therapist list container
 .therapist-list-container {
   padding: 40px 0;
   max-width: 1200px;
   margin: 0 auto;
   
+  // Header section
   .therapist-list-header {
     text-align: center;
     margin-bottom: 40px;
@@ -25,12 +28,14 @@
       margin: 0 auto 30px;
     }
     
+    // Filter components
     .therapist-filters {
       display: flex;
       justify-content: center;
       gap: 20px;
       flex-wrap: wrap;
       
+      // Search box
       .search-box {
         flex: 1;
         max-width: 300px;
@@ -49,6 +54,7 @@
         }
       }
       
+      // Experience filter
       .experience-filter {
         display: flex;
         align-items: center;
@@ -75,6 +81,7 @@
         }
       }
       
+      // Clear filters button
       .clear-filters-button {
         padding: 8px 15px;
         background-color: #f5f5f5;
@@ -98,6 +105,7 @@
     }
   }
   
+  // State components
   .loading-indicator {
     text-align: center;
     padding: 40px;
@@ -127,11 +135,13 @@
     }
   }
   
+  // Therapist grid layout
   .therapist-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 30px;
     
+    // Therapist card component
     .therapist-card {
       background-color: white;
       border-radius: 12px;
@@ -144,6 +154,7 @@
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
       }
       
+      // Inactive state
       &.inactive {
         opacity: 0.8;
         background-color: #f9f9f9;
@@ -158,6 +169,7 @@
         }
       }
       
+      // Therapist image
       .therapist-image {
         height: 220px;
         position: relative;
@@ -168,6 +180,7 @@
           object-fit: cover;
         }
         
+        // Status indicator
         .therapist-status {
           position: absolute;
           top: 15px;
@@ -196,6 +209,7 @@
         }
       }
       
+      // Therapist details
       .therapist-details {
         padding: 20px;
         
@@ -206,6 +220,7 @@
           color: #333;
         }
         
+        // Information section
         .therapist-info {
           margin-bottom: 15px;
           
@@ -222,6 +237,7 @@
             margin-bottom: 8px;
           }
           
+          // Rating component
           .rating {
             display: flex;
             align-items: center;
@@ -243,6 +259,7 @@
             }
           }
           
+          // Role indicator
           .role {
             display: flex;
             align-items: center;
@@ -257,6 +274,7 @@
           }
         }
         
+        // Bio section
         .therapist-bio {
           margin-bottom: 20px;
           
@@ -267,6 +285,7 @@
           }
         }
         
+        // Book button
         .book-button {
           width: 100%;
           padding: 12px;
@@ -300,6 +319,7 @@
     }
   }
   
+  // Responsive styles
   @media (max-width: 1200px) {
     padding: 0 20px;
   }
@@ -338,6 +358,7 @@
   }
 }
 
+// Loading state component
 .therapist-list__loading {
   display: flex;
   flex-direction: column;
@@ -365,12 +386,14 @@
   }
 }
 
+// Spinner animation
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
+// Error state component
 .therapist-list__error {
   display: flex;
   flex-direction: column;
@@ -413,6 +436,7 @@
     max-width: 500px;
   }
   
+  // Action buttons
   .retry-button {
     padding: 10px 20px;
     background-color: #ff4f6f;
@@ -446,11 +470,13 @@
   }
 }
 
+// Therapist list component
 .therapist-list {
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
   
+  // Filter section
   .therapist-list__filters {
     display: flex;
     flex-wrap: wrap;
@@ -458,6 +484,7 @@
     margin-bottom: 30px;
     justify-content: center;
     
+    // Search input
     .search-input {
       flex: 1;
       min-width: 250px;
@@ -478,6 +505,7 @@
       }
     }
     
+    // Experience filter
     .experience-filter {
       display: flex;
       align-items: center;
@@ -507,6 +535,7 @@
       }
     }
     
+    // Responsive styles
     @media (max-width: 768px) {
       flex-direction: column;
       align-items: stretch;
@@ -521,6 +550,7 @@
     }
   }
   
+  // No results state
   .therapist-list__no-results {
     text-align: center;
     padding: 40px 20px;
@@ -560,6 +590,7 @@
   }
 }
 
+// Empty state component
 .therapist-list__empty {
   display: flex;
   flex-direction: column;

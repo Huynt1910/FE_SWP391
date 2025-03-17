@@ -1,0 +1,472 @@
+// Service page styles
+.service {
+  position: relative;
+  padding: 100px 0;
+  overflow: hidden;
+  
+  @media (max-width: 767px) {
+    padding: 60px 0;
+  }
+  
+  // Services grid layout
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    
+    @media (max-width: 767px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  // Service card component
+  .service-card {
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    // Card image
+    &__image {
+      height: 200px;
+      overflow: hidden;
+      
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+      }
+    }
+    
+    &:hover &__image img {
+      transform: scale(1.05);
+    }
+    
+    // Card content
+    &__info {
+      padding: 20px;
+    }
+    
+    &__name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #222;
+    }
+    
+    &__category {
+      color: #ff4f6f;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    
+    &__description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 15px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    // Card footer
+    &__bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    &__price {
+      font-size: 18px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    &__actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    // Buttons
+    &__btn {
+      padding: 8px 15px;
+      background-color: #ff4f6f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      
+      &:hover {
+        background-color: #e43e5e;
+      }
+    }
+
+    &__cart-btn {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #ff4f6f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background-color: #e43e5e;
+        transform: translateY(-2px);
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+  
+  // State components
+  .service-list {
+    &__loading,
+    &__error,
+    &__empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      padding: 50px 0;
+      text-align: center;
+
+      .spinner-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top-color: #ff4f6f;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      .loading-text {
+        font-size: 18px;
+        color: #666;
+        margin-top: 10px;
+      }
+    }
+    
+    &__empty {
+      width: 100%;
+      
+      .services-grid {
+        width: 100%;
+      }
+    }
+  }
+  
+  // Animations
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  // Error components
+  .error-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #ff4f6f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  
+  .error-x {
+    color: white;
+    font-size: 30px;
+    font-weight: bold;
+  }
+  
+  // Action buttons
+  .login-button,
+  .retry-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #ff4f6f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    
+    &:hover {
+      background-color: #e43e5e;
+    }
+  }
+  
+  // Empty state
+  .no-services {
+    text-align: center;
+    padding: 40px 0;
+    
+    p {
+      margin-bottom: 20px;
+      font-size: 16px;
+      color: #666;
+    }
+    
+    button {
+      padding: 10px 20px;
+      background-color: #ff4f6f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      
+      &:hover {
+        background-color: #e43e5e;
+      }
+    }
+  }
+  
+  // Range slider
+  .range-slider__values {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+  
+  // Active state for category links
+  .shop-aside__item ul li a.active {
+    color: #ff4f6f;
+    font-weight: 600;
+  }
+}
+
+// Service detail page styles
+.service-detail {
+  padding: 80px 0;
+  
+  @media (max-width: 767px) {
+    padding: 50px 0;
+  }
+  
+  // Layout
+  &__content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    
+    @media (max-width: 991px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  // Image container
+  &__image {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  // Content container
+  &__info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  // Typography
+  &__title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #222;
+  }
+  
+  &__category {
+    color: #ff4f6f;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  &__price {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #222;
+  }
+  
+  &__description {
+    margin-bottom: 30px;
+    
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #666;
+    }
+  }
+  
+  // Action button
+  &__book-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 25px;
+    background-color: #ff4f6f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    align-self: flex-start;
+    
+    &:hover {
+      background-color: #e43e5e;
+    }
+  }
+  
+  // State components
+  &__loading,
+  &__error,
+  &__not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 80px 0;
+    text-align: center;
+    
+    h3 {
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #222;
+    }
+    
+    p {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    
+    .spinner-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: #ff4f6f;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    .loading-text {
+      font-size: 18px;
+      color: #666;
+      margin-top: 10px;
+    }
+    
+    .back-button {
+      padding: 10px 20px;
+      background-color: #ff4f6f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      
+      &:hover {
+        background-color: #e43e5e;
+      }
+    }
+  }
+}
+
+// Placeholder styles for loading state
+.service-card {
+  &--placeholder {
+    animation: pulse 1.5s infinite;
+  }
+  
+  .placeholder-image {
+    height: 200px;
+    background-color: #f0f0f0;
+    border-radius: 10px 10px 0 0;
+  }
+  
+  .placeholder-text {
+    background-color: #f0f0f0;
+    height: 16px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    
+    &.placeholder-title {
+      height: 24px;
+      width: 70%;
+    }
+    
+    &.placeholder-description {
+      width: 100%;
+    }
+    
+    &.placeholder-price {
+      width: 40%;
+      height: 20px;
+    }
+  }
+  
+  .placeholder-button {
+    background-color: #f0f0f0;
+    height: 36px;
+    width: 100px;
+    border-radius: 5px;
+  }
+}
+
+// Loading animation
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+} 

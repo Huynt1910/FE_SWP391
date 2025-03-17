@@ -34,10 +34,18 @@ export const Login = () => {
     e.preventDefault();
 
     try {
-      await signIn({
+      const response = await signIn({
         username: formData.username,
         password: formData.password,
       });
+      
+      // Check if there's a redirect URL stored
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
+      if (redirectUrl) {
+        console.log("Redirecting to:", redirectUrl);
+        localStorage.removeItem('redirectAfterLogin');
+        router.push(redirectUrl);
+      }
     } catch (error) {
       showToast.error("An error occurred during login. Please try again.");
       console.error("Login error:", error);

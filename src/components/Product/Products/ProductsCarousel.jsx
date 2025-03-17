@@ -2,17 +2,20 @@ import {
   SlickArrowPrev,
   SlickArrowNext,
 } from "@components/utils/SlickArrows/SlickArrows";
-import { useContext } from "react";
 import Slider from "react-slick";
-import { CartContext } from "@/pages/_app";
+import { useCart } from "@/context/CartContext";
 import { SingleProduct } from "./SingleProduct/SingleProduct";
+import { toast } from "react-toastify";
 
 export const ProductsCarousel = ({ products }) => {
-  const { cart, setCart } = useContext(CartContext);
+  const { cart, addToCart } = useCart();
 
   const handleAddToCart = (id) => {
-    const newProduct = products?.find((pd) => pd.id === id);
-    setCart([...cart, { ...newProduct, quantity: 1 }]);
+    const product = products?.find((pd) => pd.id === id);
+    if (product) {
+      addToCart(product);
+      toast.success(`${product.name} added to cart!`);
+    }
   };
 
   const settings = {

@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import { useCart } from "@/context/CartContext";
 
 export const Card = ({ cart, onChangeQuantity }) => {
+  const { removeFromCart } = useCart();
   const {
     name,
     image,
@@ -16,9 +18,7 @@ export const Card = ({ cart, onChangeQuantity }) => {
     <div className='cart-table__row'>
       <div className='cart-table__col'>
         <Link href={`/product/${id}`} className='cart-table__img'>
-
-          <img src={image} className='js-img' alt='' />
-
+          <img src={image || "/assets/img/services/placeholder.jpg"} className='js-img' alt='' />
         </Link>
         <div className='cart-table__info'>
           <Link href={`/product/${id}`} className='title5'>
@@ -67,6 +67,12 @@ export const Card = ({ cart, onChangeQuantity }) => {
         <span className='cart-table__total'>
           ${(price * quantity).toFixed(2)}
         </span>
+        <button 
+          className='cart-table__delete'
+          onClick={() => removeFromCart(id)}
+        >
+          <i className='icon-close'></i>
+        </button>
       </div>
     </div>
   </>);
