@@ -1,47 +1,140 @@
-import React, { useState } from "react";
-import { FaPlus, FaEdit, FaTrash, FaSpinner } from "react-icons/fa";
+import React, { useState, useRef } from "react";
+import { FaSpinner } from "react-icons/fa";
 import { useGetAllServices } from "@/auth/hook/admin/useGetAllServicesHook";
 import { useCreateServices } from "@/auth/hook/admin/useCreateServicesHook";
+import ServiceHeader from "./components/ServiceHeader";
+import ServiceSearch from "./components/ServiceSearch";
+import ServiceTable from "./components/ServiceTable";
+import ServiceModal from "./components/ServiceModal";
 
 function Services() {
   const { data: services, isLoading } = useGetAllServices();
-  const { createService } = useCreateServices();
+  const { createService, isLoading: isCreating } = useCreateServices();
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState("add");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
     duration: "",
-    active: true,
+    active: "true",
     image: "",
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc",
+  });
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleInputChange = (e) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? e.target.checked : value,
-    }));
+    const { name, value } = e.target;
+
+    if (name === "duration") {
+      // Format as XX:XX
+      const numbers = value.replace(/\D/g, "");
+      let formattedValue = numbers;
+      if (numbers.length >= 2) {
+        formattedValue = `${numbers.slice(0, 2)}:${numbers.slice(2, 4)}`;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        [name]: formattedValue,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Cập nhật formData với file
+      setFormData((prev) => ({
+        ...prev,
+        image: file,
+      }));
+
+      // Tạo preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageClick = () => {
+    fileInputRef.current.click();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createService.mutateAsync(formData);
+      const serviceData = {
+        serviceName: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        isActive: formData.active === "true",
+        duration: formData.duration,
+        imgUrl: formData.image || "",
+      };
+
+      await createService(serviceData);
+      toast.success("Thêm dịch vụ thành công!");
       setShowModal(false);
+      // Reset form
       setFormData({
         name: "",
         description: "",
         price: "",
         duration: "",
-        active: true,
+        active: "true",
         image: "",
       });
+      // Refresh data
+      window.location.reload();
     } catch (error) {
       console.error("Error creating service:", error);
+      toast.error("Có lỗi xảy ra khi thêm dịch vụ!");
     }
   };
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const filteredAndSortedServices = React.useMemo(() => {
+    let filteredServices =
+      services?.filter(
+        (service) =>
+          service.serviceName
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          service.description.toLowerCase().includes(searchTerm.toLowerCase())
+      ) || [];
+
+    if (sortConfig.key) {
+      filteredServices.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return filteredServices;
+  }, [services, searchTerm, sortConfig]);
 
   if (isLoading) {
     return (
@@ -53,144 +146,31 @@ function Services() {
 
   return (
     <div className="admin-page">
-      <div className="admin-page__header">
-        <div className="admin-page__header-title">
-          <h1>Quản lý dịch vụ</h1>
-          <p>Quản lý thông tin các dịch vụ của spa</p>
-        </div>
-        <div className="admin-page__header-actions">
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowModal(true)}
-          >
-            <FaPlus /> Thêm dịch vụ
-          </button>
-        </div>
-      </div>
-
-      <div className="admin-page__table">
-        <table>
-          <thead>
-            <tr>
-              <th>Tên dịch vụ</th>
-              <th>Mô tả</th>
-              <th>Giá (VNĐ)</th>
-              <th>Thời gian</th>
-              <th>Trạng thái</th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {services?.map((service) => (
-              <tr key={service.id}>
-                <td>{service.serviceName}</td>
-                <td>{service.description}</td>
-                <td>{new Intl.NumberFormat("vi-VN").format(service.price)}</td>
-                <td>{service.duration}</td>
-                <td>
-                  <span
-                    className={`status-badge ${
-                      service.isActive ? "active" : "inactive"
-                    }`}
-                  >
-                    {service.isActive ? "Hoạt động" : "Tạm ngưng"}
-                  </span>
-                </td>
-                <td>
-                  <div className="action-buttons">
-                    <button className="edit-btn">
-                      <FaEdit />
-                    </button>
-                    <button className="delete-btn">
-                      <FaTrash />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {showModal && (
-        <div className="admin-page__modal">
-          <div className="admin-page__modal-content">
-            <div className="admin-page__modal-header">
-              <h2>Thêm dịch vụ mới</h2>
-              <button onClick={() => setShowModal(false)}>×</button>
-            </div>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Tên dịch vụ</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Mô tả</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Giá dịch vụ (VNĐ)</label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Thời gian (phút)</label>
-                <input
-                  type="number"
-                  name="duration"
-                  value={formData.duration}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Trạng thái</label>
-                <select
-                  name="active"
-                  value={formData.active}
-                  onChange={handleInputChange}
-                >
-                  <option value={true}>Hoạt động</option>
-                  <option value={false}>Tạm ngưng</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Hình ảnh URL</label>
-                <input
-                  type="text"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="form-actions">
-                <button type="button" onClick={() => setShowModal(false)}>
-                  Hủy
-                </button>
-                <button type="submit" disabled={createService.isLoading}>
-                  {createService.isLoading ? "Đang xử lý..." : "Thêm dịch vụ"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <ServiceHeader onAddClick={() => setShowModal(true)} />
+      <ServiceSearch searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+      <ServiceTable
+        services={filteredAndSortedServices}
+        sortConfig={sortConfig}
+        onSort={handleSort}
+        onEdit={(service) => {
+          /* handle edit */
+        }}
+        onDelete={(service) => {
+          /* handle delete */
+        }}
+      />
+      <ServiceModal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        formData={formData}
+        onSubmit={handleSubmit}
+        onChange={handleInputChange}
+        imagePreview={imagePreview}
+        onImageClick={handleImageClick}
+        fileInputRef={fileInputRef}
+        onImageChange={handleImageChange}
+        isCreating={isCreating}
+      />
     </div>
   );
 }

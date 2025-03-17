@@ -228,7 +228,7 @@
 
     &--inactive {
       background: #fee2e2;
-      color: #991b1b;
+      color: #b91c1c;
     }
 
     svg {
@@ -327,6 +327,90 @@
         white-space: nowrap;
         margin-bottom: 8px;
         z-index: 10;
+      }
+    }
+
+    .restore-btn {
+      background-color: #4caf50;
+      color: white;
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: #45a049;
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .key-btn {
+      background-color: #fbbf24;
+      color: white;
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: #f59e0b;
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+
+    button {
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .edit-btn {
+      background: #e2e8f0;
+      color: #475569;
+
+      &:hover {
+        background: #cbd5e1;
+      }
+    }
+
+    .delete-btn {
+      background: #fee2e2;
+      color: #b91c1c;
+
+      &:hover {
+        background: #fecaca;
+      }
+    }
+
+    .restore-btn {
+      background: #dcfce7;
+      color: #15803d;
+
+      &:hover {
+        background: #bbf7d0;
       }
     }
   }
@@ -694,4 +778,15 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
   }
+}
+
+// Add form error styles
+.form-error {
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  color: #b91c1c;
+  font-size: 14px;
 }

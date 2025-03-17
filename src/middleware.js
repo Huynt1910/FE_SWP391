@@ -1,29 +1,25 @@
+// middleware.js
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function middleware(request) {
-  const pathname = request.nextUrl.pathname;
-  const token = request.cookies.get("token");
-  const userRole = request.cookies.get("userRole");
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get("token");
 
-  // Handle admin routes
-  if (pathname.startsWith("/admin")) {
-    // No token or not admin -> redirect to login
-    if (!token || userRole?.value !== "ADMIN") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
+  // If the user is authenticated and tries to access /login, redirect to /
+  if (authToken && request.nextUrl.pathname === "/login") {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Logged in users trying to access login page
-  if (pathname === "/login" && token) {
-    if (userRole?.value === "ADMIN") {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    }
-    return NextResponse.redirect(new URL("/", request.url));
+  // If the user is not authenticated and tries to access a protected route, redirect to /login
+  if (!authToken && request.nextUrl.pathname !== "/login") {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
 }
 
+// Specify the routes where the middleware should run
 export const config = {
-  matcher: ["/admin/:path*", "/login"],
+  matcher: ["/login"],
 };
