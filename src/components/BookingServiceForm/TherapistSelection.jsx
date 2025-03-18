@@ -1,8 +1,8 @@
 import React from 'react';
-import { FaArrowLeft, FaArrowRight, FaUser, FaCircle } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaUser, FaCircle, FaExclamationTriangle } from 'react-icons/fa';
 import Link from 'next/link';
 
-const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, onNext, onPrev }) => {
+const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, onNext, onPrev, loading, error }) => {
   // Function to render stars based on rating
   const renderStars = (rating) => {
     return (
@@ -16,6 +16,49 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
       </div>
     );
   };
+
+  // Render loading state
+  if (loading) {
+    return (
+      <div className="book-appointment">
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Finding therapists for your selected services...</p>
+        </div>
+        
+        <div className="booking-actions">
+          <div className="booking-actions__left">
+            <button className="booking-actions__prev" onClick={onPrev}>
+              <FaArrowLeft className="icon" /> BACK
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render error state
+  if (error) {
+    return (
+      <div className="book-appointment">
+        <div className="error-container">
+          <h3>Error Loading Therapists</h3>
+          <p>{error}</p>
+          <button className="btn-primary" onClick={() => window.location.reload()}>
+            Try Again
+          </button>
+        </div>
+        
+        <div className="booking-actions">
+          <div className="booking-actions__left">
+            <button className="booking-actions__prev" onClick={onPrev}>
+              <FaArrowLeft className="icon" /> BACK
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="book-appointment">
@@ -58,7 +101,17 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
               </div>
             ))
           ) : (
-            <p>No therapists available at the moment.</p>
+            <div className="no-therapists-message">
+              <div className="no-therapists-icon">
+                <FaExclamationTriangle size={30} color="#ff9800" />
+              </div>
+              <h3>No Therapists Available</h3>
+              <p>We couldn't find any therapists for your selected services at this time.</p>
+              <p>Please try selecting different services or check back later.</p>
+              <button className="btn-try-different" onClick={onPrev}>
+                <FaArrowLeft className="icon" /> Select Different Services
+              </button>
+            </div>
           )}
         </div>
       </div>

@@ -8,6 +8,8 @@ export const useBookingHook = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [data, setData] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [bookingResult, setBookingResult] = useState(null);
   const [authRequired, setAuthRequired] = useState(false);
   const [formState, setFormState] = useState({
     selectedTherapistId: null,
@@ -68,7 +70,18 @@ export const useBookingHook = () => {
   // Check if user is authenticated
   const checkAuthentication = () => {
     const authenticated = isAuthenticated();
+    console.log("Checking authentication status:", authenticated);
     setAuthRequired(!authenticated);
+    
+    // // If not authenticated, reset all loading and data states
+    // if (!authenticated) {
+    //   setLoading(false);
+    //   setError(null);
+    //   setData([]);
+    //   setAvailableSlots([]);
+    //   setBookingResult(null);
+    // }
+    
     return authenticated;
   };
 
@@ -78,14 +91,6 @@ export const useBookingHook = () => {
       setLoading(true);
       setError(null);
       setAuthRequired(false);
-      
-      // Check authentication first
-      if (!checkAuthentication()) {
-        console.log("Authentication required for booking");
-        setAuthRequired(true);
-        setError("Authentication required to book appointments. Please log in.");
-        return [];
-      }
       
       console.log("Fetching active therapists...");
       
@@ -109,16 +114,158 @@ export const useBookingHook = () => {
       }
     } catch (error) {
       console.error("Error fetching active therapists:", error);
+      setError(error.message || "Failed to fetch active therapists");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get available slots for a therapist on a specific date
+  const getAvailableSlots = async (therapistId, serviceIds, date) => {
+    try {
+      setLoading(true);
+      setError(null);
       
-      // Handle authentication errors specifically
-      if (error.status === 401 || error.message?.includes("Authentication required")) {
-        console.log("Authentication error caught");
-        setAuthRequired(true);
-        setError("Authentication required to book appointments. Please log in.");
+      console.log("Fetching available slots...");
+      
+      const response = await APIClient.invoke({
+        action: ACTIONS.GET_AVAILABLE_SLOTS,
+        data: {
+          therapistId: therapistId,
+          serviceId: serviceIds,
+          date: date
+        },
+        options: { preventRedirect: true }
+      });
+      
+      console.log("API Response for getAvailableSlots:", response);
+      
+      // Process the response
+      if (response && response.success === true && response.result) {
+        console.log("Available slots:", response.result);
+        setAvailableSlots(response.result);
+        return response.result;
       } else {
-        setError(error.message || "Failed to fetch active therapists");
+        console.error("Unexpected API response format:", response);
+        setError("Invalid response format from API");
+        return [];
       }
+    } catch (error) {
+      console.error("Error fetching available slots:", error);
+      setError(error.message || "Failed to fetch available slots");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get therapist schedule for a month
+  const getTherapistScheduleForMonth = async (therapistId, month, year) => {
+    try {
+      setLoading(true);
+      setError(null);
       
+      console.log(`Fetching schedule for therapist ${therapistId} for ${month}/${year}...`);
+      
+      const response = await APIClient.invoke({
+        action: ACTIONS.GET_THERAPIST_SCHEDULE,
+        urlParams: {
+          month: month,
+          year: year
+        },
+        options: { preventRedirect: true }
+      });
+      
+      console.log("API Response for getTherapistSchedule:", response);
+      
+      if (response && response.success === true && Array.isArray(response.result)) {
+        return response.result;
+      } else if (Array.isArray(response)) {
+        return response;
+      } else {
+        console.error("Unexpected API response format:", response);
+        setError("Invalid response format from API");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching therapist schedule:", error);
+      setError(error.message || "Failed to fetch therapist schedule");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get therapist schedule by ID
+  const getTherapistScheduleById = async (therapistId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log(`Fetching schedule for therapist ID: ${therapistId}`);
+      
+      const response = await APIClient.invoke({
+        action: ACTIONS.GET_THERAPIST_SCHEDULE_BY_ID,
+        urlParams: {
+          id: therapistId
+        },
+        options: { preventRedirect: true }
+      });
+      
+      console.log("API Response for getTherapistScheduleById:", response);
+      
+      if (response && response.success === true && Array.isArray(response.result)) {
+        return response.result;
+      } else if (Array.isArray(response)) {
+        return response;
+      } else {
+        console.error("Unexpected API response format:", response);
+        setError("Invalid response format from API");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching therapist schedule by ID:", error);
+      setError(error.message || "Failed to fetch therapist schedule");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get available vouchers
+  const getAvailableVouchers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log("Fetching available vouchers...");
+      
+      const response = await APIClient.invoke({
+        action: ACTIONS.GET_VOUCHERS,
+        options: { preventRedirect: true }
+      });
+      
+      console.log("API Response for getAvailableVouchers:", response);
+      
+      if (response && response.success === true && Array.isArray(response.result)) {
+        // Filter for active vouchers only
+        const activeVouchers = response.result.filter(voucher => 
+          voucher.isActive && 
+          new Date(voucher.expiryDate) > new Date() && 
+          voucher.quantity > 0
+        );
+        
+        console.log("Active vouchers:", activeVouchers);
+        return activeVouchers;
+      } else {
+        console.error("Unexpected API response format:", response);
+        setError("Invalid response format from API");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching vouchers:", error);
+      setError(error.message || "Failed to fetch vouchers");
       return [];
     } finally {
       setLoading(false);
@@ -126,31 +273,66 @@ export const useBookingHook = () => {
   };
 
   // Submit booking
-  const submitBooking = async () => {
+  const submitBooking = async (bookingData) => {
     try {
-      // Validate form first
-      if (!validateForm()) {
-        return false;
-      }
-      
       setLoading(true);
       setError(null);
       
-      // Check authentication first
-      if (!checkAuthentication()) {
-        setAuthRequired(true);
-        setError("Authentication required to book appointments. Please log in.");
-        return false;
+      // CRITICAL: Ensure userId is valid and correctly formatted
+      if (!bookingData.userId || bookingData.userId === 0) {
+        console.warn("CRITICAL: Invalid or missing userId in booking data, using default (1)");
+        bookingData = {
+          ...bookingData,
+          userId: 1 // Explicitly set to 1 if missing or invalid
+        };
       }
       
-      // Implementation for booking submission will go here
-      // This is a placeholder for the actual API call
+      // Convert userId to number just to be safe
+      bookingData.userId = Number(bookingData.userId);
       
-      return true;
+      // Add email to booking data - the API might need this to store the booking
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.email) {
+          bookingData.email = user.email;
+          console.log("Added user email to booking data:", user.email);
+        } else {
+          // Try to find email in other storage locations
+          const storedEmail = localStorage.getItem('userEmail');
+          if (storedEmail) {
+            bookingData.email = storedEmail;
+            console.log("Added email from direct localStorage:", storedEmail);
+          }
+        }
+      } catch (err) {
+        console.warn("Error adding email to booking data:", err);
+      }
+      
+      console.log("Creating booking with FINAL data:", JSON.stringify(bookingData));
+      console.log("User ID type and value:", typeof bookingData.userId, bookingData.userId);
+      
+      const response = await APIClient.invoke({
+        action: ACTIONS.CREATE_BOOKING,
+        data: bookingData,
+        options: { preventRedirect: true }
+      });
+      
+      console.log("API Response for createBooking:", response);
+      
+      // Process the response
+      if (response && response.success === true) {
+        console.log("Booking created successfully:", response.result);
+        setBookingResult(response.result);
+        return response.result;
+      } else {
+        console.error("Failed to create booking:", response);
+        setError(response.message || "Failed to create booking");
+        return null;
+      }
     } catch (error) {
-      console.error("Error submitting booking:", error);
-      setError(error.message || "Failed to submit booking");
-      return false;
+      console.error("Error creating booking:", error);
+      setError(error.message || "Failed to create booking");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -178,14 +360,20 @@ export const useBookingHook = () => {
     loading,
     error,
     data,
+    availableSlots,
+    bookingResult,
     authRequired,
     formState,
     formErrors,
     
     // Methods
     getActiveTherapists,
-    handleInputChange,
+    getAvailableSlots,
+    getTherapistScheduleForMonth,
+    getTherapistScheduleById,
+    getAvailableVouchers,
     submitBooking,
+    handleInputChange,
     resetForm,
     validateForm
   };

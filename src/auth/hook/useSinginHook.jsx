@@ -54,7 +54,29 @@ export function useSignIn() {
             // Store token and role in cookies
             setAuthData(token, userRole);
             
-            showToast.success("Login successful!");
+            // After setting auth, fetch user info to get ID
+            try {
+              const userInfoResponse = await APIClient.invoke({
+                action: ACTIONS.MY_INFO,
+                options: { secure: true }
+              });
+              
+              console.log("User info response:", userInfoResponse);
+              
+              if (userInfoResponse && userInfoResponse.success && userInfoResponse.result && userInfoResponse.result.id) {
+                // Store user ID in cookies
+                const userId = userInfoResponse.result.id;
+                document.cookie = `userId=${userId}; path=/; max-age=86400`;
+                console.log("Stored user ID in cookies:", userId);
+                
+                // Also store in localStorage for backup
+                localStorage.setItem('userId', userId);
+              }
+            } catch (error) {
+              console.error("Error fetching user info:", error);
+            }
+            
+            showToast("Login successful!", "success");
             
             // Redirect based on role
             if (userRole === "admin" || userRole === "staff" || userRole === "therapist") {
@@ -66,18 +88,18 @@ export function useSignIn() {
             return { success: true };
           } else {
             console.error("No token found in response:", response);
-            showToast.error("Login failed: No authentication token received");
+            showToast("Login failed: No authentication token received", "error");
             return { success: false, error: "No authentication token received" };
           }
         } else {
           const errorMessage = response?.message || "Login failed. Please check your credentials.";
-          showToast.error(errorMessage);
+          showToast(errorMessage, "error");
           return { success: false, error: errorMessage };
         }
       } catch (error) {
         console.error("Login error:", error);
         const errorMessage = error.message || "Login failed. Please try again.";
-        showToast.error(errorMessage);
+        showToast(errorMessage, "error");
         return { success: false, error: errorMessage };
       }
     },

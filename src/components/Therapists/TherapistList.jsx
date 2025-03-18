@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { FaStar, FaCalendarAlt, FaCircle, FaUserMd, FaFilter, FaTimes } from "react-icons/fa";
+import { FaStar, FaCalendarAlt, FaCircle, FaUserMd, FaFilter, FaTimes, FaLock } from "react-icons/fa";
 import useListAllTherapist from "@/auth/hook/useListAllTherapist";
+import { isAuthenticated } from "@/utils/auth";
 
 const TherapistList = () => {
   const router = useRouter();
@@ -10,14 +11,24 @@ const TherapistList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterExperience, setFilterExperience] = useState(0);
   const [filterAvailability, setFilterAvailability] = useState("all"); // "all", "available", "unavailable"
+  const [isAuthChecked, setIsAuthChecked] = useState(false); // Default to false to check authentication
 
-  // Fetch all therapists on component mount
+  // Check authentication on component mount
   useEffect(() => {
-    console.log("TherapistList: Fetching therapists...");
-    getAllTherapists().then(result => {
-      console.log("TherapistList: Therapists fetched, count:", result?.length || 0);
-    });
+    const isUserAuthenticated = isAuthenticated();
+    console.log("Therapist List: User authentication status:", isUserAuthenticated);
+    setIsAuthChecked(isUserAuthenticated);
   }, []);
+
+  // Fetch all therapists on component mount and when auth status changes
+  useEffect(() => {
+    if (isAuthChecked) {
+      console.log("TherapistList: Fetching therapists...");
+      getAllTherapists().then(result => {
+        console.log("TherapistList: Therapists fetched, count:", result?.length || 0);
+      });
+    }
+  }, [isAuthChecked]);
 
   // Log data changes
   useEffect(() => {
@@ -106,6 +117,34 @@ const TherapistList = () => {
     setFilterAvailability("all");
   };
 
+  // Handler for login button
+  const handleLogin = () => {
+    router.push("/login?redirect=/therapists");
+  };
+
+  // Render authentication required view
+  if (!isAuthChecked) {
+    return (
+      <div className="service">
+        <div className="wrapper">
+          <div className="service-list__error">
+            <div className="error-icon">
+              <FaLock size={24} color="white" />
+            </div>
+            <h3>Login Requireds</h3>
+            <p>You need to be logged in to view our services.</p>
+            <button 
+              className="login-button"
+              onClick={() => router.push('/login')}
+            >
+              Log In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Render loading state
   if (loading) {
     return (
@@ -117,55 +156,6 @@ const TherapistList = () => {
       </div>
     );
   }
-
-  // // Render error state
-  // if (error) {
-  //   // Don't show auth errors for therapists, just try to load them anyway
-  //   if (error.toLowerCase().includes("authentication required") || 
-  //       error.toLowerCase().includes("log in") || 
-  //       error.toLowerCase().includes("session") || 
-  //       error.toLowerCase().includes("unauthorized") ||
-  //       error.toLowerCase().includes("expired")) {
-  //     // If it's an auth error, just show empty state instead
-  //     return (
-  //       <div className="therapist-list__empty">
-  //         <div className="therapist-grid">
-  //           {/* Show some placeholder therapists */}
-  //           {[1, 2, 3].map((index) => (
-  //             <div key={index} className="therapist-card therapist-card--placeholder">
-  //               <div className="therapist-image placeholder-image"></div>
-  //               <div className="therapist-details">
-  //                 <div className="placeholder-text placeholder-title"></div>
-  //                 <div className="placeholder-text placeholder-specialization"></div>
-  //                 <div className="placeholder-text placeholder-experience"></div>
-  //                 <div className="placeholder-text placeholder-bio"></div>
-  //                 <div className="placeholder-button"></div>
-  //               </div>
-  //             </div>
-  //           ))}
-  //         </div>
-  //       </div>
-  //     );
-  //   }
-    
-  //   return (
-  //     <div className="therapist-list__error">
-  //       <div className="error-icon">
-  //         <FaCircle className="error-circle" />
-  //         <span className="error-x">×</span>
-  //       </div>
-  //       <h3>Unable To Load Therapists</h3>
-  //       <p>{error}</p>
-        
-  //       <button 
-  //         className="retry-button"
-  //         onClick={() => getAllTherapists()}
-  //       >
-  //         Try Again
-  //       </button>
-  //     </div>
-  //   );
-  // }
 
   // Render empty state with more helpful message
   if (!loading && (!therapists || therapists.length === 0)) {

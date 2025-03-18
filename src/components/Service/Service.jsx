@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Slider from "rc-slider";
 import Dropdown from "react-dropdown";
-import { FaSearch, FaSpinner, FaCalendarAlt, FaAngleDown, FaAngleUp } from "react-icons/fa";
+import { FaSearch, FaSpinner, FaCalendarAlt, FaAngleDown, FaAngleUp, FaLock } from "react-icons/fa";
 import useListAllServices from "@/auth/hook/useListAllServices";
 import { PagingList } from "@components/shared/PagingList/PagingList";
 import { usePagination } from "@components/utils/Pagination/Pagination";
 import { useCart } from "@/context/CartContext";
-import { toast } from "react-toastify";
+import { showToast } from "@/utils/toast";
+import { isAuthenticated, redirectToLogin } from "@/utils/auth";
 
 // React Range - Use regular Range instead of createSliderWithTooltip
 const Range = Slider.Range;
@@ -26,13 +27,29 @@ export const Service = () => {
   const [sortedServices, setSortedServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
-  // Fetch all services on component mount
+  // Check authentication on component mount
   useEffect(() => {
-    console.log("Service: Fetching services...");
-    getAllServices().then(result => {
-      console.log("Service: Services fetched, count:", result?.length || 0);
-    });
+    const checkAuth = () => {
+      const authenticated = isAuthenticated();
+      if (!authenticated) {
+        // Don't call redirectToLogin here as it will cause error
+        // We'll handle this in the render phase
+        return false;
+      }
+      return true;
+    };
+    
+    const authenticated = checkAuth();
+    setIsAuthChecked(authenticated);
+    
+    if (authenticated) {
+      console.log("Service: Fetching services...");
+      getAllServices().then(result => {
+        console.log("Service: Services fetched, count:", result?.length || 0);
+      });
+    }
   }, []);
 
   // Update sorted services when data changes
@@ -125,7 +142,7 @@ export const Service = () => {
     // Redirect to booking page - start at step 2 since service is already selected
     router.push('/booking?step=2');
     
-    toast.success(`Booking ${service.name}...`);
+    showToast(`Booking ${service.name}...`, "success");
   };
 
   // Get unique categories from services
@@ -136,12 +153,71 @@ export const Service = () => {
   // Setup pagination
   const paginate = usePagination(filteredServices, 12);
 
-  // Render loading state
+  // Create a function to render placeholder cards
+  const renderPlaceholderCards = () => {
+    return (
+      <div className="services-grid">
+        {Array(6).fill().map((_, index) => (
+          <div key={index} className="service-card service-card--placeholder">
+            <div className="placeholder-image"></div>
+            <div className="service-card__info">
+              <div className="placeholder-text placeholder-title"></div>
+              <div className="placeholder-text placeholder-description"></div>
+              <div className="placeholder-text placeholder-description"></div>
+              <div className="service-card__bottom">
+                <div className="placeholder-text placeholder-price"></div>
+                <div className="placeholder-button"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Show authentication required state
+  if (!isAuthChecked) {
+    return (
+      <div className="service">
+        <div className="wrapper">
+          <div className="service-list__error">
+            <div className="error-icon">
+              <FaLock size={24} color="white" />
+            </div>
+            <h3>Login Required</h3>
+            <p>You need to be logged in to view our services.</p>
+            <button 
+              className="login-button"
+              onClick={() => router.push('/login')}
+            >
+              Log In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Update loading state to include placeholder cards
   if (loading) {
     return (
-      <div className="service-list__loading">
-        <FaSpinner className="loading-icon" />
-        <p className="loading-text">Loading services...</p>
+      <div className="service">
+        <div className="wrapper">
+          <div className="shop-content">
+            <div className="shop-aside">
+              {/* Placeholder sidebar */}
+            </div>
+            <div className="shop-main">
+              <div className="service-list__loading">
+                <div className="spinner-container">
+                  <div className="spinner"></div>
+                </div>
+                <p className="loading-text">Loading services...</p>
+              </div>
+              {renderPlaceholderCards()}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -149,19 +225,22 @@ export const Service = () => {
   // Render error state
   if (error) {
     return (
-      <div className="service-list__error">
-        <div className="error-icon">
-          <span className="error-x">×</span>
+      <div className="service">
+        <div className="wrapper">
+          <div className="service-list__error">
+            <div className="error-icon">
+              <span className="error-x">×</span>
+            </div>
+            <h3>Unable To Load Services</h3>
+            <p>{error}</p>
+            <button 
+              className="retry-button"
+              onClick={() => getAllServices()}
+            >
+              Try Again
+            </button>
+          </div>
         </div>
-        <h3>Unable To Load Services</h3>
-        <p>{error}</p>
-        
-        <button 
-          className="retry-button"
-          onClick={() => getAllServices()}
-        >
-          Try Again
-        </button>
       </div>
     );
   }
@@ -282,10 +361,11 @@ export const Service = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="no-services">
-                    <h3>No services found matching your criteria.</h3>
+                  <div className="service-list__empty">
+                    <h3>No Services Found</h3>
+                    <p>We couldn't find any services matching your search criteria.</p>
                     <button 
-                      className="clear-filters"
+                      className="back-button"
                       onClick={() => {
                         setSearchTerm("");
                         setCategoryFilter("");

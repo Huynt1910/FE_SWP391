@@ -37,8 +37,8 @@ export const Info = () => {
                 adipisicing ea aliqua alluptate sit do do.Non aliqua
                 reprehenderit reprehenderit culpa laboris nulla minim.
               </p>
-              <Link href="/shop" className="btn">
-                Shop now
+              <Link href="/service" className="btn">
+                Services
               </Link>
             </div>
           </div>

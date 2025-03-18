@@ -44,9 +44,9 @@ const ScheduleSelection = ({
   };
 
   // Handle time selection
-  const handleTimeSelect = (time) => {
+  const handleTimeSelect = (time, slotId) => {
     try {
-      onTimeSelect(time);
+      onTimeSelect(time, slotId);
       // Clear any previous errors
       setErrorMessage('');
     } catch (error) {
@@ -80,6 +80,38 @@ const ScheduleSelection = ({
     } catch (error) {
       console.error("Error formatting date:", error);
       return dateString;
+    }
+  };
+  
+  // Get the day of the week
+  const getDayOfWeek = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      const options = { weekday: 'short' };
+      return date.toLocaleDateString('en-US', options);
+    } catch (error) {
+      return '';
+    }
+  };
+  
+  // Get the day number
+  const getDayNumber = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.getDate();
+    } catch (error) {
+      return '';
+    }
+  };
+  
+  // Get month name
+  const getMonthName = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      const options = { month: 'short' };
+      return date.toLocaleDateString('en-US', options);
+    } catch (error) {
+      return '';
     }
   };
 
@@ -121,32 +153,50 @@ const ScheduleSelection = ({
                 className={`date-card ${selectedDate === dateObj.date ? 'selected' : ''}`}
                 onClick={() => handleDateSelect(dateObj.date)}
               >
-                <div className="day">{formatDate(dateObj.date)}</div>
+                <div className="date-weekday">{getDayOfWeek(dateObj.date)}</div>
+                <div className="date-number">{getDayNumber(dateObj.date)}</div>
+                <div className="date-month">{getMonthName(dateObj.date)}</div>
               </div>
             ))
           ) : (
-            <p>No available dates</p>
+            <div className="no-dates-message">
+              <p>No available dates for this therapist</p>
+              <p className="select-another">Please select another therapist</p>
+            </div>
           )}
         </div>
       </div>
       
       {selectedDate && (
         <div className="schedule-selection__times">
-          <h3><FaClock className="icon" /> Available Times</h3>
+          <h3><FaClock className="icon" /> Available Times for {formatDate(selectedDate)}</h3>
           {availableTimes && availableTimes.length > 0 ? (
             <div className="time-grid">
               {availableTimes.map((timeSlot) => (
                 <div
-                  key={timeSlot.time}
+                  key={timeSlot.time || timeSlot.id}
                   className={`time-card ${selectedTime === timeSlot.time ? 'selected' : ''}`}
-                  onClick={() => handleTimeSelect(timeSlot.time)}
+                  onClick={() => handleTimeSelect(timeSlot.time, timeSlot.id)}
                 >
-                  <div className="time">{timeSlot.time}</div>
+                  <div className="time">
+                    {timeSlot.time ? 
+                      // Format time to display in a readable format (e.g., "11:00:00" to "11:00 AM")
+                      new Date(`2000-01-01T${timeSlot.time}`).toLocaleTimeString([], {
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: true
+                      }) 
+                      : 'Unknown Time'
+                    }
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p>No available times for this date</p>
+            <div className="no-slots-message">
+              <p>No available time slots for this date</p>
+              <p className="select-another">Please select another date or therapist</p>
+            </div>
           )}
         </div>
       )}

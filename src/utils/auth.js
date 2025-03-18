@@ -36,7 +36,7 @@ export const clearAuthData = () => {
 export const redirectToLogin = (message = "Please log in to continue") => {
   clearAuthData();
   if (typeof window !== "undefined") {
-    showToast.error(message);
+    showToast(message, "error");
     
     // Store the current URL to redirect back after login
     const currentPath = window.location.pathname + window.location.search;
