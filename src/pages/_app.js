@@ -68,9 +68,9 @@ const MyApp = ({ Component, pageProps }) => {
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         {requiresAuth ? (
-          <SystemAuthGuard requiredRole={router.pathname.includes('/admin') ? 'admin' : undefined}>
+          <AuthGuard requiredRole={router.pathname.includes('/admin') ? 'admin' : undefined}>
             <Component {...pageProps} />
-          </SystemAuthGuard>
+          </AuthGuard>
         ) : (
           <Component {...pageProps} />
         )}
