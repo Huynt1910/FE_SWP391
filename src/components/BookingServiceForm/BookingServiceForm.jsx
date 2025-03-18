@@ -123,10 +123,10 @@ export const BookingServiceForm = () => {
   };
 
   // Fetch therapists based on selected services
-  const fetchTherapists = async () => {
+    const fetchTherapists = async () => {
     if (!isAuthChecked) return; // Don't fetch if not authenticated
     
-    try {
+      try {
       if (selectedServices.length > 0) {
         setLoading(true);
         const serviceIds = selectedServices.map(service => service.id);
@@ -233,8 +233,8 @@ export const BookingServiceForm = () => {
           console.error("Error setting up available dates:", err);
           setError(err.message || "Failed to set up available dates");
           setAvailableDates([]);
-        } finally {
-          setLoading(false);
+      } finally {
+        setLoading(false);
         }
       }
     };
@@ -359,15 +359,15 @@ export const BookingServiceForm = () => {
           <div className="service-list__error">
             <div className="error-icon">
               <FaLock size={24} color="white" />
-            </div>
+        </div>
             <h3>Login Requireds</h3>
             <p>You need to be logged in to view our services.</p>
-            <button 
+        <button 
               className="login-button"
               onClick={() => router.push('/login')}
-            >
+        >
               Log In
-            </button>
+        </button>
           </div>
         </div>
       </div>
@@ -467,9 +467,20 @@ export const BookingServiceForm = () => {
         }
         break;
       case 2: // Therapist selection
-        canProceed = selectedTherapist !== null;
-        if (!canProceed) {
-          showToast("Please select a therapist", "error");
+        // Auto-select a therapist if none is selected and therapists are available
+        if (selectedTherapist === null && therapists && therapists.length > 0) {
+          // Randomly select a therapist
+          const randomIndex = Math.floor(Math.random() * therapists.length);
+          const randomTherapist = therapists[randomIndex];
+          
+          setSelectedTherapist(randomTherapist);
+          showToast(`Auto-selected random therapist: ${randomTherapist.fullName || randomTherapist.name}`, "info");
+          canProceed = true;
+        } else {
+          canProceed = selectedTherapist !== null;
+          if (!canProceed) {
+            showToast("Please select a therapist", "error");
+          }
         }
         break;
       case 3: // Schedule selection
@@ -490,7 +501,7 @@ export const BookingServiceForm = () => {
     
     if (canProceed) {
       if (currentStep < totalSteps) {
-        setCurrentStep(currentStep + 1);
+      setCurrentStep(currentStep + 1);
       } else {
         handleSubmit();
       }
@@ -711,7 +722,7 @@ export const BookingServiceForm = () => {
           serviceNames: selectedServices.map(service => service.name).join(", "),
           voucherName: selectedVoucher?.voucherName || null,
           voucherDiscount: selectedVoucher?.percentDiscount || 0,
-          bookingId: result.bookingId || `BK-${Math.floor(Math.random() * 1000000)}`
+          
         };
         
         // Store booking details in localStorage for access if needed

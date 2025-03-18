@@ -3,6 +3,7 @@ import { Layout } from "@/layout/Layout";
 import { useRouter } from 'next/router';
 import { FaCalendarCheck, FaArrowLeft } from 'react-icons/fa';
 import Link from 'next/link';
+import { PublicLayout } from '@/layout/PublicLayout';
 
 const BookingConfirmationPage = () => {
   const router = useRouter();
@@ -23,7 +24,7 @@ const BookingConfirmationPage = () => {
 
   if (!success) {
     return (
-      <Layout>
+      <PublicLayout>
         <div className="container">
           <div className="error-section">
             <h1>No booking information found</h1>
@@ -33,12 +34,12 @@ const BookingConfirmationPage = () => {
             </Link>
           </div>
         </div>
-      </Layout>
+      </PublicLayout>
     );
   }
 
   return (
-    <Layout>
+    <PublicLayout>
       <div className="container">
         <div className="confirmation-section">
           <div className="confirmation-icon">
@@ -50,11 +51,6 @@ const BookingConfirmationPage = () => {
           {bookingDetails && (
             <div className="booking-details">
               <h2>Booking Details</h2>
-              <div className="details-item">
-                <span className="label">Booking ID:</span>
-                <span className="value">{bookingId || bookingDetails.bookingId}</span>
-              </div>
-              
               <div className="details-item">
                 <span className="label">Therapist:</span>
                 <span className="value">{bookingDetails.therapistName}</span>
@@ -218,7 +214,7 @@ const BookingConfirmationPage = () => {
           }
         }
       `}</style>
-    </Layout>
+    </PublicLayout>
   );
 };
 

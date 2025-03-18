@@ -56,6 +56,18 @@ export const RequestMethod = {
     getAllServices: { path: "/services", method: "GET", secure: false },
     getServiceById: { path: "/services/:id", method: "GET", parameterized: true, secure: false },
     refreshToken: { path: "/authentication/refresh-token", method: "POST", secure: true },
+    getCustomerPendingBookings: { 
+      path: "/booking/customer/:userId/pending", 
+      method: "GET", 
+      parameterized: true, 
+      secure: false
+    },
+    deleteBooking: {
+      path: "/booking/delete/:bookingId",
+      method: "DELETE",
+      parameterized: true,
+      secure: true
+    },
   };
   
   export const ACTIONS = {
@@ -82,6 +94,8 @@ export const RequestMethod = {
     GET_ALL_SERVICES: "getAllServices",
     GET_SERVICE_BY_ID: "getServiceById",
     REFRESH_TOKEN: "refreshToken",
+    GET_CUSTOMER_PENDING_BOOKINGS: "getCustomerPendingBookings",
+    DELETE_BOOKING: "deleteBooking",
   };
   
   export const API_URL =

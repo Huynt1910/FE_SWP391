@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaArrowLeft, FaArrowRight, FaUser, FaCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaUser, FaCircle, FaExclamationTriangle, FaRandom } from 'react-icons/fa';
 import Link from 'next/link';
 import { isAuthenticated } from '@/utils/auth';
 
@@ -16,6 +16,17 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
         <span className="rating-value">{rating || 4.5}</span>
       </div>
     );
+  };
+
+  // Function to select a random therapist automatically
+  const autoSelectBestTherapist = () => {
+    if (therapists && therapists.length > 0) {
+      // Select a random therapist instead of the highest-rated one
+      const randomIndex = Math.floor(Math.random() * therapists.length);
+      const randomTherapist = therapists[randomIndex];
+      
+      onSelectTherapist(randomTherapist);
+    }
   };
 
   // Render loading state
@@ -66,6 +77,19 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
       {/* Therapist selection */}
       <div className="choose-therapist">
         <h2 className="choose-therapist__title">Choose Your Therapist</h2>
+        
+        {/* Auto-select button
+        {therapists && therapists.length > 0 && !selectedTherapist && (
+          // <div className="auto-select-container">
+          //   <button 
+          //     className="auto-select-button" 
+          //     onClick={autoSelectBestTherapist}
+          //   >
+          //     <FaRandom className="icon" /> Select random therapist
+          //   </button>
+          //   <p className="auto-select-note">Don't know who to choose? Let us select a random therapist for you.</p>
+          // </div>
+        )} */}
         
         <div className="choose-therapist__list">
           {therapists && therapists.length > 0 ? (
