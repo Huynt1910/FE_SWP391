@@ -5,8 +5,8 @@ const ScheduleSelection = ({
   selectedTherapist, 
   selectedDate, 
   selectedTime,
-  onSelectDate,
-  onSelectTime,
+  onDateSelect,
+  onTimeSelect,
   onPrev,
   onNext,
   availableDates,
@@ -24,7 +24,7 @@ const ScheduleSelection = ({
   // Handle date selection with session check
   const handleDateSelect = (date) => {
     try {
-      onSelectDate(date);
+      onDateSelect(date);
       // Clear any previous errors
       setErrorMessage('');
       setSessionExpired(false);
@@ -46,7 +46,7 @@ const ScheduleSelection = ({
   // Handle time selection
   const handleTimeSelect = (time) => {
     try {
-      onSelectTime(time);
+      onTimeSelect(time);
       // Clear any previous errors
       setErrorMessage('');
     } catch (error) {
@@ -67,6 +67,20 @@ const ScheduleSelection = ({
   // Handle login redirect
   const handleLogin = () => {
     window.location.href = '/login';
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      const options = { weekday: 'short', month: 'short', day: 'numeric' };
+      return date.toLocaleDateString('en-US', options);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return dateString;
+    }
   };
 
   return (
@@ -103,12 +117,11 @@ const ScheduleSelection = ({
           {availableDates && availableDates.length > 0 ? (
             availableDates.map((dateObj) => (
               <div
-                key={dateObj.value}
-                className={`date-card ${selectedDate === dateObj.value ? 'selected' : ''}`}
-                onClick={() => handleDateSelect(dateObj.value)}
+                key={dateObj.date}
+                className={`date-card ${selectedDate === dateObj.date ? 'selected' : ''}`}
+                onClick={() => handleDateSelect(dateObj.date)}
               >
-                <div className="day">{dateObj.date.split(',')[0]}</div>
-                <div className="date">{dateObj.date.split(',')[1]}</div>
+                <div className="day">{formatDate(dateObj.date)}</div>
               </div>
             ))
           ) : (
@@ -124,11 +137,11 @@ const ScheduleSelection = ({
             <div className="time-grid">
               {availableTimes.map((timeSlot) => (
                 <div
-                  key={timeSlot.id}
-                  className={`time-card ${selectedTime?.id === timeSlot.id ? 'selected' : ''}`}
-                  onClick={() => handleTimeSelect(timeSlot)}
+                  key={timeSlot.time}
+                  className={`time-card ${selectedTime === timeSlot.time ? 'selected' : ''}`}
+                  onClick={() => handleTimeSelect(timeSlot.time)}
                 >
-                  <div className="time">{timeSlot.displayTime}</div>
+                  <div className="time">{timeSlot.time}</div>
                 </div>
               ))}
             </div>

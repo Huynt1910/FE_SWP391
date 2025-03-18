@@ -3,14 +3,15 @@ import { FaArrowLeft, FaCheck, FaCreditCard, FaMoneyBill } from 'react-icons/fa'
 
 const PaymentConfirmation = ({ 
   selectedTherapist, 
+  selectedServices,
   selectedDate, 
   selectedTime,
-  paymentMethod,
+  selectedPaymentMethod,
   customerNotes,
-  setCustomerNotes,
-  onSelectPaymentMethod,
+  onCustomerNotesChange,
+  onPaymentMethodSelect,
   onPrev,
-  onSubmit,
+  onNext,
   isPending,
   paymentMethods
 }) => {
@@ -25,6 +26,33 @@ const PaymentConfirmation = ({
     });
   };
 
+  // Calculate total price of selected services
+  const calculateTotalPrice = () => {
+    if (!selectedServices || selectedServices.length === 0) return 0;
+    return selectedServices.reduce((total, service) => total + (service.price || 0), 0);
+  };
+
+  // Get service duration
+  const getServiceDuration = () => {
+    if (!selectedServices || selectedServices.length === 0) return "N/A";
+    // If only one service, return its duration
+    if (selectedServices.length === 1) {
+      return selectedServices[0].duration || "30 mins";
+    }
+    // If multiple services, return combined duration or estimated duration
+    return "Multiple services";
+  };
+
+  // Format price to display as VND currency
+  const formatPrice = (price) => {
+    // The price is already in VND
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+
   return (
     <div className="payment-confirmation">
       <h2 className="payment-confirmation__title">Payment & Confirmation</h2>
@@ -33,11 +61,15 @@ const PaymentConfirmation = ({
         <h3>Booking Summary</h3>
         <div className="summary-item">
           <span>Service:</span>
-          <span>Skin Care Consultation</span>
+          <span>
+            {selectedServices && selectedServices.length > 0 
+              ? selectedServices.map(service => service.name).join(", ")
+              : "No service selected"}
+          </span>
         </div>
         <div className="summary-item">
           <span>Duration:</span>
-          <span>30 mins</span>
+          <span>{getServiceDuration()}</span>
         </div>
         <div className="summary-item">
           <span>Therapist:</span>
@@ -49,11 +81,11 @@ const PaymentConfirmation = ({
         </div>
         <div className="summary-item">
           <span>Time:</span>
-          <span>{selectedTime ? selectedTime.displayTime : 'No time selected'}</span>
+          <span>{selectedTime || 'No time selected'}</span>
         </div>
         <div className="summary-item">
           <span>Price:</span>
-          <span>$50.00</span>
+          <span>{formatPrice(calculateTotalPrice())}</span>
         </div>
       </div>
       
@@ -64,9 +96,9 @@ const PaymentConfirmation = ({
             <div
               key={method.id}
               className={`payment-method ${
-                paymentMethod?.id === method.id ? "selected" : ""
+                selectedPaymentMethod?.id === method.id ? "selected" : ""
               }`}
-              onClick={() => onSelectPaymentMethod(method)}
+              onClick={() => onPaymentMethodSelect(method)}
             >
               <div className="payment-icon">{method.icon}</div>
               <span>{method.name}</span>
@@ -80,7 +112,7 @@ const PaymentConfirmation = ({
         <textarea
           placeholder="Any special requests or information for your therapist?"
           value={customerNotes}
-          onChange={(e) => setCustomerNotes(e.target.value)}
+          onChange={(e) => onCustomerNotesChange(e.target.value)}
           rows={3}
         ></textarea>
       </div>
@@ -104,8 +136,8 @@ const PaymentConfirmation = ({
         </button>
         <button 
           className="booking-actions__confirm" 
-          onClick={onSubmit}
-          disabled={!paymentMethod || isPending}
+          onClick={onNext}
+          disabled={!selectedPaymentMethod || isPending}
         >
           {isPending ? "Processing..." : "CONFIRM BOOKING"} {!isPending && <FaCheck className="icon" />}
         </button>

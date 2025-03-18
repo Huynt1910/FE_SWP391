@@ -3,9 +3,11 @@ import { useRouter } from "next/router";
 import { showToast } from "@/utils/toast";
 import { FaArrowLeft, FaArrowRight, FaCheck, FaCreditCard, FaMoneyBill, FaLock } from "react-icons/fa";
 import useBookingHook from "@/auth/hook/useBookingHook";
+import useListAllServices from "@/auth/hook/useListAllServices";
 import TherapistSelection from "./TherapistSelection";
 import ScheduleSelection from "./ScheduleSelection";
 import PaymentConfirmation from "./PaymentConfirmation";
+import ServiceSelection from "./ServiceSelection";
 
 // Payment methods
 const paymentMethods = [
@@ -14,16 +16,18 @@ const paymentMethods = [
 ];
 
 export const BookingServiceForm = () => {
-  // Initialize router and booking hook
+  // Initialize router and hooks
   const router = useRouter();
-  const { therapistId } = router.query;
+  const { therapistId, step } = router.query;
   const { loading: bookingLoading, error: bookingError, data: therapistsData, authRequired, getActiveTherapists } = useBookingHook();
+  const { loading: servicesLoading, error: servicesError, data: services, getAllServices } = useListAllServices();
   
-  // Step tracking
+  // Step tracking - initialize from URL query parameter if available
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3; // Reduced to 3 steps: Therapist, Schedule, Payment/Confirm
+  const totalSteps = 4; // 4 steps: Service, Therapist, Schedule, Payment/Confirm
 
   // Form state
+  const [selectedServices, setSelectedServices] = useState([]);
   const [selectedTherapist, setSelectedTherapist] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
@@ -39,315 +43,423 @@ export const BookingServiceForm = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch active therapists on component mount
+  // Set initial step based on URL parameter if available
   useEffect(() => {
-    const fetchTherapists = async () => {
+    if (router.isReady) {
+      if (step && !isNaN(Number(step))) {
+        setCurrentStep(Number(step));
+      }
+    }
+  }, [router.isReady, step]);
+
+  // Check localStorage for pre-selected service on component mount
+  useEffect(() => {
+    if (router.isReady) {
       try {
-        setLoading(true);
-        const data = await getActiveTherapists();
-        
-        // Check if authentication is required
-        if (authRequired) {
-          console.log("Authentication required for booking");
-          setError("Authentication required to book appointments");
-          return;
-        }
-        
-        setTherapists(Array.isArray(data) ? data : []);
-        
-        // If therapistId is provided in the URL, select that therapist
-        if (therapistId && Array.isArray(data)) {
-          const preSelectedTherapist = data.find(t => 
-            t.id === Number(therapistId) || 
-            t.id === therapistId
-          );
+        const storedService = localStorage.getItem('selectedService');
+        if (storedService) {
+          const service = JSON.parse(storedService);
+          setSelectedServices([service]);
           
-          if (preSelectedTherapist) {
-            setSelectedTherapist(preSelectedTherapist);
-            // Optionally move to next step if therapist is pre-selected
-            // setCurrentStep(2);
+          // If the step has been set to 2+ (from direct booking), fetch therapists for this service
+          if (currentStep >= 2 && service.id) {
+            getActiveTherapists([service.id]);
           }
+          
+          // Clear localStorage to prevent it from being used again on page refresh
+          localStorage.removeItem('selectedService');
         }
       } catch (error) {
-        console.error("Error fetching therapists:", error);
-        setError("Failed to load therapists. Please try again later.");
-        showToast("error", "Failed to load therapists");
+        console.error("Error parsing stored service:", error);
+      }
+    }
+  }, [router.isReady, currentStep]);
+
+  // Fetch services on component mount
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        await getAllServices();
+      } catch (err) {
+        console.error("Error fetching services:", err);
+        setError(err.message || "Failed to fetch services");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTherapists();
-  }, [therapistId, authRequired]);
+    fetchServices();
+  }, []);
 
-  // Handle login redirect
+  // Fetch active therapists on service selection change
+  useEffect(() => {
+    const fetchTherapists = async () => {
+      try {
+        if (selectedServices.length > 0) {
+          setLoading(true);
+          const serviceIds = selectedServices.map(service => service.id);
+          const data = await getActiveTherapists(serviceIds);
+          
+          // Check if authentication is required
+          if (authRequired) {
+            console.log("Authentication required for booking");
+            return;
+          }
+          
+          // Format therapist data
+          if (data && data.length > 0) {
+            console.log("Fetched therapists:", data);
+            setTherapists(data);
+            
+            // If a therapist ID was provided in the URL, pre-select it
+            if (therapistId) {
+              const preselectedTherapist = data.find(
+                (therapist) => therapist.id.toString() === therapistId.toString()
+              );
+              if (preselectedTherapist) {
+                setSelectedTherapist(preselectedTherapist);
+              }
+            }
+          } else {
+            console.log("No therapists found");
+            setTherapists([]);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching therapists:", err);
+        setError(err.message || "Failed to fetch therapists");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (currentStep >= 2 && selectedServices.length > 0) {
+      fetchTherapists();
+    }
+  }, [selectedServices, currentStep]);
+
   const handleLogin = () => {
-    // Store the current URL to redirect back after login
-    localStorage.setItem('redirectAfterLogin', router.asPath);
-    router.push('/login');
+    // Save current state to local storage or context
+    const bookingState = {
+      selectedServices,
+      selectedTherapist,
+      selectedDate,
+      selectedTime,
+      currentStep
+    };
+    localStorage.setItem("bookingState", JSON.stringify(bookingState));
+    
+    // Redirect to login
+    router.push("/login?redirect=/booking");
   };
 
-  // Render authentication required message
   const renderAuthRequired = () => {
     return (
-      <div className="booking-auth-required">
-        <div className="booking-auth-required__icon">
-          <FaLock size={40} />
+      <div className="auth-required">
+        <div className="auth-required__content">
+          <div className="auth-required__icon">
+            <FaLock size={30} />
+          </div>
+          <h2>Authentication Required</h2>
+          <p>
+            Please log in to book an appointment with our therapists.
+          </p>
+          <div className="auth-required__actions">
+            <button 
+              className="btn-primary"
+              onClick={handleLogin}
+            >
+              Log In to Continue
+            </button>
+            <button 
+              className="btn-secondary"
+              onClick={() => router.push("/")}
+            >
+              Return to Home
+            </button>
+          </div>
         </div>
-        <h2>Authentication Required</h2>
-        <p>You need to be logged in to book an appointment.</p>
-        <p>Please log in to continue with your booking.</p>
-        <button 
-          className="booking-auth-required__login-btn"
-          onClick={handleLogin}
-        >
-          Log In to Book
-        </button>
-        <button 
-          className="booking-auth-required__back-btn"
-          onClick={() => router.push('/service')}
-        >
-          Back to Services
-        </button>
       </div>
     );
   };
 
-  // If authentication is required, show login prompt
-  if (authRequired) {
-    return renderAuthRequired();
-  }
+  const handleSelectService = (service) => {
+    // Check if service is already selected
+    const isSelected = selectedServices.some(s => s.id === service.id);
+    
+    if (isSelected) {
+      // Remove service from selection
+      setSelectedServices(prev => prev.filter(s => s.id !== service.id));
+    } else {
+      // Add service to selection
+      setSelectedServices(prev => [...prev, service]);
+    }
+  };
 
-  // If there's an error related to authentication, show login prompt
-  if (error && (
-    error.includes("Authentication required") || 
-    error.includes("log in") || 
-    error.includes("unauthorized")
-  )) {
-    return renderAuthRequired();
-  }
-
-  // Handle therapist selection
   const handleSelectTherapist = (therapist) => {
     setSelectedTherapist(therapist);
-    console.log("Selected therapist:", therapist);
+    // When therapist is selected, generate available dates and times
+    getAvailableDates();
   };
 
-  // Handle date selection
   const handleDateSelect = (date) => {
     setSelectedDate(date);
-    console.log("Selected date:", date);
-    // When a date is selected, generate available time slots
-    setAvailableTimes(generateSampleTimeSlots());
+    // Generate time slots for the selected date
+    const slots = generateSampleTimeSlots();
+    setAvailableTimes(slots);
   };
 
-  // Handle time selection
   const handleTimeSelect = (time) => {
     setSelectedTime(time);
-    console.log("Selected time:", time);
   };
 
-  // Handle payment method selection
   const handlePaymentMethodSelect = (method) => {
     setPaymentMethod(method);
-    console.log("Selected payment method:", method);
   };
 
-  // Generate sample available dates (7 days from today)
   const getAvailableDates = () => {
+    // In a real application, this would fetch available dates from the API
+    // based on the selected therapist's availability
+    
+    // For now, generate sample dates (next 14 days)
     const dates = [];
     const today = new Date();
     
-    for (let i = 0; i < 7; i++) {
+    for (let i = 1; i <= 14; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       
-      const options = { weekday: 'short' };
-      const dayName = date.toLocaleDateString('en-US', options);
-      
-      const dateValue = date.toISOString().split('T')[0];
-      const dateDisplay = `${date.getDate()}/${date.getMonth() + 1}`;
-      
-      dates.push({
-        value: dateValue,
-        date: `${dayName}, ${dateDisplay}`
-      });
-    }
-    
-    return dates;
-  };
-
-  // Generate sample time slots
-  const generateSampleTimeSlots = () => {
-    return [
-      { id: 1, time: "09:00", displayTime: "9:00 AM" },
-      { id: 2, time: "10:00", displayTime: "10:00 AM" },
-      { id: 3, time: "11:00", displayTime: "11:00 AM" },
-      { id: 4, time: "12:00", displayTime: "12:00 PM" },
-      { id: 5, time: "13:00", displayTime: "1:00 PM" },
-      { id: 6, time: "14:00", displayTime: "2:00 PM" },
-      { id: 7, time: "15:00", displayTime: "3:00 PM" },
-      { id: 8, time: "16:00", displayTime: "4:00 PM" },
-      { id: 9, time: "17:00", displayTime: "5:00 PM" },
-    ];
-  };
-  
-  // Handle next step
-  const handleNextStep = () => {
-    if (currentStep < totalSteps) {
-      // Validate current step before proceeding
-      if (currentStep === 1 && !selectedTherapist) {
-        showToast("error", "Please select a therapist");
-        return;
-      }
-      if (currentStep === 2 && (!selectedDate || !selectedTime)) {
-        showToast("error", "Please select both date and time");
-        return;
-      }
-
-      setCurrentStep(currentStep + 1);
-
-      // If moving to final step, prepare booking details
-      if (currentStep === 2) {
-        // Generate a random booking ID
-        const bookingId = `BK${Date.now().toString().slice(-6)}`;
-        
-        setBookingDetails({
-          bookingId,
-          therapist: selectedTherapist,
-          date: selectedDate,
-          time: selectedTime,
-          paymentMethod: paymentMethod || paymentMethods[0], // Default to first payment method if none selected
-          notes: customerNotes,
-          totalPrice: 50, // Fixed price
-          serviceName: "Skin Care Consultation"
+      // Skip weekends (0 = Sunday, 6 = Saturday)
+      const dayOfWeek = date.getDay();
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        dates.push({
+          date: date.toISOString().split('T')[0],
+          available: Math.random() > 0.3, // Randomly mark some dates as unavailable
         });
       }
     }
+    
+    setAvailableSlots(dates);
+    return dates;
   };
 
-  // Handle previous step
+  const generateSampleTimeSlots = () => {
+    // Generate sample time slots for the selected date
+    const slots = [];
+    const startHour = 9; // 9 AM
+    const endHour = 17; // 5 PM
+    
+    for (let hour = startHour; hour <= endHour; hour++) {
+      for (let minutes of ['00', '30']) {
+        slots.push({
+          time: `${hour}:${minutes}`,
+          available: Math.random() > 0.3, // Randomly mark some slots as unavailable
+        });
+      }
+    }
+    
+    return slots;
+  };
+
+  const handleNextStep = () => {
+    let canProceed = false;
+    
+    // Validation logic for each step
+    switch (currentStep) {
+      case 1: // Service selection
+        canProceed = selectedServices.length > 0;
+        if (!canProceed) {
+          showToast("Please select at least one service", "error");
+        }
+        break;
+      case 2: // Therapist selection
+        canProceed = selectedTherapist !== null;
+        if (!canProceed) {
+          showToast("Please select a therapist", "error");
+        }
+        break;
+      case 3: // Schedule selection
+        canProceed = selectedDate && selectedTime;
+        if (!canProceed) {
+          showToast("Please select a date and time", "error");
+        }
+        break;
+      case 4: // Payment and confirmation
+        canProceed = paymentMethod !== null;
+        if (!canProceed) {
+          showToast("Please select a payment method", "error");
+        }
+        break;
+      default:
+        canProceed = true;
+    }
+    
+    if (canProceed) {
+      if (currentStep < totalSteps) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        handleSubmit();
+      }
+    }
+  };
+
   const handlePrevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  // Render step indicators
   const renderStepIndicators = () => {
-    const steps = [
-      { number: 1, label: "Therapist" },
-      { number: 2, label: "Schedule" },
-      { number: 3, label: "Payment & Confirm" }
-    ];
-
     return (
-      <div className="book-appointment__steps">
-        {steps.map((step) => (
+      <div className="step-indicators">
+        {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
           <div 
-            key={step.number} 
-            className="book-appointment__step"
+            key={step} 
+            className={`step-indicator ${currentStep >= step ? 'active' : ''} ${currentStep > step ? 'completed' : ''}`}
           >
-            <div className={`book-appointment__step-number ${currentStep === step.number ? 'active' : ''}`}>
-              {step.number}
+            <div className="step-indicator__number">
+              {currentStep > step ? <FaCheck className="check-icon" /> : step}
             </div>
-            <div className={`book-appointment__step-label ${currentStep === step.number ? 'active' : ''}`}>
-              {step.label}
+            <div className="step-indicator__label">
+              {step === 1 && 'Select Services'}
+              {step === 2 && 'Choose Therapist'}
+              {step === 3 && 'Schedule'}
+              {step === 4 && 'Payment'}
             </div>
+            {step < totalSteps && (
+              <div className="step-indicator__connector">
+                <div className={`connector-line ${currentStep > step ? 'completed' : ''}`}></div>
+              </div>
+            )}
           </div>
         ))}
       </div>
     );
   };
 
-
-  // Render the current step
   const renderStep = () => {
+    // If authentication is required, show login prompt
+    if (authRequired) {
+      return renderAuthRequired();
+    }
+    
     switch (currentStep) {
       case 1:
         return (
-          <TherapistSelection 
-            therapists={therapists}
-            selectedTherapist={selectedTherapist}
-            onSelectTherapist={handleSelectTherapist}
+          <ServiceSelection
+            services={services}
+            selectedServices={selectedServices}
+            onSelectService={handleSelectService}
             onNext={handleNextStep}
-            onPrev={() => router.push("/")}
+            loading={servicesLoading}
+            error={servicesError}
           />
         );
       case 2:
         return (
-          <ScheduleSelection
+          <TherapistSelection
+            therapists={therapists}
             selectedTherapist={selectedTherapist}
-            selectedDate={selectedDate}
-            selectedTime={selectedTime}
-            onSelectDate={handleDateSelect}
-            onSelectTime={handleTimeSelect}
-            onPrev={handlePrevStep}
+            onSelectTherapist={handleSelectTherapist}
             onNext={handleNextStep}
-            availableDates={getAvailableDates()}
-            availableTimes={generateSampleTimeSlots()}
+            onPrev={handlePrevStep}
+            loading={bookingLoading}
+            error={bookingError}
           />
         );
       case 3:
         return (
+          <ScheduleSelection
+            selectedTherapist={selectedTherapist}
+            availableDates={availableSlots}
+            selectedDate={selectedDate}
+            onDateSelect={handleDateSelect}
+            availableTimes={availableTimes}
+            selectedTime={selectedTime}
+            onTimeSelect={handleTimeSelect}
+            onNext={handleNextStep}
+            onPrev={handlePrevStep}
+          />
+        );
+      case 4:
+        return (
           <PaymentConfirmation
             selectedTherapist={selectedTherapist}
+            selectedServices={selectedServices}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
-            paymentMethod={paymentMethod}
-            customerNotes={customerNotes}
-            setCustomerNotes={setCustomerNotes}
-            onSelectPaymentMethod={handlePaymentMethodSelect}
-            onPrev={handlePrevStep}
-            onSubmit={handleSubmit}
-            isPending={isPending}
             paymentMethods={paymentMethods}
+            selectedPaymentMethod={paymentMethod}
+            onPaymentMethodSelect={handlePaymentMethodSelect}
+            customerNotes={customerNotes}
+            onCustomerNotesChange={setCustomerNotes}
+            onNext={handleNextStep}
+            onPrev={handlePrevStep}
+            isPending={isPending}
           />
         );
       default:
-        return null;
+        return <div>Unknown step</div>;
     }
   };
 
-  // Handle final submission
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     
-    if (!bookingDetails) {
-      showToast("error", "Booking details not found");
-      return;
-    }
-
-    // Validate payment method
-    if (!paymentMethod) {
-      showToast("error", "Please select a payment method");
-      return;
-    }
-
-    setIsPending(true);
     try {
-      // Simulate API call to book appointment
-      setTimeout(() => {
-        showToast("success", `Booking confirmed! Your booking ID is ${bookingDetails.bookingId}`);
-        setIsPending(false);
-        // Redirect to confirmation page
-        router.push("/booking-confirmation");
-      }, 1500);
+      setIsPending(true);
+      
+      // Calculate total price
+      const totalPrice = selectedServices.reduce((total, service) => total + (service.price || 0), 0);
+      
+      // Build booking details object
+      const bookingData = {
+        therapistId: selectedTherapist.id,
+        serviceIds: selectedServices.map(service => service.id),
+        date: selectedDate,
+        time: selectedTime,
+        paymentMethod: paymentMethod.id,
+        customerNotes,
+        totalPrice
+      };
+      
+      console.log("Submitting booking:", bookingData);
+      
+      // In a real application, this would send the booking data to the API
+      // For now, simulate a successful booking
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Set booking details for confirmation
+      setBookingDetails({
+        ...bookingData,
+        appointmentDateTime: `${selectedDate} ${selectedTime}`,
+        therapistName: selectedTherapist.fullName || selectedTherapist.name,
+        serviceNames: selectedServices.map(service => service.name).join(", "),
+        bookingId: `BK-${Math.floor(Math.random() * 1000000)}`
+      });
+      
+      // Show success message
+      showToast("Booking successful! Your appointment has been confirmed.", "success");
+      
+      // Redirect to confirmation page
+      router.push({
+        pathname: "/booking/confirmation",
+        query: { bookingId: bookingDetails.bookingId }
+      });
+      
     } catch (error) {
-      showToast("error", "Error processing your booking");
+      console.error("Error submitting booking:", error);
+      showToast("Failed to submit booking. Please try again.", "error");
+    } finally {
       setIsPending(false);
     }
   };
 
   return (
-    <div className="booking-service">
-      <div className="wrapper">
-        <div className="book-appointment">
-          <h1 className="book-appointment__title">Book Your Appointment</h1>
-          {renderStepIndicators()}
-          {renderStep()}
-        </div>
-      </div>
+    <div className="booking-container">
+      {renderStepIndicators()}
+      {renderStep()}
     </div>
   );
 };

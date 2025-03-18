@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Slider from "rc-slider";
 import Dropdown from "react-dropdown";
-import { FaSearch, FaSpinner, FaShoppingCart } from "react-icons/fa";
+import { FaSearch, FaSpinner, FaCalendarAlt, FaAngleDown, FaAngleUp } from "react-icons/fa";
 import useListAllServices from "@/auth/hook/useListAllServices";
 import { PagingList } from "@components/shared/PagingList/PagingList";
 import { usePagination } from "@components/utils/Pagination/Pagination";
@@ -22,10 +22,10 @@ export const Service = () => {
   const { addToCart } = useCart();
   
   const [searchTerm, setSearchTerm] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 1000]);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortedServices, setSortedServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
 
   // Fetch all services on component mount
   useEffect(() => {
@@ -49,7 +49,7 @@ export const Service = () => {
     }
   }, [services]);
 
-  // Filter services based on search, price, and category
+  // Filter services based on search and category
   useEffect(() => {
     if (sortedServices.length > 0) {
       const filtered = sortedServices.filter(service => {
@@ -60,20 +60,16 @@ export const Service = () => {
           name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           description.toLowerCase().includes(searchTerm.toLowerCase());
         
-        // Filter by price
-        const price = service.price || 0;
-        const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
-        
         // Filter by category
         const category = service.category || "";
         const matchesCategory = categoryFilter === "" || category.toLowerCase() === categoryFilter.toLowerCase();
         
-        return matchesSearch && matchesPrice && matchesCategory;
+        return matchesSearch && matchesCategory;
       });
       
       setFilteredServices(filtered);
     }
-  }, [sortedServices, searchTerm, priceRange, categoryFilter]);
+  }, [sortedServices, searchTerm, categoryFilter]);
 
   // Handle sorting
   const handleSort = (value) => {
@@ -95,16 +91,41 @@ export const Service = () => {
     }
   };
 
+  // Format price as VND
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+
   // Handle service selection
   const handleSelectService = (serviceId) => {
     router.push(`/service/${serviceId}`);
   };
 
-  // Handle adding to cart
-  const handleAddToCart = (service, e) => {
+  // Toggle description expansion
+  const toggleDescription = (serviceId, e) => {
     e.stopPropagation(); // Prevent triggering the card click
-    addToCart(service);
-    toast.success(`${service.name} added to cart!`);
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [serviceId]: !prev[serviceId]
+    }));
+  };
+
+  // Handle booking
+  const handleBookService = (service, e) => {
+    e.stopPropagation(); // Prevent triggering the card click
+    
+    // Store selected service in localStorage or use context API
+    // This is a simple way to pass the selected service to the booking page
+    localStorage.setItem('selectedService', JSON.stringify(service));
+    
+    // Redirect to booking page - start at step 2 since service is already selected
+    router.push('/booking?step=2');
+    
+    toast.success(`Booking ${service.name}...`);
   };
 
   // Get unique categories from services
@@ -112,21 +133,14 @@ export const Service = () => {
     ? [...new Set(services.map(service => service.category).filter(Boolean))]
     : [];
 
-  // Get max price for range slider
-  const maxPrice = services 
-    ? Math.max(...services.map(service => service.price || 0)) + 100
-    : 1000;
-
   // Setup pagination
-  const paginate = usePagination(filteredServices, 9);
+  const paginate = usePagination(filteredServices, 12);
 
   // Render loading state
   if (loading) {
     return (
       <div className="service-list__loading">
-        <div className="spinner-container">
-          <div className="spinner"></div>
-        </div>
+        <FaSpinner className="loading-icon" />
         <p className="loading-text">Loading services...</p>
       </div>
     );
@@ -182,11 +196,11 @@ export const Service = () => {
                       }}
                       className={categoryFilter === "" ? "active" : ""}
                     >
-                      All Services <span>({services?.length || 0})</span>
+                      All Services ({services.length})
                     </a>
                   </li>
-                  {categories.map((category, index) => (
-                    <li key={index}>
+                  {categories.map((category) => (
+                    <li key={category}>
                       <a 
                         href="#" 
                         onClick={(e) => {
@@ -195,28 +209,11 @@ export const Service = () => {
                         }}
                         className={categoryFilter === category ? "active" : ""}
                       >
-                        {category} <span>({services?.filter(s => s.category === category).length || 0})</span>
+                        {category} ({services.filter(s => s.category === category).length})
                       </a>
                     </li>
                   ))}
                 </ul>
-              </div>
-              <div className="shop-aside__item">
-                <span className="shop-aside__item-title">Price</span>
-                <div className="range-slider">
-                  <Range
-                    min={0}
-                    max={maxPrice}
-                    defaultValue={[0, maxPrice]}
-                    value={priceRange}
-                    onChange={setPriceRange}
-                    allowCross={false}
-                  />
-                  <div className="range-slider__values">
-                    <span>${priceRange[0]}</span>
-                    <span>${priceRange[1]}</span>
-                  </div>
-                </div>
               </div>
             </div>
             {/* <!-- Service Main --> */}
@@ -247,40 +244,50 @@ export const Service = () => {
                           {service.category && service.category !== "General" && (
                             <p className="service-card__category">{service.category}</p>
                           )}
-                          <p className="service-card__description">{service.description || "No description available."}</p>
-                          {service.duration && (
-                            <p className="service-card__duration">
-                              <span className="duration-label">Duration:</span> {service.duration}
+                          <div className="service-card__description-container">
+                            <p className="service-card__description" style={{
+                              maxHeight: expandedDescriptions[service.id] ? 'none' : '4.5em',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              display: '-webkit-box',
+                              WebkitLineClamp: expandedDescriptions[service.id] ? 'unset' : '3',
+                              WebkitBoxOrient: 'vertical',
+                            }}>
+                              {service.description || "No description available."}
                             </p>
-                          )}
+                            {service.description && service.description.length > 100 && (
+                              <button 
+                                className="service-card__book-btn"
+                                onClick={(e) => toggleDescription(service.id, e)}
+                              >
+                                {expandedDescriptions[service.id] 
+                                  ? <>View less <FaAngleUp className="icon" /></> 
+                                  : <>View more <FaAngleDown className="icon" /></>}
+                              </button>
+                            )}
+                          </div>
                           <div className="service-card__bottom">
-                            <span className="service-card__price">${service.price || 0}</span>
-                            <div className="service-card__actions">
-                              <button 
-                                className="service-card__btn"
-                                onClick={() => handleSelectService(service.id)}
-                              >
-                                View Details
-                              </button>
-                              <button 
-                                className="service-card__cart-btn"
-                                onClick={(e) => handleAddToCart(service, e)}
-                              >
-                                <FaShoppingCart />
-                              </button>
-                            </div>
+                            <span className="service-card__price">{formatPrice(service.price || 0)}</span>
+                            <button 
+                              className="service-card__book-btn"
+                              onClick={(e) => handleBookService(service, e)}
+                            >
+                              <FaCalendarAlt className="icon" />
+                              <span>Book Now</span>
+                            </button>
                           </div>
                         </div>
+                        <div className="service-card__overlay" onClick={() => handleSelectService(service.id)}></div>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="no-services">
-                    <p>No services found matching your criteria.</p>
+                    <h3>No services found matching your criteria.</h3>
                     <button 
+                      className="clear-filters"
                       onClick={() => {
                         setSearchTerm("");
-                        setPriceRange([0, maxPrice]);
                         setCategoryFilter("");
                       }}
                     >
@@ -289,10 +296,14 @@ export const Service = () => {
                   </div>
                 )}
               </div>
-
-              {/* <!-- PAGINATE LIST --> */}
-              {filteredServices.length > 0 && (
-                <PagingList paginate={paginate} />
+              {paginate?.maxPage > 1 && (
+                <PagingList
+                  currentPage={paginate.currentPage}
+                  maxPage={paginate.maxPage}
+                  next={paginate.next}
+                  prev={paginate.prev}
+                  jump={paginate.jump}
+                />
               )}
             </div>
           </div>

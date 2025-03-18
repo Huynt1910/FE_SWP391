@@ -118,54 +118,54 @@ const TherapistList = () => {
     );
   }
 
-  // Render error state
-  if (error) {
-    // Don't show auth errors for therapists, just try to load them anyway
-    if (error.toLowerCase().includes("authentication required") || 
-        error.toLowerCase().includes("log in") || 
-        error.toLowerCase().includes("session") || 
-        error.toLowerCase().includes("unauthorized") ||
-        error.toLowerCase().includes("expired")) {
-      // If it's an auth error, just show empty state instead
-      return (
-        <div className="therapist-list__empty">
-          <div className="therapist-grid">
-            {/* Show some placeholder therapists */}
-            {[1, 2, 3].map((index) => (
-              <div key={index} className="therapist-card therapist-card--placeholder">
-                <div className="therapist-image placeholder-image"></div>
-                <div className="therapist-details">
-                  <div className="placeholder-text placeholder-title"></div>
-                  <div className="placeholder-text placeholder-specialization"></div>
-                  <div className="placeholder-text placeholder-experience"></div>
-                  <div className="placeholder-text placeholder-bio"></div>
-                  <div className="placeholder-button"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
+  // // Render error state
+  // if (error) {
+  //   // Don't show auth errors for therapists, just try to load them anyway
+  //   if (error.toLowerCase().includes("authentication required") || 
+  //       error.toLowerCase().includes("log in") || 
+  //       error.toLowerCase().includes("session") || 
+  //       error.toLowerCase().includes("unauthorized") ||
+  //       error.toLowerCase().includes("expired")) {
+  //     // If it's an auth error, just show empty state instead
+  //     return (
+  //       <div className="therapist-list__empty">
+  //         <div className="therapist-grid">
+  //           {/* Show some placeholder therapists */}
+  //           {[1, 2, 3].map((index) => (
+  //             <div key={index} className="therapist-card therapist-card--placeholder">
+  //               <div className="therapist-image placeholder-image"></div>
+  //               <div className="therapist-details">
+  //                 <div className="placeholder-text placeholder-title"></div>
+  //                 <div className="placeholder-text placeholder-specialization"></div>
+  //                 <div className="placeholder-text placeholder-experience"></div>
+  //                 <div className="placeholder-text placeholder-bio"></div>
+  //                 <div className="placeholder-button"></div>
+  //               </div>
+  //             </div>
+  //           ))}
+  //         </div>
+  //       </div>
+  //     );
+  //   }
     
-    return (
-      <div className="therapist-list__error">
-        <div className="error-icon">
-          <FaCircle className="error-circle" />
-          <span className="error-x">×</span>
-        </div>
-        <h3>Unable To Load Therapists</h3>
-        <p>{error}</p>
+  //   return (
+  //     <div className="therapist-list__error">
+  //       <div className="error-icon">
+  //         <FaCircle className="error-circle" />
+  //         <span className="error-x">×</span>
+  //       </div>
+  //       <h3>Unable To Load Therapists</h3>
+  //       <p>{error}</p>
         
-        <button 
-          className="retry-button"
-          onClick={() => getAllTherapists()}
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
+  //       <button 
+  //         className="retry-button"
+  //         onClick={() => getAllTherapists()}
+  //       >
+  //         Try Again
+  //       </button>
+  //     </div>
+  //   );
+  // }
 
   // Render empty state with more helpful message
   if (!loading && (!therapists || therapists.length === 0)) {

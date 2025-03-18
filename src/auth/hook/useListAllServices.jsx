@@ -25,66 +25,37 @@ export const useListAllServices = () => {
       
       console.log("API Response for getAllServices:", response);
       
-      // Process the response data
-      if (response && response.success === true && response.result) {
+      // Process the response data - checking for expected structure with more flexible handling
+      if (response && response.success === true && Array.isArray(response.result)) {
         console.log("Response has result array with length:", response.result.length);
         // Map each service in the result array
         const mappedServices = response.result.map(service => mapServiceFields(service));
+        console.log("Mapped services:", mappedServices);
         setData(mappedServices);
         return mappedServices;
-      } else if (Array.isArray(response)) {
-        console.log("Response is an array with length:", response.length);
-        // Map each service in the array
+      } else if (response && Array.isArray(response)) {
+        // Handle case where response is directly an array
+        console.log("Response is directly an array with length:", response.length);
         const mappedServices = response.map(service => mapServiceFields(service));
+        console.log("Mapped services:", mappedServices);
         setData(mappedServices);
         return mappedServices;
       } else if (response && response.data && Array.isArray(response.data)) {
+        // Handle case where response has a data property that is an array
         console.log("Response has data array with length:", response.data.length);
         const mappedServices = response.data.map(service => mapServiceFields(service));
+        console.log("Mapped services:", mappedServices);
         setData(mappedServices);
         return mappedServices;
-      } else if (response && typeof response === 'object') {
-        console.log("Response is an object with keys:", Object.keys(response));
-        
-        // Try to find any array in the response
-        for (const key in response) {
-          if (Array.isArray(response[key])) {
-            console.log(`Found array at key '${key}' with length:`, response[key].length);
-            // Map each service in the array
-            const mappedServices = response[key].map(service => mapServiceFields(service));
-            setData(mappedServices);
-            return mappedServices;
-          }
-        }
-        
-        // If no array found but response looks like a single service
-        if (response.id || response.serviceId) {
-          console.log("Response appears to be a single service object");
-          const mappedService = mapServiceFields(response);
-          const serviceArray = [mappedService];
-          setData(serviceArray);
-          return serviceArray;
-        }
-        
-        console.error("Unexpected API response format:", response);
-        setError("Invalid response format from API");
-        return [];
       } else {
-        console.error("Unexpected API response format:", response);
+        // Log the full response structure for debugging
+        console.error("Unexpected API response format:", JSON.stringify(response, null, 2));
         setError("Invalid response format from API");
         return [];
       }
     } catch (error) {
       console.error("Error fetching all services:", error);
-      
-      // Handle authentication errors differently - don't show auth error for public endpoint
-      if (error.status === 401 || error.message?.includes("Authentication required")) {
-        console.log("Authentication error caught, but this is a public endpoint");
-        setError("Failed to fetch services. Please try again later.");
-      } else {
-        setError(error.message || "Failed to fetch services");
-      }
-      
+      setError(error.message || "Failed to fetch services");
       return [];
     } finally {
       setLoading(false);
@@ -113,35 +84,23 @@ export const useListAllServices = () => {
       if (response && response.success === true && response.result) {
         // Map API response fields to component expected fields
         const mappedService = mapServiceFields(response.result);
+        console.log("Mapped service:", mappedService);
         setData([mappedService]);
         return mappedService;
-      } else if (response && response.id) {
-        // Map API response fields to component expected fields
+      } else if (response && response.id || response.serviceId) {
+        // Handle case where the response itself is a service object
         const mappedService = mapServiceFields(response);
+        console.log("Mapped service (direct):", mappedService);
         setData([mappedService]);
         return mappedService;
-      } else if (response && response.success === false) {
-        // Handle error response
-        setError(response.message || "Failed to fetch service");
-        return null;
       } else {
-        console.error("Unexpected API response format:", response);
+        console.error("Unexpected API response format:", JSON.stringify(response, null, 2));
         setError("Invalid response format from API");
         return null;
       }
     } catch (error) {
       console.error(`Error fetching service with ID ${id}:`, error);
-      
-      // Handle authentication errors differently - don't show auth error for public endpoint
-      if (error.status === 401 || error.message?.includes("Authentication required")) {
-        console.log("Authentication error caught, but this is a public endpoint");
-        setError("Failed to fetch service. Please try again later.");
-      } else if (error.status === 404) {
-        setError("Service not found");
-      } else {
-        setError(error.message || "Failed to fetch service");
-      }
-      
+      setError(error.message || "Failed to fetch service");
       return null;
     } finally {
       setLoading(false);
@@ -152,19 +111,23 @@ export const useListAllServices = () => {
   const mapServiceFields = (service) => {
     if (!service) return null;
     
-    return {
-      ...service,
-      // Map serviceName to name if it exists and name doesn't
-      name: service.name || service.serviceName,
-      // Map serviceId to id if it exists and id doesn't
-      id: service.id || service.serviceId,
-      // Ensure other fields exist
+    console.log("Mapping service:", service);
+    
+    // Handle both camelCase and snake_case field names
+    const result = {
+      id: service.serviceId || service.service_id || service.id,
+      name: service.serviceName || service.service_name || service.name,
       description: service.description || "",
       price: service.price || 0,
-      category: service.category || "",
-      imgUrl: service.imgUrl || null,
-      duration: service.duration || null
+      imgUrl: service.imgUrl || service.img_url || service.image || service.imageUrl || null,
+      duration: service.duration || null,
+      isActive: service.isActive !== undefined ? service.isActive : true,
+      // Add category for filtering in Service component
+      category: service.category || service.serviceCategory || service.service_category || ""
     };
+    
+    console.log("Mapped result:", result);
+    return result;
   };
 
   return {
