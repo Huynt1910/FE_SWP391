@@ -1,34 +1,26 @@
 import { Card } from "./Card/Card";
 import socialData from "@data/social";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CartContext } from "@/pages/_app";
+import { useCart } from "@/context/CartContext";
 
 export const Cart = () => {
-  const { cart, setCart } = useContext(CartContext);
-  const [count, setCount] = useState(0);
+  const { cart, updateQuantity } = useCart();
   const socialLinks = [...socialData];
 
   const total = cart.reduce(
-    (total, item) => total + Number(item.price) * Number(item.quantity),
+    (total, item) => total + Number(item.price) * Number(item.quantity || 1),
     0
   );
 
   const handleProductQuantity = (change, quantity, id) => {
-    console.log(change, quantity, id);
     if (change === "increment") {
-      cart.find((item) => item.id === id).quantity = quantity + 1;
-      setCount(count + 1);
+      updateQuantity(id, quantity + 1);
     }
     if (change === "decrement" && quantity > 1) {
-      cart.find((item) => item.id === id).quantity = quantity - 1;
-      setCount(count + 1);
+      updateQuantity(id, quantity - 1);
     }
   };
-
-  useEffect(() => {
-    setCart(cart);
-  }, [cart, count]);
 
   return (
     <>
@@ -44,13 +36,13 @@ export const Cart = () => {
                 <div className="cart-table__col">Total</div>
               </div>
 
-              {cart.map((cart) => (
+              {cart.map((cartItem) => (
                 <Card
                   onChangeQuantity={(change, quantity) =>
-                    handleProductQuantity(change, quantity, cart.id)
+                    handleProductQuantity(change, quantity, cartItem.id)
                   }
-                  key={cart.id}
-                  cart={cart}
+                  key={cartItem.id}
+                  cart={cartItem}
                 />
               ))}
             </div>
@@ -83,7 +75,7 @@ export const Cart = () => {
                 <ul>
                   {socialLinks.map((social, index) => (
                     <li key={index}>
-                      <a href={social.path} target="_blank">
+                      <a href={social.path} target="_blank" rel="noopener noreferrer">
                         <i className={social.icon}></i>
                       </a>
                     </li>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { FaStar, FaCalendarAlt, FaCircle, FaUserMd, FaFilter, FaTimes } from "react-icons/fa";
+import { FaStar, FaCalendarAlt, FaCircle, FaUserMd, FaFilter, FaTimes, FaLock } from "react-icons/fa";
 import useListAllTherapist from "@/auth/hook/useListAllTherapist";
+import { isAuthenticated } from "@/utils/auth";
 
 const TherapistList = () => {
   const router = useRouter();
@@ -9,14 +10,25 @@ const TherapistList = () => {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [filterExperience, setFilterExperience] = useState(0);
+  const [filterAvailability, setFilterAvailability] = useState("all"); // "all", "available", "unavailable"
+  const [isAuthChecked, setIsAuthChecked] = useState(false); // Default to false to check authentication
 
-  // Fetch all therapists on component mount
+  // Check authentication on component mount
   useEffect(() => {
-    console.log("TherapistList: Fetching therapists...");
-    getAllTherapists().then(result => {
-      console.log("TherapistList: Therapists fetched, count:", result?.length || 0);
-    });
+    const isUserAuthenticated = isAuthenticated();
+    console.log("Therapist List: User authentication status:", isUserAuthenticated);
+    setIsAuthChecked(isUserAuthenticated);
   }, []);
+
+  // Fetch all therapists on component mount and when auth status changes
+  useEffect(() => {
+    if (isAuthChecked) {
+      console.log("TherapistList: Fetching therapists...");
+      getAllTherapists().then(result => {
+        console.log("TherapistList: Therapists fetched, count:", result?.length || 0);
+      });
+    }
+  }, [isAuthChecked]);
 
   // Log data changes
   useEffect(() => {
@@ -26,26 +38,65 @@ const TherapistList = () => {
     }
   }, [therapists]);
 
-  // Filter therapists based on search term and experience
+  // Add a helper function to normalize Vietnamese text for searching
+  const normalizeVietnamese = (str) => {
+    if (!str) return '';
+    
+    // First, clean up any Unikey special characters that might appear during typing
+    let cleaned = str.replace(/·/g, ''); // Remove Unikey dot marker
+    cleaned = cleaned.replace(/\s+/g, ' ').trim(); // Normalize spaces
+    
+    // Replace Vietnamese characters with their non-accented equivalents
+    return cleaned
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/[đĐ]/g, d => d === 'đ' ? 'd' : 'D'); // Replace Vietnamese d/D
+  };
+
+  // Filter therapists based on search term, experience, and availability
   const filteredTherapists = therapists ? therapists.filter(therapist => {
-    // Filter by search term (name or specialization)
-    const name = therapist.fullName || therapist.name || "";
+    // Filter by search term (prioritize fullName)
+    const fullName = therapist.fullName || therapist.name || "";
     const specialization = therapist.specialization || therapist.specialty || "";
     
-    const matchesSearch = searchTerm === "" || 
-      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      specialization.toLowerCase().includes(searchTerm.toLowerCase());
+    // Clean and normalize search term and therapist data for better Vietnamese search
+    const normalizedSearchTerm = normalizeVietnamese(searchTerm.toLowerCase());
+    const normalizedFullName = normalizeVietnamese(fullName.toLowerCase());
+    const normalizedSpecialization = normalizeVietnamese(specialization.toLowerCase());
+    
+    // Split search term into words for partial matching
+    const searchWords = normalizedSearchTerm.split(' ').filter(word => word.length > 0);
+    
+    // Check if all search words are found in the fullName
+    const matchesFullName = searchTerm === "" || 
+      fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (searchWords.length > 0 && searchWords.every(word => normalizedFullName.includes(word)));
+    
+    // Check if all search words are found in the specialization
+    const matchesSpecialization = searchTerm === "" || 
+      specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (searchWords.length > 0 && searchWords.every(word => normalizedSpecialization.includes(word)));
+    
+    const matchesSearch = matchesFullName || matchesSpecialization;
     
     // Filter by years of experience
     const experience = therapist.yearsOfExperience || therapist.yearExperience || therapist.experience || 0;
     const matchesExperience = filterExperience === 0 || experience >= filterExperience;
     
-    return matchesSearch && matchesExperience;
+    // Filter by availability
+    const status = therapist.status;
+    const isActive = status === true || status === "ACTIVE";
+    const matchesAvailability = 
+      filterAvailability === "all" || 
+      (filterAvailability === "available" && isActive) || 
+      (filterAvailability === "unavailable" && !isActive);
+    
+    return matchesSearch && matchesExperience && matchesAvailability;
   }) : [];
 
   // Handle therapist selection
   const handleSelectTherapist = (therapistId) => {
-    router.push(`/booking-service?therapistId=${therapistId}`);
+    router.push(`/booking`);
   };
 
   // Format role for display
@@ -59,6 +110,41 @@ const TherapistList = () => {
       .join(' ');
   };
 
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm("");
+    setFilterExperience(0);
+    setFilterAvailability("all");
+  };
+
+  // Handler for login button
+  const handleLogin = () => {
+    router.push("/login?redirect=/therapists");
+  };
+
+  // Render authentication required view
+  if (!isAuthChecked) {
+    return (
+      <div className="service">
+        <div className="wrapper">
+          <div className="service-list__error">
+            <div className="error-icon">
+              <FaLock size={24} color="white" />
+            </div>
+            <h3>Login Requireds</h3>
+            <p>You need to be logged in to view our services.</p>
+            <button 
+              className="login-button"
+              onClick={() => router.push('/login')}
+            >
+              Log In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Render loading state
   if (loading) {
     return (
@@ -67,38 +153,6 @@ const TherapistList = () => {
           <div className="spinner"></div>
         </div>
         <p className="loading-text">Loading therapists...</p>
-      </div>
-    );
-  }
-
-  // Render error state
-  if (error) {
-    const isAuthError = error.includes("Authentication required");
-    
-    return (
-      <div className="therapist-list__error">
-        <div className="error-icon">
-          <FaCircle className="error-circle" />
-          <span className="error-x">×</span>
-        </div>
-        <h3>Unable To Load Therapists</h3>
-        <p>{error}</p>
-        
-        {isAuthError ? (
-          <button 
-            className="login-button"
-            onClick={() => router.push('/login')}
-          >
-            Log In
-          </button>
-        ) : (
-          <button 
-            className="retry-button"
-            onClick={() => getAllTherapists()}
-          >
-            Try Again
-          </button>
-        )}
       </div>
     );
   }
@@ -125,10 +179,10 @@ const TherapistList = () => {
       <div className="therapist-list">
         <div className="therapist-list__filters">
           {/* Search input */}
-          <div className="search-input">
+          <div className="search-box">
             <input
               type="text"
-              placeholder="Search by name or specialization"
+              placeholder="Search by therapist name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -148,6 +202,19 @@ const TherapistList = () => {
               <option value={10}>10+ years</option>
             </select>
           </div>
+          
+          {/* Availability filter */}
+          <div className="experience-filter">
+            <label>Availability:</label>
+            <select 
+              value={filterAvailability} 
+              onChange={(e) => setFilterAvailability(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="available">Available</option>
+              <option value="unavailable">Unavailable</option>
+            </select>
+          </div>
         </div>
         
         <div className="therapist-list__no-results">
@@ -155,10 +222,7 @@ const TherapistList = () => {
           <p>No therapists match your search criteria.</p>
           <p>Try adjusting your filters or search term.</p>
           <button 
-            onClick={() => {
-              setSearchTerm("");
-              setFilterExperience(0);
-            }}
+            onClick={clearFilters}
           >
             <FaTimes style={{ marginRight: '8px' }} /> Clear Filters
           </button>
@@ -177,7 +241,7 @@ const TherapistList = () => {
           <div className="search-box">
             <input
               type="text"
-              placeholder="Search therapists..."
+              placeholder="Search by therapist name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -197,13 +261,22 @@ const TherapistList = () => {
             </select>
           </div>
           
-          {(searchTerm || filterExperience > 0) && (
+          <div className="experience-filter">
+            <label>Availability:</label>
+            <select 
+              value={filterAvailability} 
+              onChange={(e) => setFilterAvailability(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="available">Available</option>
+              <option value="unavailable">Unavailable</option>
+            </select>
+          </div>
+          
+          {(searchTerm || filterExperience > 0 || filterAvailability !== "all") && (
             <button 
               className="clear-filters-button"
-              onClick={() => {
-                setSearchTerm("");
-                setFilterExperience(0);
-              }}
+              onClick={clearFilters}
             >
               <FaTimes size={12} /> Clear
             </button>
@@ -217,29 +290,41 @@ const TherapistList = () => {
             // Extract therapist properties with fallbacks
             const id = therapist.id || therapist._id || "";
             const name = therapist.fullName || therapist.name || "Unnamed Therapist";
-            const image = therapist.image || therapist.avatar || therapist.photo || "/assets/img/therapists/default.jpg";
+            
+            // Improved image path handling - include imgUrl in the options
+            let image = therapist.imgUrl || therapist.image || therapist.avatar || therapist.photo || "/assets/img/therapists/default.jpg";
+            
+            // Log the image URL for debugging
+            console.log(`Therapist ${name} image URL:`, image);
+            
             const specialization = therapist.specialization || therapist.specialty || "Skin Care Specialist";
             const role = therapist.role || therapist.position || "";
             const experience = therapist.yearsOfExperience || therapist.yearExperience || therapist.experience || 0;
             const rating = therapist.rating || 4.5;
             const bio = therapist.bio || therapist.description || "Specialized in providing exceptional skin care treatments tailored to individual needs.";
-            const status = therapist.status || "ACTIVE";
+            const status = therapist.status;
+            const isActive = status === true || status === "ACTIVE";
             
             return (
               <div 
                 key={id} 
-                className={`therapist-card ${status === "INACTIVE" ? "inactive" : ""}`}
+                className={`therapist-card ${!isActive ? "inactive" : ""}`}
               >
                 <div className="therapist-image">
                   <img 
                     src={image} 
-                    alt={name} 
+                    alt={name}
+                    onError={(e) => {
+                      console.error(`Failed to load image for ${name}:`, image);
+                      e.target.onerror = null;
+                      e.target.src = "/assets/img/therapists/default.jpg";
+                    }}
                   />
                   <div className="therapist-status">
                     <FaCircle 
-                      className={status === "ACTIVE" ? "status-active" : "status-inactive"} 
+                      className={isActive ? "status-active" : "status-inactive"} 
                     />
-                    <span>{status === "ACTIVE" ? "Available" : "Unavailable"}</span>
+                    <span>{isActive ? "Available" : "Unavailable"}</span>
                   </div>
                 </div>
                 
@@ -273,11 +358,11 @@ const TherapistList = () => {
                   </div>
                   
                   <button 
-                    className={`book-button ${status === "INACTIVE" ? "disabled" : ""}`}
+                    className={`book-button ${!isActive ? "disabled" : ""}`}
                     onClick={() => handleSelectTherapist(id)}
-                    disabled={status === "INACTIVE"}
+                    disabled={!isActive}
                   >
-                    <FaCalendarAlt /> {status === "ACTIVE" ? "Book Appointment" : "Currently Unavailable"}
+                    <FaCalendarAlt /> {isActive ? "Book Appointment" : "Currently Unavailable"}
                   </button>
                 </div>
               </div>

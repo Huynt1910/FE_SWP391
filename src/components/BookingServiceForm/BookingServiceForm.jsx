@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { showToast } from "@/utils/toast";
-import { FaArrowLeft, FaArrowRight, FaCheck, FaCreditCard, FaMoneyBill } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaCheck, FaCreditCard, FaMoneyBill, FaLock } from "react-icons/fa";
 import useBookingHook from "@/auth/hook/useBookingHook";
+import useListAllServices from "@/auth/hook/useListAllServices";
 import TherapistSelection from "./TherapistSelection";
 import ScheduleSelection from "./ScheduleSelection";
 import PaymentConfirmation from "./PaymentConfirmation";
+import ServiceSelection from "./ServiceSelection";
+import { showToast } from "@/utils/toast";
+import { isAuthenticated } from "@/utils/auth";
 
 // Payment methods
 const paymentMethods = [
@@ -14,398 +17,749 @@ const paymentMethods = [
 ];
 
 export const BookingServiceForm = () => {
-  // Initialize router and booking hook
+  // Initialize router and hooks
   const router = useRouter();
-  const { therapistId } = router.query;
-  const bookingHook = useBookingHook();
+  const { therapistId, step } = router.query;
+  const { 
+    loading: bookingLoading, 
+    error: bookingError, 
+    data: therapistsData, 
+    availableSlots,
+    getActiveTherapists,
+    getAvailableSlots,
+    getTherapistScheduleForMonth,
+    submitBooking,
+    getAvailableVouchers,
+    checkAuthentication
+  } = useBookingHook();
+  const { loading: servicesLoading, error: servicesError, data: services, getAllServices } = useListAllServices();
   
-  // Step tracking
+  // Authentication state
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  
+  // Step tracking - initialize from URL query parameter if available
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3; // Reduced to 3 steps: Therapist, Schedule, Payment/Confirm
+  const totalSteps = 4; // 4 steps: Service, Therapist, Schedule, Payment/Confirm
 
   // Form state
+  const [selectedServices, setSelectedServices] = useState([]);
   const [selectedTherapist, setSelectedTherapist] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const [availableTimes, setAvailableTimes] = useState([]);
+  const [selectedSlot, setSelectedSlot] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [customerNotes, setCustomerNotes] = useState("");
+  const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [isPending, setIsPending] = useState(false);
   const [bookingDetails, setBookingDetails] = useState(null);
 
   // API data state
   const [therapists, setTherapists] = useState([]);
-  const [availableSlots, setAvailableSlots] = useState([]);
+  const [availableDates, setAvailableDates] = useState([]);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch active therapists on component mount
+  // Initial auth check on mount
   useEffect(() => {
-    const fetchTherapists = async () => {
-      try {
+    const isUserAuthenticated = isAuthenticated();
+    console.log("User authentication status:", isUserAuthenticated);
+    setIsAuthChecked(isUserAuthenticated);
+  }, []);
+
+  // Watch for authentication status changes
+  useEffect(() => {
+    if (isAuthChecked) {
+      // User is authenticated, fetch data if needed
+      if (services?.length === 0) {
+        fetchServices();
+      }
+      
+      if (therapistsData?.length === 0 && selectedServices.length > 0) {
+        fetchTherapists();
+      }
+      
+      // Fetch vouchers when authenticated
+      fetchVouchers();
+    }
+  }, [isAuthChecked]);
+  
+  // Fetch active therapists when service selection changes
+  useEffect(() => {
+    if (isAuthChecked && selectedServices.length > 0) {
+      console.log("Service selection changed, fetching therapists for services:", 
+        selectedServices.map(s => `${s.name} (ID: ${s.id})`).join(", "));
+      fetchTherapists();
+    }
+  }, [selectedServices, isAuthChecked]);
+
+  // Fetch available vouchers
+  const fetchVouchers = async () => {
+    if (!isAuthChecked) return; // Don't fetch if not authenticated
+    
+    try {
+      console.log("Fetching available vouchers...");
+      const vouchers = await getAvailableVouchers();
+      console.log("Vouchers fetched:", vouchers?.length || 0);
+      // Note: The vouchers will be handled by the PaymentConfirmation component
+    } catch (error) {
+      console.error("Error fetching vouchers:", error);
+      showToast("Error loading vouchers", "error");
+    }
+  };
+
+  // Fetch services
+  const fetchServices = async () => {
+    if (!isAuthChecked) return; // Don't fetch if not authenticated
+    
+    try {
+      console.log("Fetching services...");
+      const servicesData = await getAllServices();
+      console.log("Services fetched:", servicesData?.length || 0);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+      showToast("Error loading services", "error");
+    }
+  };
+
+  // Fetch therapists based on selected services
+  const fetchTherapists = async () => {
+    if (!isAuthChecked) return; // Don't fetch if not authenticated
+    
+    try {
+      if (selectedServices.length > 0) {
         setLoading(true);
-        console.log("Fetching active therapists...");
+        const serviceIds = selectedServices.map(service => service.id);
+        const data = await getActiveTherapists(serviceIds);
         
-        const data = await bookingHook.getActiveTherapists();
-        console.log("Therapists data received:", data);
-        
-        setTherapists(Array.isArray(data) ? data : []);
-        
-        // If therapistId is provided in the URL, select that therapist
-        if (therapistId && Array.isArray(data) && data.length > 0) {
-          const preSelectedTherapist = data.find(t => 
-            t.id === Number(therapistId) || 
-            t.id === therapistId
-          );
+        // Format therapist data
+        if (data && data.length > 0) {
+          console.log("Fetched therapists:", data);
+          setTherapists(data);
           
-          if (preSelectedTherapist) {
-            setSelectedTherapist(preSelectedTherapist);
+          // If a therapist ID was provided in the URL, pre-select it
+          if (therapistId) {
+            const preselectedTherapist = data.find(
+              (therapist) => therapist.id.toString() === therapistId.toString()
+            );
+            if (preselectedTherapist) {
+              setSelectedTherapist(preselectedTherapist);
+            }
           }
+        } else {
+          console.log("No therapists found");
+          setTherapists([]);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching therapists:", err);
+      setError(err.message || "Failed to fetch therapists");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Set initial step based on URL parameter if available
+  useEffect(() => {
+    if (router.isReady) {
+      if (step && !isNaN(Number(step))) {
+        setCurrentStep(Number(step));
+      }
+    }
+  }, [router.isReady, step]);
+
+  // Check localStorage for pre-selected service on component mount
+  useEffect(() => {
+    if (router.isReady) {
+      try {
+        const storedService = localStorage.getItem('selectedService');
+        if (storedService) {
+          const service = JSON.parse(storedService);
+          setSelectedServices([service]);
+          
+          // If the step has been set to 2+ (from direct booking), fetch therapists for this service
+          if (currentStep >= 2 && service.id) {
+            getActiveTherapists([service.id]);
+          }
+          
+          // Clear localStorage to prevent it from being used again on page refresh
+          localStorage.removeItem('selectedService');
         }
       } catch (error) {
-        console.error("Error fetching therapists:", error);
-        setError("Failed to load therapists. Please try again later.");
-        showToast.error("Failed to load therapists");
-      } finally {
-        setLoading(false);
+        console.error("Error parsing stored service:", error);
+      }
+    }
+  }, [router.isReady, currentStep]);
+
+  // Fetch available dates when therapist is selected
+  useEffect(() => {
+    const fetchAvailableDates = async () => {
+      if (selectedTherapist) {
+        try {
+          setLoading(true);
+          
+          // Skip using the problematic API call for now
+          console.log(`Skip API call for therapist ${selectedTherapist.id}, using direct dates`);
+          
+          // Generate dates for the next 14 days as a workaround
+          const dates = [];
+          const today = new Date();
+          
+          for (let i = 1; i <= 14; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+            
+            // Skip weekends (0 = Sunday, 6 = Saturday)
+            const dayOfWeek = date.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+              dates.push({
+                date: date.toISOString().split('T')[0],
+                available: true,
+                shifts: [1],
+                therapistName: selectedTherapist.fullName || selectedTherapist.name || "Therapist"
+              });
+            }
+          }
+          
+          console.log(`Generated ${dates.length} available dates for therapist ${selectedTherapist.id}`);
+          setAvailableDates(dates);
+          
+          // Clear any previously selected date and time
+          setSelectedDate("");
+          setSelectedTime("");
+          setSelectedSlot(null);
+          
+        } catch (err) {
+          console.error("Error setting up available dates:", err);
+          setError(err.message || "Failed to set up available dates");
+          setAvailableDates([]);
+        } finally {
+          setLoading(false);
+        }
       }
     };
+    
+    if (selectedTherapist) {
+      fetchAvailableDates();
+    }
+  }, [selectedTherapist]);
 
-    fetchTherapists();
-  }, [therapistId, bookingHook]);
-
-  // Fetch available slots when date is selected
+  // Fetch available slots when therapist and date are selected
   useEffect(() => {
     const fetchAvailableSlots = async () => {
-      if (!selectedDate) return;
-
-      try {
-        // Don't attempt to fetch if already loading or if there was a previous error
-        if (loading) return;
-        
-        setLoading(true);
-        console.log(`Fetching available slots for date: ${selectedDate}`);
-        
-        const data = await bookingHook.getAvailableSlots(selectedDate);
-        console.log("Available slots data:", data);
-        
-        setAvailableSlots(data || []);
-        
-        // Format time slots for display
-        if (data && data.length > 0) {
-          const formattedTimes = data.map(slot => {
-            // Assuming slot.startTime is in format "HH:MM:SS"
-            const time = new Date(`2000-01-01T${slot.startTime}`);
-            return {
-              id: slot.id,
-              displayTime: time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-              startTime: slot.startTime
-            };
-          });
-          setAvailableTimes(formattedTimes);
-        } else {
-          // If no data, use sample data for testing
-          console.log("No available slots returned, using sample data");
-          setAvailableTimes(generateSampleTimeSlots());
+      if (selectedTherapist && selectedDate) {
+        try {
+          setLoading(true);
+          const serviceIds = selectedServices.map(service => service.id);
+          const slots = await getAvailableSlots(selectedTherapist.id, serviceIds, selectedDate);
+          
+          if (slots && slots.length > 0) {
+            console.log("Available slots:", slots);
+            // Filter out deleted/invalid slots and map to UI format
+            const validSlots = slots
+              .filter(slot => !slot.deleted) // Only include non-deleted slots
+              .map(slot => ({
+                id: slot.slotid,
+                time: slot.slottime,
+                available: true // All non-deleted slots are available
+              }));
+            
+            setAvailableTimeSlots(validSlots);
+            
+            // Reset time selection if previously selected slot is no longer available
+            if (selectedTime && !validSlots.some(slot => slot.time === selectedTime)) {
+              setSelectedTime("");
+              setSelectedSlot(null);
+            }
+            
+            console.log("Valid time slots:", validSlots);
+          } else {
+            setAvailableTimeSlots([]);
+          }
+        } catch (err) {
+          console.error("Error fetching available slots:", err);
+          setError(err.message || "Failed to fetch available time slots");
+          setAvailableTimeSlots([]);
+        } finally {
+          setLoading(false);
         }
-        
-        setSelectedTime(""); // Reset time when date changes
-        setError(null); // Clear any previous errors
-      } catch (err) {
-        console.error("Error fetching available slots:", err);
-        setError("Failed to load available slots");
-        
-        // Use sample data for testing when API fails
-        console.log("Using sample time slots due to API error");
-        setAvailableTimes(generateSampleTimeSlots());
-        
-        // Don't show toast for every failed attempt to prevent spam
-        if (!error || error !== "Failed to load available slots") {
-          showToast.error("Failed to load available slots");
-        }
-      } finally {
-        setLoading(false);
       }
     };
-
-    // Only fetch if we're on the schedule selection step
-    if (currentStep === 2) {
+    
+    if (selectedTherapist && selectedDate) {
       fetchAvailableSlots();
     }
-  }, [selectedDate, currentStep]);
+  }, [selectedTherapist, selectedDate]);
 
-  // Fetch therapist schedule when therapist and date are selected
-  useEffect(() => {
-    const fetchTherapistSchedule = async () => {
-      if (!selectedTherapist || !selectedDate) return;
-
-      try {
-        // Don't attempt to fetch if already loading or if there was a previous error
-        if (loading) return;
-        
-        setLoading(true);
-        console.log(`Fetching schedule for therapist ${selectedTherapist.id} on date ${selectedDate}`);
-        
-        const data = await bookingHook.getTherapistSchedule(selectedDate);
-        console.log("Therapist schedule data:", data);
-        
-        // If we have schedule data, filter available slots
-        if (data && data.length > 0) {
-          // Filter available slots based on therapist schedule
-          const filteredSlots = availableSlots.filter(slot => 
-            data.some(schedule => schedule.slotId === slot.id)
-          );
-          setAvailableSlots(filteredSlots);
-        } else {
-          // If no schedule data, just use all available slots
-          console.log("No therapist schedule data, using all available slots");
-        }
-        
-        setError(null); // Clear any previous errors
-      } catch (err) {
-        console.error("Error fetching therapist schedule:", err);
-        setError("Failed to load therapist schedule");
-        
-        // Don't show toast for every failed attempt to prevent spam
-        if (!error || error !== "Failed to load therapist schedule") {
-          showToast.error("Failed to load therapist schedule");
-        }
-      } finally {
-        setLoading(false);
-      }
+  const handleLogin = () => {
+    // Save current state to local storage or context
+    const bookingState = {
+      selectedServices,
+      selectedTherapist,
+      selectedDate,
+      selectedTime,
+      currentStep
     };
+    localStorage.setItem("bookingState", JSON.stringify(bookingState));
+    
+    // Redirect to login
+    router.push("/login?redirect=/booking");
+  };
 
-    // Only fetch if we're on the schedule selection step
-    if (currentStep === 2) {
-      fetchTherapistSchedule();
+  // const renderAuthRequired = () => {
+  //   return (
+  //     <div className="auth-required booking-service">
+  //       <div className="auth-required__content">
+  //         <div className="auth-required__icon">
+  //           <FaLock size={50} color="#007bff" />
+  //         </div>
+        
+  //         <div className="service-preview">
+  //           <h3>Login Requireds</h3>
+  //           <div className="service-preview__items">
+  //             {services && services.length > 0 ? (
+  //               services.slice(0, 3).map((service) => (
+  //                 <div key={service.id} className="service-preview__item">
+  //                   <img 
+  //                     src={service.imageUrl || "https://via.placeholder.com/100"} 
+  //                     alt={service.name} 
+  //                     className="service-preview__image" 
+  //                   />
+  //                   <h4>{service.name}</h4>
+  //                   <p>{service.shortDescription || service.description?.substring(0, 80) + "..."}</p>
+  //                 </div>
+  //               ))
+  //             ) : (
+  //               <p>Our services will be displayed after login.</p>
+  //             )}
+  //           </div>
+  //         </div>
+  //         <div className="auth-required__actions">
+  //           <button 
+  //             className="btn-primary"
+  //             onClick={handleLogin}
+  //           >
+  //             Log In to Book Services
+  //           </button>
+  //           <button 
+  //             className="btn-secondary"
+  //             onClick={() => router.push("/registration")}
+  //           >
+  //             Create Account
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // };
+  if (!isAuthChecked) {
+    return (
+      <div className="service">
+        <div className="wrapper">
+          <div className="service-list__error">
+            <div className="error-icon">
+              <FaLock size={24} color="white" />
+            </div>
+            <h3>Login Requireds</h3>
+            <p>You need to be logged in to view our services.</p>
+            <button 
+              className="login-button"
+              onClick={() => router.push('/login')}
+            >
+              Log In
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleSelectService = (service) => {
+    // Check if service is already selected
+    const isSelected = selectedServices.some(s => s.id === service.id);
+    
+    if (isSelected) {
+      // Remove service from selection
+      setSelectedServices(prev => prev.filter(s => s.id !== service.id));
+    } else {
+      // Add service to selection
+      setSelectedServices(prev => [...prev, service]);
     }
-  }, [selectedTherapist, selectedDate, currentStep]);
+  };
 
-  // Generate available dates (next 7 days)
+  const handleSelectTherapist = (therapist) => {
+    setSelectedTherapist(therapist);
+    // Reset date and time selection when therapist changes
+    setSelectedDate("");
+    setSelectedTime("");
+    setSelectedSlot(null);
+  };
+
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
+    // Reset time selection when date changes
+    setSelectedTime("");
+    setSelectedSlot(null);
+  };
+
+  const handleTimeSelect = (time, slotId) => {
+    setSelectedTime(time);
+    setSelectedSlot(slotId);
+  };
+
+  const handlePaymentMethodSelect = (method) => {
+    setPaymentMethod(method);
+    console.log("Selected payment method:", method);
+  };
+
+  // Generate sample available dates (7 days from today)
   const getAvailableDates = () => {
     const dates = [];
     const today = new Date();
     
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       
-      const formattedDate = date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-      });
+      const options = { weekday: 'short' };
+      const dayName = date.toLocaleDateString('en-US', options);
+      
+      const dateValue = date.toISOString().split('T')[0];
+      const dateDisplay = `${date.getDate()}/${date.getMonth() + 1}`;
       
       dates.push({
-        date: formattedDate,
-        value: date.toISOString().split('T')[0]
+        value: dateValue,
+        date: `${dayName}, ${dateDisplay}`
       });
     }
     
     return dates;
   };
 
-  // Handle therapist selection
-  const handleSelectTherapist = (therapist) => {
-    setSelectedTherapist(therapist);
-    // Reset subsequent selections
-    setSelectedDate("");
-    setSelectedTime("");
+  // Generate sample time slots
+  const generateSampleTimeSlots = () => {
+    return [
+      { id: 1, time: "09:00", displayTime: "9:00 AM" },
+      { id: 2, time: "10:00", displayTime: "10:00 AM" },
+      { id: 3, time: "11:00", displayTime: "11:00 AM" },
+      { id: 4, time: "12:00", displayTime: "12:00 PM" },
+      { id: 5, time: "13:00", displayTime: "1:00 PM" },
+      { id: 6, time: "14:00", displayTime: "2:00 PM" },
+      { id: 7, time: "15:00", displayTime: "3:00 PM" },
+      { id: 8, time: "16:00", displayTime: "4:00 PM" },
+      { id: 9, time: "17:00", displayTime: "5:00 PM" },
+    ];
   };
 
-  // Handle date selection
-  const handleDateSelect = (date) => {
-    setSelectedDate(date);
-    setSelectedTime(""); // Reset time when date changes
+  const handleVoucherSelect = (voucher) => {
+    setSelectedVoucher(voucher);
   };
 
-  // Handle time selection
-  const handleTimeSelect = (timeSlot) => {
-    setSelectedTime(timeSlot);
-  };
-
-  // Handle payment method selection
-  const handlePaymentMethodSelect = (method) => {
-    setPaymentMethod(method);
-  };
-
-  // Handle next step
   const handleNextStep = () => {
-    if (currentStep < totalSteps) {
-      // Validate current step before proceeding
-      if (currentStep === 1 && !selectedTherapist) {
-        showToast.error("Please select a therapist");
-        return;
-      }
-      if (currentStep === 2 && (!selectedDate || !selectedTime)) {
-        showToast.error("Please select both date and time");
-        return;
-      }
-
-      setCurrentStep(currentStep + 1);
-
-      // If moving to final step, prepare booking details
-      if (currentStep === 2) {
-        // Generate a random booking ID
-        const bookingId = `BK${Date.now().toString().slice(-6)}`;
-        
-        setBookingDetails({
-          bookingId,
-          therapist: selectedTherapist,
-          date: selectedDate,
-          time: selectedTime,
-          paymentMethod: paymentMethod || paymentMethods[0], // Default to first payment method if none selected
-          notes: customerNotes,
-          totalPrice: 50, // Fixed price
-          serviceName: "Skin Care Consultation"
-        });
+    let canProceed = false;
+    
+    // Validation logic for each step
+    switch (currentStep) {
+      case 1: // Service selection
+        canProceed = selectedServices.length > 0;
+        if (!canProceed) {
+          showToast("Please select at least one service", "error");
+        }
+        break;
+      case 2: // Therapist selection
+        canProceed = selectedTherapist !== null;
+        if (!canProceed) {
+          showToast("Please select a therapist", "error");
+        }
+        break;
+      case 3: // Schedule selection
+        canProceed = selectedDate && selectedTime && selectedSlot;
+        if (!canProceed) {
+          showToast("Please select a date and time", "error");
+        }
+        break;
+      case 4: // Payment and confirmation
+        canProceed = paymentMethod !== null;
+        if (!canProceed) {
+          showToast("Please select a payment method", "error");
+        }
+        break;
+      default:
+        canProceed = true;
+    }
+    
+    if (canProceed) {
+      if (currentStep < totalSteps) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        handleSubmit();
       }
     }
   };
 
-  // Handle previous step
   const handlePrevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  // Render step indicators
   const renderStepIndicators = () => {
-    const steps = [
-      { number: 1, label: "Therapist" },
-      { number: 2, label: "Schedule" },
-      { number: 3, label: "Payment & Confirm" }
-    ];
-
     return (
-      <div className="book-appointment__steps">
-        {steps.map((step) => (
+      <div className="step-indicators">
+        {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
           <div 
-            key={step.number} 
-            className="book-appointment__step"
+            key={step} 
+            className={`step-indicator ${currentStep >= step ? 'active' : ''} ${currentStep > step ? 'completed' : ''}`}
           >
-            <div className={`book-appointment__step-number ${currentStep === step.number ? 'active' : ''}`}>
-              {step.number}
+            <div className="step-indicator__number">
+              {currentStep > step ? <FaCheck className="check-icon" /> : step}
             </div>
-            <div className={`book-appointment__step-label ${currentStep === step.number ? 'active' : ''}`}>
-              {step.label}
+            <div className="step-indicator__label">
+              {step === 1 && 'Select Services'}
+              {step === 2 && 'Choose Therapist'}
+              {step === 3 && 'Schedule'}
+              {step === 4 && 'Payment'}
             </div>
+            {step < totalSteps && (
+              <div className="step-indicator__connector">
+                <div className={`connector-line ${currentStep > step ? 'completed' : ''}`}></div>
+              </div>
+            )}
           </div>
         ))}
       </div>
     );
   };
 
-  // Generate sample time slots for testing if no real data is available
-  const generateSampleTimeSlots = () => {
-    if (availableTimes && availableTimes.length > 0) {
-      return availableTimes;
+  const renderStep = () => {
+    // Check authentication first
+    if (!isAuthChecked) {
+      return renderAuthRequired();
     }
     
-    // Generate sample time slots from 9 AM to 5 PM
-    const sampleSlots = [];
-    for (let hour = 9; hour <= 17; hour++) {
-      const displayHour = hour > 12 ? hour - 12 : hour;
-      const amPm = hour >= 12 ? 'PM' : 'AM';
-      sampleSlots.push({
-        id: `slot-${hour}`,
-        displayTime: `${displayHour}:00 ${amPm}`,
-        startTime: `${hour}:00:00`
-      });
+    // Display loading/error states
+    if (loading || bookingLoading || servicesLoading) {
+      return (
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Loading booking information...</p>
+        </div>
+      );
     }
-    return sampleSlots;
-  };
-
-  // Render the current step
-  const renderStep = () => {
+    
+    if (error || bookingError || servicesError) {
+      return (
+        <div className="error-container">
+          <h3>Something went wrong</h3>
+          <p>{error || bookingError || servicesError}</p>
+          <button className="btn-primary" onClick={() => window.location.reload()}>
+            Try Again
+          </button>
+        </div>
+      );
+    }
+    
     switch (currentStep) {
       case 1:
+        return (
+          <ServiceSelection
+            services={services}
+            selectedServices={selectedServices}
+            onSelectService={handleSelectService}
+            onNext={handleNextStep}
+            loading={false}
+            error={null}
+          />
+        );
+      case 2:
         return (
           <TherapistSelection 
             therapists={therapists}
             selectedTherapist={selectedTherapist}
             onSelectTherapist={handleSelectTherapist}
             onNext={handleNextStep}
-            onPrev={() => router.push("/")}
-            loading={loading}
-          />
-        );
-      case 2:
-        return (
-          <ScheduleSelection
-            selectedTherapist={selectedTherapist}
-            selectedDate={selectedDate}
-            selectedTime={selectedTime}
-            onSelectDate={handleDateSelect}
-            onSelectTime={handleTimeSelect}
             onPrev={handlePrevStep}
-            onNext={handleNextStep}
-            availableDates={getAvailableDates()}
-            availableTimes={generateSampleTimeSlots()}
-            loading={loading}
+            loading={bookingLoading}
+            error={bookingError}
           />
         );
       case 3:
         return (
+          <ScheduleSelection
+            selectedTherapist={selectedTherapist}
+            availableDates={availableDates}
+            selectedDate={selectedDate}
+            onDateSelect={handleDateSelect}
+            availableTimes={availableTimeSlots}
+            selectedTime={selectedTime}
+            onTimeSelect={handleTimeSelect}
+            onNext={handleNextStep}
+            onPrev={handlePrevStep}
+          />
+        );
+      case 4:
+        return (
           <PaymentConfirmation
             selectedTherapist={selectedTherapist}
+            selectedServices={selectedServices}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
-            paymentMethod={paymentMethod}
-            customerNotes={customerNotes}
-            setCustomerNotes={setCustomerNotes}
-            onSelectPaymentMethod={handlePaymentMethodSelect}
-            onPrev={handlePrevStep}
-            onSubmit={handleSubmit}
-            isPending={isPending}
             paymentMethods={paymentMethods}
+            selectedPaymentMethod={paymentMethod}
+            onPaymentMethodSelect={handlePaymentMethodSelect}
+            selectedVoucher={selectedVoucher}
+            onVoucherSelect={handleVoucherSelect}
+            customerNotes={customerNotes}
+            onCustomerNotesChange={setCustomerNotes}
+            onNext={handleNextStep}
+            onPrev={handlePrevStep}
+            isPending={isPending}
           />
         );
       default:
-        return null;
+        return <div>Unknown step</div>;
     }
   };
 
-  // Handle final submission
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     
-    if (!bookingDetails) {
-      showToast.error("Booking details not found");
-      return;
-    }
-
-    // Validate payment method
-    if (!paymentMethod) {
-      showToast.error("Please select a payment method");
-      return;
-    }
-
-    setIsPending(true);
     try {
-      // Simulate API call to book appointment
-      setTimeout(() => {
-        showToast.success(`Booking confirmed! Your booking ID is ${bookingDetails.bookingId}`);
-        setIsPending(false);
-        // Redirect to confirmation page
-        router.push("/booking-confirmation");
-      }, 1500);
+      setIsPending(true);
+      
+      // Get user ID with priority: cookies > localStorage > default
+      let userId = null;
+      
+      // Try to get from cookies first
+      const userIdCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('userId='));
+      
+      if (userIdCookie) {
+        userId = parseInt(userIdCookie.split('=')[1], 10); // Convert to number
+        console.log("Found user ID in cookies:", userId, typeof userId);
+      } 
+      // Then try localStorage
+      else {
+        // Direct userId from localStorage
+        const directUserId = localStorage.getItem('userId');
+        if (directUserId) {
+          userId = parseInt(directUserId, 10); // Convert to number
+          console.log("Found user ID directly in localStorage:", userId, typeof userId);
+        } else {
+          // Try from user object in localStorage
+          const userString = localStorage.getItem('user');
+          if (userString) {
+            try {
+              const user = JSON.parse(userString);
+              if (user && user.id) {
+                userId = parseInt(user.id, 10); // Convert to number
+                console.log("Found user ID from user object in localStorage:", userId, typeof userId);
+              }
+            } catch (error) {
+              console.error("Error parsing user from localStorage:", error);
+            }
+          }
+        }
+      }
+      
+      console.log("Final userId before sending to API:", userId, typeof userId);
+      
+      // // If still no user ID, use default with warning
+      // if (!userId) {
+      //   userId = 1; // Default ID
+      //   console.warn("USING DEFAULT USER ID (1). This is only for development!");
+      //   showToast("Using default account. For your own bookings, please log in.", "warning");
+      // }
+      
+      // Build booking data based on API requirements
+      const bookingData = {
+        userId: userId ,// || 1,  Ensure a valid userId (use 1 as fallback)
+        slotId: Number(selectedSlot),
+        bookingDate: selectedDate,
+        serviceId: selectedServices.map(service => service.id),
+        therapistId: Number(selectedTherapist.id),
+        voucherId: selectedVoucher ? Number(selectedVoucher.voucherId) : null,
+        email: "customer@example.com" // Add a default email to ensure the booking goes through
+      };
+      
+      // Try to get real email if possible
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.email) {
+          bookingData.email = user.email;
+        }
+      } catch (err) {
+        console.warn("Using default email for booking");
+      }
+      
+      // Log the exact data being sent
+      console.log("Submitting booking with data:", JSON.stringify(bookingData));
+      console.log("User ID type:", typeof bookingData.userId);
+      console.log("SlotId type:", typeof bookingData.slotId);
+      console.log("TherapistId type:", typeof bookingData.therapistId);
+      
+      // Submit booking to API
+      const result = await submitBooking(bookingData);
+      
+      if (result) {
+        // Set booking details for display on confirmation page
+        const bookingDetails = {
+          ...bookingData,
+          appointmentDateTime: `${selectedDate} ${selectedTime}`,
+          therapistName: selectedTherapist.fullName || selectedTherapist.name,
+          serviceNames: selectedServices.map(service => service.name).join(", "),
+          voucherName: selectedVoucher?.voucherName || null,
+          voucherDiscount: selectedVoucher?.percentDiscount || 0,
+          bookingId: result.bookingId || `BK-${Math.floor(Math.random() * 1000000)}`
+        };
+        
+        // Store booking details in localStorage for access if needed
+        localStorage.setItem('lastBookingDetails', JSON.stringify(bookingDetails));
+        
+        // Show success message with booking confirmation
+        showToast("Booking successful! Your appointment has been confirmed.", "success");
+        
+        // Redirect to booking confirmation page
+        router.push({
+          pathname: "/booking/confirmation",
+          query: { 
+            success: true,
+            bookingId: bookingDetails.bookingId
+          }
+        });
+      } else {
+        console.error("Booking submission failed - result was falsy");
+        showToast("Failed to submit booking. Please check your selections and try again.", "error");
+      }
     } catch (error) {
-      showToast.error("Error processing your booking");
+      console.error("Error submitting booking:", error);
+      
+      // Show more detailed error message to help diagnose the issue
+      let errorMessage = "Failed to submit booking.";
+      
+      if (error.response) {
+        // Server responded with an error
+        errorMessage += ` Server error: ${error.response.status}`;
+        console.error("Server response:", error.response.data);
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage += " No response from server. Please check your internet connection.";
+      } else {
+        // Error in setting up the request
+        errorMessage += ` ${error.message || "Unknown error"}`;
+      }
+      
+      showToast(errorMessage, "error");
+    } finally {
       setIsPending(false);
     }
   };
 
   return (
-    <div className="booking-service">
-      <div className="wrapper">
-        <div className="book-appointment">
-          <h1 className="book-appointment__title">Book Your Appointment</h1>
+    <div className="booking-container">
           {renderStepIndicators()}
           {renderStep()}
-        </div>
-      </div>
     </div>
   );
 };

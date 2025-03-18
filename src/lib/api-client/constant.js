@@ -46,50 +46,16 @@ export const RequestMethod = {
       secure: true,
     },
     getActiveTherapists: { path: "/therapists/activeTherapists", method: "GET", secure: true },
-    getAllTherapists: { path: "/therapists", method: "GET" },
-    getTherapistById: { path: "/therapists/:id", method: "GET", parameterized: true },
-    getAvailableSlots: { path: "/slot/:date", method: "GET", parameterized: true },
-    getTherapistSchedule: { path: "/schedule/therapist/:date", method: "GET", parameterized: true },
-    getTherapistMonthlySchedule: { 
-      path: "/schedule/therapist/month/:therapistId/:month", 
-      method: "GET", 
-      parameterized: true 
-    },
-    getAllSlots: { path: "/slot/getAllSlot", method: "GET" },
-    
-    // Therapist Schedule Endpoints
-    createTherapistSchedule: { 
-      path: "/schedule/therapist", 
-      method: "POST", 
-      secure: true 
-    },
-    getTherapistScheduleByDate: { 
-      path: "/schedule/therapist/:date", 
-      method: "GET", 
-      parameterized: true 
-    },
-    getTherapistScheduleById: { 
-      path: "/schedule/therapist/getById/:id", 
-      method: "GET", 
-      parameterized: true 
-    },
-    updateTherapistSchedule: { 
-      path: "/schedule/therapist/update/:id", 
-      method: "PUT", 
-      parameterized: true, 
-      secure: true 
-    },
-    deleteTherapistSchedule: { 
-      path: "/schedule/therapist/:id", 
-      method: "DELETE", 
-      parameterized: true, 
-      secure: true 
-    },
-    getTherapistScheduleByMonth: { 
-      path: "/schedule/therapist/month/:therapistId/:month", 
-      method: "GET", 
-      parameterized: true 
-    },
+    getTherapistsByService: { path: "/booking/therapists", method: "POST", secure: false },
+    getAvailableSlots: { path: "/booking/slots", method: "POST", secure: false },
+    createBooking: { path: "/booking/createBooking", method: "POST", secure: false },
+    getTherapistSchedule: { path: "/schedule/therapist/month/:month/:year", method: "GET", parameterized: true, secure: false },
+    getTherapistScheduleById: { path: "/schedule/therapist/getById/:id", method: "GET", parameterized: true, secure: false },
+    getVouchers: { path: "/vouchers", method: "GET", secure: false },
+    getAllTherapists: { path: "/therapists", method: "GET", secure: false },
+    getAllServices: { path: "/services", method: "GET", secure: false },
+    getServiceById: { path: "/services/:id", method: "GET", parameterized: true, secure: false },
+    refreshToken: { path: "/authentication/refresh-token", method: "POST", secure: true },
   };
   
   export const ACTIONS = {
@@ -106,12 +72,16 @@ export const RequestMethod = {
     UPDATE_INFO: "updateInfo",
     CHANGE_PASSWORD: "changePassword",
     GET_ACTIVE_THERAPISTS: "getActiveTherapists",
-    GET_ALL_THERAPISTS: "getAllTherapists",
-    GET_THERAPIST_BY_ID: "getTherapistById",
+    GET_THERAPISTS_BY_SERVICE: "getTherapistsByService",
     GET_AVAILABLE_SLOTS: "getAvailableSlots",
+    CREATE_BOOKING: "createBooking",
     GET_THERAPIST_SCHEDULE: "getTherapistSchedule",
-    GET_THERAPIST_MONTHLY_SCHEDULE: "getTherapistMonthlySchedule",
-    GET_ALL_SLOTS: "getAllSlots",
+    GET_THERAPIST_SCHEDULE_BY_ID: "getTherapistScheduleById",
+    GET_VOUCHERS: "getVouchers",
+    GET_ALL_THERAPISTS: "getAllTherapists",
+    GET_ALL_SERVICES: "getAllServices",
+    GET_SERVICE_BY_ID: "getServiceById",
+    REFRESH_TOKEN: "refreshToken",
   };
   
   export const API_URL =

@@ -1,54 +1,112 @@
 import { useState } from "react";
 import { APIClient } from "@/lib/api-client";
 import { ACTIONS } from "@/lib/api-client/constant";
+import { isAuthenticated } from "@/utils/auth";
 
 export const useBookingHook = () => {
+  // State management
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [bookingResult, setBookingResult] = useState(null);
+  const [authRequired, setAuthRequired] = useState(false);
+  const [formState, setFormState] = useState({
+    selectedTherapistId: null,
+    selectedDate: null,
+    selectedTime: null,
+    selectedServiceIds: [],
+    customerNote: "",
+  });
+
+  // Form validation state
+  const [formErrors, setFormErrors] = useState({
+    therapist: "",
+    date: "",
+    time: "",
+    services: "",
+  });
+
+  // Handle input changes
+  const handleInputChange = (field, value) => {
+    setFormState(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear error when field is changed
+    if (formErrors[field]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [field]: ""
+      }));
+    }
+  };
+
+  // Validate form
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formState.selectedTherapistId) {
+      errors.therapist = "Please select a therapist";
+    }
+    
+    if (!formState.selectedDate) {
+      errors.date = "Please select a date";
+    }
+    
+    if (!formState.selectedTime) {
+      errors.time = "Please select a time";
+    }
+    
+    if (!formState.selectedServiceIds.length) {
+      errors.services = "Please select at least one service";
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Check if user is authenticated
+  const checkAuthentication = () => {
+    const authenticated = isAuthenticated();
+    console.log("Checking authentication status:", authenticated);
+    setAuthRequired(!authenticated);
+    
+    // // If not authenticated, reset all loading and data states
+    // if (!authenticated) {
+    //   setLoading(false);
+    //   setError(null);
+    //   setData([]);
+    //   setAvailableSlots([]);
+    //   setBookingResult(null);
+    // }
+    
+    return authenticated;
+  };
 
   // Get all active therapists
-  const getActiveTherapists = async () => {
+  const getActiveTherapists = async (serviceIds = [1, 2, 3]) => {
     try {
       setLoading(true);
       setError(null);
+      setAuthRequired(false);
       
-      console.log("Calling getActiveTherapists from hook");
-      
-      // Check if token exists
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
-      console.log("Token available:", !!token);
+      console.log("Fetching active therapists...");
       
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_ACTIVE_THERAPISTS
+        action: ACTIONS.GET_THERAPISTS_BY_SERVICE,
+        data: { serviceId: serviceIds },
+        options: { preventRedirect: true }
       });
       
-      console.log("API response for active therapists:", response);
+      console.log("API Response for getActiveTherapists:", response);
       
-      // Check if response has data property and it's an array
-      if (response && response.data && Array.isArray(response.data)) {
-        console.log("Found data array in response.data");
-        setData(response.data);
-        return response.data;
-      } else if (response && Array.isArray(response)) {
-        // Some APIs might return the array directly
-        console.log("Response is directly an array");
-        setData(response);
-        return response;
-      } else if (response && typeof response === 'object') {
-        // Try to find any array in the response
-        console.log("Searching for array in response object");
-        for (const key in response) {
-          if (Array.isArray(response[key])) {
-            console.log(`Found array in response.${key}`);
-            setData(response[key]);
-            return response[key];
-          }
-        }
-        
-        console.error("No array found in response:", response);
-        setError("Invalid response format from API");
-        return [];
+      // Process the response
+      if (response && response.success === true && response.result) {
+        console.log("Response has result array with length:", response.result.length);
+        setData(response.result);
+        return response.result;
       } else {
         console.error("Unexpected API response format:", response);
         setError("Invalid response format from API");
@@ -75,230 +133,261 @@ export const useBookingHook = () => {
     }
   };
 
-  // Get all therapists (active and inactive)
-  const getAllTherapists = async () => {
+  // Get available slots for a therapist on a specific date
+  const getAvailableSlots = async (therapistId, serviceIds, date) => {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log("Fetching available slots...");
+      
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_ALL_THERAPISTS
+        action: ACTIONS.GET_AVAILABLE_SLOTS,
+        data: {
+          therapistId: therapistId,
+          serviceId: serviceIds,
+          date: date
+        },
+        options: { preventRedirect: true }
       });
       
-      // Check if response has data property and it's an array
-      if (response && Array.isArray(response)) {
-        setData(response);
-        return response;
-      } else if (response && response.data && Array.isArray(response.data)) {
-        // Some APIs might return the data in a data property
-        setData(response.data);
-        return response.data;
+      console.log("API Response for getAvailableSlots:", response);
+      
+      // Process the response
+      if (response && response.success === true && response.result) {
+        console.log("Available slots:", response.result);
+        setAvailableSlots(response.result);
+        return response.result;
       } else {
         console.error("Unexpected API response format:", response);
         setError("Invalid response format from API");
         return [];
       }
     } catch (error) {
-      console.error("Error fetching all therapists:", error);
-      setError(error.message || "Failed to fetch therapists");
+      console.error("Error fetching available slots:", error);
+      setError(error.message || "Failed to fetch available slots");
       return [];
     } finally {
       setLoading(false);
     }
   };
 
-  // Get therapist details by ID
-  const getTherapistById = async (id) => {
+  // Get therapist schedule for a month
+  const getTherapistScheduleForMonth = async (therapistId, month, year) => {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log(`Fetching schedule for therapist ${therapistId} for ${month}/${year}...`);
+      
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_THERAPIST_BY_ID,
-        data: { id }
+        action: ACTIONS.GET_THERAPIST_SCHEDULE,
+        urlParams: {
+          month: month,
+          year: year
+        },
+        options: { preventRedirect: true }
       });
       
-      if (response && response.data) {
-        setData(response.data);
-        return response.data;
-      } else if (response) {
-        setData(response);
+      console.log("API Response for getTherapistSchedule:", response);
+      
+      if (response && response.success === true && Array.isArray(response.result)) {
+        return response.result;
+      } else if (Array.isArray(response)) {
         return response;
       } else {
         console.error("Unexpected API response format:", response);
         setError("Invalid response format from API");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching therapist schedule:", error);
+      setError(error.message || "Failed to fetch therapist schedule");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get therapist schedule by ID
+  const getTherapistScheduleById = async (therapistId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log(`Fetching schedule for therapist ID: ${therapistId}`);
+      
+      const response = await APIClient.invoke({
+        action: ACTIONS.GET_THERAPIST_SCHEDULE_BY_ID,
+        urlParams: {
+          id: therapistId
+        },
+        options: { preventRedirect: true }
+      });
+      
+      console.log("API Response for getTherapistScheduleById:", response);
+      
+      if (response && response.success === true && Array.isArray(response.result)) {
+        return response.result;
+      } else if (Array.isArray(response)) {
+        return response;
+      } else {
+        console.error("Unexpected API response format:", response);
+        setError("Invalid response format from API");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching therapist schedule by ID:", error);
+      setError(error.message || "Failed to fetch therapist schedule");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get available vouchers
+  const getAvailableVouchers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log("Fetching available vouchers...");
+      
+      const response = await APIClient.invoke({
+        action: ACTIONS.GET_VOUCHERS,
+        options: { preventRedirect: true }
+      });
+      
+      console.log("API Response for getAvailableVouchers:", response);
+      
+      if (response && response.success === true && Array.isArray(response.result)) {
+        // Filter for active vouchers only
+        const activeVouchers = response.result.filter(voucher => 
+          voucher.isActive && 
+          new Date(voucher.expiryDate) > new Date() && 
+          voucher.quantity > 0
+        );
+        
+        console.log("Active vouchers:", activeVouchers);
+        return activeVouchers;
+      } else {
+        console.error("Unexpected API response format:", response);
+        setError("Invalid response format from API");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching vouchers:", error);
+      setError(error.message || "Failed to fetch vouchers");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Submit booking
+  const submitBooking = async (bookingData) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // CRITICAL: Ensure userId is valid and correctly formatted
+      if (!bookingData.userId || bookingData.userId === 0) {
+        console.warn("CRITICAL: Invalid or missing userId in booking data, using default (1)");
+        bookingData = {
+          ...bookingData,
+          userId: 1 // Explicitly set to 1 if missing or invalid
+        };
+      }
+      
+      // Convert userId to number just to be safe
+      bookingData.userId = Number(bookingData.userId);
+      
+      // Add email to booking data - the API might need this to store the booking
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.email) {
+          bookingData.email = user.email;
+          console.log("Added user email to booking data:", user.email);
+        } else {
+          // Try to find email in other storage locations
+          const storedEmail = localStorage.getItem('userEmail');
+          if (storedEmail) {
+            bookingData.email = storedEmail;
+            console.log("Added email from direct localStorage:", storedEmail);
+          }
+        }
+      } catch (err) {
+        console.warn("Error adding email to booking data:", err);
+      }
+      
+      console.log("Creating booking with FINAL data:", JSON.stringify(bookingData));
+      console.log("User ID type and value:", typeof bookingData.userId, bookingData.userId);
+      
+      const response = await APIClient.invoke({
+        action: ACTIONS.CREATE_BOOKING,
+        data: bookingData,
+        options: { preventRedirect: true }
+      });
+      
+      console.log("API Response for createBooking:", response);
+      
+      // Process the response
+      if (response && response.success === true) {
+        console.log("Booking created successfully:", response.result);
+        setBookingResult(response.result);
+        return response.result;
+      } else {
+        console.error("Failed to create booking:", response);
+        setError(response.message || "Failed to create booking");
         return null;
       }
     } catch (error) {
-      console.error("Error fetching therapist details:", error);
-      setError(error.message || "Failed to fetch therapist details");
+      console.error("Error creating booking:", error);
+      setError(error.message || "Failed to create booking");
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  // Get available slots for a specific date
-  const getAvailableSlots = async (date) => {
-    try {
-      setLoading(true);
-      setError(null);
-      console.log(`Calling getAvailableSlots for date: ${date}`);
-      
-      // Check if token exists
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
-      console.log("Token available for slots request:", !!token);
-      
-      const response = await APIClient.invoke({
-        action: ACTIONS.GET_AVAILABLE_SLOTS,
-        data: { date }
-      });
-      
-      console.log("API response for available slots:", response);
-      
-      // Check response format and provide fallback
-      if (response && response.data && Array.isArray(response.data)) {
-        setData(response.data);
-        return response.data;
-      } else if (response && Array.isArray(response)) {
-        setData(response);
-        return response;
-      } else {
-        console.log("Invalid response format, returning sample slots");
-        // Return sample slots as fallback
-        return generateSampleSlots();
-      }
-    } catch (error) {
-      console.error("Error fetching available slots:", error);
-      setError(error.message || "Failed to fetch available slots");
-      
-      // Return sample slots as fallback
-      return generateSampleSlots();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Generate sample time slots for testing
-  const generateSampleSlots = () => {
-    const slots = [];
-    // Generate slots from 9 AM to 5 PM
-    for (let i = 9; i <= 17; i++) {
-      slots.push({
-        id: `slot-${i}`,
-        startTime: `${i}:00:00`,
-        endTime: `${i+1}:00:00`,
-        available: true
-      });
-    }
-    return slots;
-  };
-
-  // Get therapist schedule by date
-  const getTherapistSchedule = async (date) => {
-    try {
-      setLoading(true);
-      setError(null);
-      console.log(`Calling getTherapistSchedule for date: ${date}`);
-      
-      // Check if token exists
-      const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
-      console.log("Token available for schedule request:", !!token);
-      
-      const response = await APIClient.invoke({
-        action: ACTIONS.GET_THERAPIST_SCHEDULE,
-        data: { date }
-      });
-      
-      console.log("API response for therapist schedule:", response);
-      
-      // Check response format and provide fallback
-      if (response && response.data && Array.isArray(response.data)) {
-        setData(response.data);
-        return response.data;
-      } else if (response && Array.isArray(response)) {
-        setData(response);
-        return response;
-      } else {
-        console.log("Invalid response format, returning sample schedule");
-        // Return sample schedule as fallback
-        return generateSampleSchedule();
-      }
-    } catch (error) {
-      console.error("Error fetching therapist schedule:", error);
-      setError(error.message || "Failed to fetch therapist schedule");
-      
-      // Return sample schedule as fallback
-      return generateSampleSchedule();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Generate sample schedule for testing
-  const generateSampleSchedule = () => {
-    const schedule = [];
-    // Generate schedule entries matching the sample slots
-    for (let i = 9; i <= 17; i++) {
-      schedule.push({
-        id: `schedule-${i}`,
-        slotId: `slot-${i}`,
-        therapistId: 1,
-        date: new Date().toISOString().split('T')[0],
-        available: true
-      });
-    }
-    return schedule;
-  };
-
-  // Get therapist monthly schedule
-  const getTherapistMonthlySchedule = async (therapistId, month) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await APIClient.invoke({
-        action: ACTIONS.GET_THERAPIST_MONTHLY_SCHEDULE,
-        data: { therapistId, month }
-      });
-      setData(response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching therapist monthly schedule:", error);
-      setError(error.message || "Failed to fetch therapist monthly schedule");
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Get all slots
-  const getAllSlots = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await APIClient.invoke({
-        action: ACTIONS.GET_ALL_SLOTS
-      });
-      setData(response.data);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching all slots:", error);
-      setError(error.message || "Failed to fetch all slots");
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+  // Reset form
+  const resetForm = () => {
+    setFormState({
+      selectedTherapistId: null,
+      selectedDate: null,
+      selectedTime: null,
+      selectedServiceIds: [],
+      customerNote: "",
+    });
+    setFormErrors({
+      therapist: "",
+      date: "",
+      time: "",
+      services: "",
+    });
   };
 
   return {
+    // State
     loading,
     error,
     data,
+    availableSlots,
+    bookingResult,
+    authRequired,
+    formState,
+    formErrors,
+    
+    // Methods
     getActiveTherapists,
-    getAllTherapists,
-    getTherapistById,
     getAvailableSlots,
-    getTherapistSchedule,
-    getTherapistMonthlySchedule,
-    getAllSlots
+    getTherapistScheduleForMonth,
+    getTherapistScheduleById,
+    getAvailableVouchers,
+    submitBooking,
+    handleInputChange,
+    resetForm,
+    validateForm
   };
 };
 

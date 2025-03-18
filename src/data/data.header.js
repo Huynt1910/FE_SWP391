@@ -10,7 +10,7 @@ export const navItem = [
   },
   {
     title: "Service",
-    path: "/shop",
+    path: "/service",
     auth: false,
   },
   {

@@ -1,7 +1,4 @@
-import BookingScreen, {
-  BookingServiceForm,
-} from "@/components/BookingServiceForm/BookingServiceForm";
-import SurveyForm from "@/components/SurveyFrom/SurveyForm";
+import BookingServiceForm from "@/components/BookingServiceForm/BookingServiceForm";
 import { PublicLayout } from "@/layout/PublicLayout";
 
 import { Subscribe } from "@components/shared/Subscribe/Subscribe";
@@ -17,13 +14,13 @@ const breadcrumbsData = [
   },
 ];
 
-const SurveyPage = () => {
+const BookingPage = () => {
   return (
-    <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Survey">
+    <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Booking">
       <BookingServiceForm />
       <Subscribe />
     </PublicLayout>
   );
 };
 
-export default SurveyPage;
+export default BookingPage;

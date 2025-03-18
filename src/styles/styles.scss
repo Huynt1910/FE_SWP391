@@ -9,8 +9,12 @@
 @import "components/_jquery.formstyler";
 @import "components/_ion.rangeSlider.min";
 @import "components/_slick";
-@import "components/_therapist-list"; // Therapist list styles
+
 @import "components/_booking-service"; // Booking service styles
+@import "components/_therapist-list"; // Therapists list styles
+@import "components/_service"; // Service styles
+
+
 @import "components/_survey"; // Survey styles
 @import "layout/_header";
 @import "layout/_footer";
@@ -31,4 +35,3 @@
 @import "admin/components/services";
 @import "admin/components/settings";
 @import "admin/components/shared";
-@import "admin/components/scheduleTherapist";

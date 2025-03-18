@@ -1,15 +1,14 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Error from "next/error";
 import "../styles/styles.scss";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { ToastContainer } from "react-toastify";
-import { SystemAuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
+import "react-toastify/dist/ReactToastify.css";
+import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
 import { protectedRoutes } from "@/auth/AUTHGUARD/protectedRoute";
 import { isAuthenticated, handleAuthError } from "@/utils/auth";
-
-// Create cart context
-export const CartContext = createContext();
+import { CartProvider } from "@/context/CartContext";
 
 const MyApp = ({ Component, pageProps }) => {
   const [queryClient] = useState(
@@ -29,8 +28,6 @@ const MyApp = ({ Component, pageProps }) => {
       })
   );
   const router = useRouter();
-
-  const [cart, setCart] = useState([]);
   const [mounted, setMounted] = useState(false);
   
   // Handle client-side mounting
@@ -69,16 +66,16 @@ const MyApp = ({ Component, pageProps }) => {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <CartContext.Provider value={{ cart, setCart }}>
+      <CartProvider>
         {requiresAuth ? (
-          <SystemAuthGuard requiredRole={router.pathname.includes('/admin') ? 'admin' : undefined}>
+          <AuthGuard requiredRole={router.pathname.includes('/admin') ? 'admin' : undefined}>
             <Component {...pageProps} />
-          </SystemAuthGuard>
+          </AuthGuard>
         ) : (
           <Component {...pageProps} />
         )}
         <ToastContainer />
-      </CartContext.Provider>
+      </CartProvider>
     </QueryClientProvider>
   );
 };
