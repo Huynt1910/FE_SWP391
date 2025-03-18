@@ -4,6 +4,8 @@ import { showToast } from "@utils/toast";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { setCookie } from "cookies-next";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const Login = () => {
   const router = useRouter();

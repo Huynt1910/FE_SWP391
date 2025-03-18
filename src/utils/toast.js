@@ -1,8 +1,7 @@
 import { toast } from "react-toastify";
 
-// Default toast configurations
 const defaultConfig = {
-  position: "top-right",
+  position: "top-center",
   autoClose: 3000,
   hideProgressBar: false,
   closeOnClick: true,
@@ -10,30 +9,17 @@ const defaultConfig = {
   draggable: true,
 };
 
-/**
- * Show a toast notification
- * @param {string} message - The message to display
- * @param {string} type - The type of toast: 'info', 'success', 'warning', 'error'
- * @param {object} options - Additional toast options
- */
-export const showToast = (message, type = 'info', options = {}) => {
-  const config = { ...defaultConfig, ...options };
-
-  switch (type.toLowerCase()) {
-    case 'success':
-      toast.success(message, config);
-      break;
-    case 'error':
-      toast.error(message, config);
-      break;
-    case 'warning':
-      toast.warning(message, config);
-      break;
-    case 'info':
-    default:
-      toast.info(message, config);
-      break;
-  }
+export const showToast = {
+  success: (message) => {
+    toast.success(message, defaultConfig);
+  },
+  error: (message) => {
+    toast.error(message, { ...defaultConfig, autoClose: 5000 });
+  },
+  warning: (message) => {
+    toast.warning(message, defaultConfig);
+  },
+  info: (message) => {
+    toast.info(message, defaultConfig);
+  },
 };
-
-export default showToast;
