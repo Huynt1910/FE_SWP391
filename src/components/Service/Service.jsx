@@ -176,27 +176,27 @@ export const Service = () => {
   };
 
   // Show authentication required state
-  if (!isAuthChecked) {
-    return (
-      <div className="service">
-        <div className="wrapper">
-          <div className="service-list__error">
-            <div className="error-icon">
-              <FaLock size={24} color="white" />
-            </div>
-            <h3>Login Required</h3>
-            <p>You need to be logged in to view our services.</p>
-            <button 
-              className="login-button"
-              onClick={() => router.push('/login')}
-            >
-              Log In
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (!isAuthChecked) {
+  //   return (
+  //     <div className="service">
+  //       <div className="wrapper">
+  //         <div className="service-list__error">
+  //           <div className="error-icon">
+  //             <FaLock size={24} color="white" />
+  //           </div>
+  //           <h3>Login Required</h3>
+  //           <p>You need to be logged in to view our services.</p>
+  //           <button 
+  //             className="login-button"
+  //             onClick={() => router.push('/login')}
+  //           >
+  //             Log In
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Update loading state to include placeholder cards
   if (loading) {

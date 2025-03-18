@@ -28,6 +28,7 @@ export const Header = () => {
     deleteCookie("userRole");
     deleteCookie("userId");
     window.location.reload();
+    
   };
 
   const isSticky = () => {

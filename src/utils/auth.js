@@ -2,6 +2,8 @@ import { getCookie, setCookie, deleteCookie } from "cookies-next";
 import { showToast } from "./toast";
 import { API_URL } from '@/lib/api-client/constant';
 import Router from 'next/router';
+import { APIClient } from "@/lib/api-client";
+import { ACTIONS } from "@/lib/api-client/constant";
 
 // Check if user is authenticated
 export const isAuthenticated = () => {
@@ -16,6 +18,30 @@ export const getToken = () => {
 // Get the user role
 export const getUserRole = () => {
   return getCookie("userRole") || "customer";
+};
+
+// Get current user information
+export const getMyInfo = async () => {
+  try {
+    if (!isAuthenticated()) {
+      console.log("User is not authenticated");
+      return null;
+    }
+
+    const response = await APIClient.invoke({
+      action: ACTIONS.MY_INFO,
+      options: { preventRedirect: true }
+    });
+
+    if (response && response.success && response.result) {
+      return response.result;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error fetching user info:", error);
+    return null;
+  }
 };
 
 // Set authentication data
