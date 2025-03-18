@@ -42,17 +42,19 @@
   // Step indicators
   .booking-steps {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 40px;
+    justify-content: center;
+    align-items: center;
+    max-width: 600px;
+    margin: 0 auto 40px;
     position: relative;
     
-    &:before {
+    &::before {
       content: '';
       position: absolute;
-      top: 24px;
-      left: 0;
-      right: 0;
-      height: 2px;
+      top: 19px;
+      left: 10%;
+      right: 10%;
+      height: 1px;
       background-color: #e0e0e0;
       z-index: 1;
     }
@@ -61,57 +63,51 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      flex: 1;
       position: relative;
       z-index: 2;
-      flex: 1;
       
       .step-number {
-        width: 48px;
-        height: 48px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
-        background-color: #f0f0f0;
-        border: 2px solid #e0e0e0;
+        background-color: #f5f5f5;
+        border: 1px solid #e0e0e0;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 600;
-        font-size: 18px;
-        color: #777;
-        margin-bottom: 8px;
-        transition: all 0.3s ease;
+        font-weight: 500;
+        font-size: 16px;
+        margin-bottom: 10px;
+        color: #555;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
       
       .step-label {
         font-size: 14px;
-        color: #777;
+        color: #666;
+        text-align: center;
+      }
+      
+      &.active .step-number {
+        background-color: #ff5a5f;
+        border-color: #ff5a5f;
+          color: white;
+      }
+      
+      &.active .step-label {
+        color: #ff5a5f;
         font-weight: 500;
-        transition: all 0.3s ease;
       }
       
-      &.active {
-        .step-number {
-          background-color: #ff4f6f;
-          border-color: #ff4f6f;
-          color: white;
-          box-shadow: 0 4px 10px rgba(255, 79, 111, 0.3);
-        }
-        
-        .step-label {
-          color: #ff4f6f;
-          font-weight: 600;
-        }
-      }
-      
-      &.completed {
-        .step-number {
-          background-color: #4caf50;
-          border-color: #4caf50;
+      &.completed .step-number {
+        background-color: #4CAF50;
+        border-color: #4CAF50;
           color: white;
         }
         
-        .step-label {
-          color: #4caf50;
-        }
+      &.completed .step-label {
+        color: #4CAF50;
       }
     }
   }
@@ -581,122 +577,9 @@
   &__list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    
-    .therapist-list__empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 30px;
-      background-color: #f9f9f9;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-      text-align: center;
-      margin: 20px 0;
-      
-      h3 {
-        font-size: 22px;
-        color: #e57373;
-        margin-bottom: 15px;
-      }
-      
-      p {
-        font-size: 16px;
-        color: #666;
-        margin-bottom: 10px;
-        max-width: 500px;
-      }
-      
-      .auth-actions {
-        display: flex;
-        gap: 15px;
-        margin: 20px 0;
-        
-        .login-button, .signup-button {
-          padding: 12px 24px;
-          border-radius: 4px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          border: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        
-        .login-button {
-          background-color: #ff5a5f;
-          color: white;
-          
-          &:hover {
-            background-color: darken(#ff5a5f, 10%);
-            transform: translateY(-2px);
-          }
-        }
-        
-        .signup-button {
-          background-color: white;
-          color: #333;
-          border: 1px solid #ddd;
-          
-          &:hover {
-            background-color: #f5f5f5;
-            transform: translateY(-2px);
-          }
-        }
-      }
-      
-      .contact-info {
-        margin: 20px 0;
-        padding: 15px;
-        background-color: #f0f0f0;
-        border-radius: 6px;
-        width: 100%;
-        max-width: 400px;
-        
-        p {
-          margin-bottom: 5px;
-          font-size: 14px;
-          
-          &:first-child {
-            font-weight: 600;
-            margin-bottom: 10px;
-          }
-        }
-      }
-    }
-    
-    .therapist-list__loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 50px 30px;
-      background-color: #f9f9f9;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-      text-align: center;
-      margin: 20px 0;
-      
-      .spinner {
-        animation: spin 1.5s linear infinite;
-        color: #4caf50;
-        margin-bottom: 20px;
-      }
-      
-      h3 {
-        font-size: 22px;
-        color: #333;
-        margin-bottom: 15px;
-      }
-      
-      p {
-        font-size: 16px;
-        color: #666;
-      }
-    }
+    gap: 15px;
+    max-width: 600px;
+    margin: 0 auto;
   }
   
   &__card {
@@ -839,91 +722,41 @@
     color: #333;
   }
   
-  &__loading {
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 10;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 30px;
-    background-color: #f9f9f9;
+    padding: 20px;
     border-radius: 8px;
-    text-align: center;
-    margin: 20px 0;
-    
-    .spinner {
-      animation: spin 1.5s linear infinite;
-      color: #4caf50;
-      font-size: 30px;
-      margin-bottom: 15px;
-    }
-    
-    p {
-      font-size: 16px;
-      color: #666;
-    }
-  }
-  
-  &__no-times {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 30px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    text-align: center;
-    margin: 20px 0;
-    
-    p {
-      font-size: 16px;
-      color: #666;
-      margin-bottom: 10px;
-      
-      &.note {
-        font-size: 14px;
-        color: #999;
-        font-style: italic;
-      }
-    }
-    
-    .retry-button {
-      margin-top: 15px;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      
-      &:hover {
-        background-color: #388e3c;
-      }
-    }
   }
   
   &__error {
+    background-color: #fff3e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 30px;
-    background-color: #ffebee;
-    border-radius: 8px;
     text-align: center;
     margin: 20px 0;
     
     .icon {
-      color: #e57373;
-      font-size: 30px;
-      margin-bottom: 15px;
+      color: #ff9800;
+      font-size: 24px;
+      margin-bottom: 10px;
     }
     
     p {
-      font-size: 16px;
-      color: #d32f2f;
-      margin-bottom: 20px;
+      color: #333;
+      margin-bottom: 15px;
     }
     
     .login-button {
@@ -932,8 +765,8 @@
       border: none;
       padding: 12px 24px;
       border-radius: 4px;
+      padding: 10px 20px;
       font-size: 16px;
-      font-weight: 600;
       cursor: pointer;
       transition: background-color 0.3s;
       
@@ -1250,7 +1083,7 @@
     background-color: #4CAF50;
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 12px 24px;
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
@@ -1284,46 +1117,232 @@
     color: #333;
   }
   
-  &__summary {
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+  
+  // Booking summary section
+  .booking-summary {
     background-color: #f9f9f9;
-    border-radius: 8px;
-    padding: 25px;
-    margin-bottom: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
     
     h3 {
       font-size: 18px;
       font-weight: 600;
-      margin-bottom: 15px;
-      color: #444;
+      margin: 0;
+      padding: 15px 20px;
+      background-color: #f2f2f2;
+      color: #333;
+      border-bottom: 1px solid #e0e0e0;
     }
     
-    .summary-item {
+    &__content {
+      padding: 20px;
+    }
+    
+    &__item {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
+      margin-bottom: 15px;
       
       &:last-child {
         margin-bottom: 0;
-        padding-bottom: 0;
+      }
+      
+      .label {
+        font-weight: 500;
+        color: #666;
+        width: 120px;
+        flex-shrink: 0;
+      }
+      
+      .value {
+        font-weight: 500;
+        color: #333;
+      }
+      
+      .services-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        
+        .service-item {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 10px;
+          border-bottom: 1px dashed #eee;
+      
+      &:last-child {
         border-bottom: none;
       }
       
-      span:first-child {
+          .service-name {
         font-weight: 500;
-        color: #666;
+      }
+      
+          .service-price {
+        font-weight: 600;
+        color: #333;
+          }
+        }
+      }
+    }
+    
+    &__total {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 15px;
+      margin-top: 15px;
+      border-top: 2px solid #e0e0e0;
+      font-size: 16px;
+      
+      span:first-child {
+        font-weight: 600;
+        color: #333;
       }
       
       span:last-child {
-        font-weight: 600;
-        color: #333;
+        font-weight: 700;
+        color: #ff5a5f;
       }
     }
   }
   
-  &__methods {
-    margin-bottom: 30px;
+  // Booking note
+  .booking-note {
+    margin-top: 15px;
+    padding: 12px 15px;
+    background-color: #fffbea;
+    border-left: 3px solid #ffcc00;
+    border-radius: 4px;
+    
+    p {
+      color: #664d03;
+      font-size: 14px;
+      margin: 0;
+      line-height: 1.4;
+    }
+  }
+  
+  // Voucher selection
+  .voucher-selection {
+    margin-bottom: 25px;
+    
+    h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #444;
+      display: flex;
+      align-items: center;
+      
+      .icon {
+        margin-right: 8px;
+        color: #ff5a5f;
+      }
+    }
+    
+    .vouchers-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+    }
+    
+    .voucher-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      background-color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      
+      &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background-color: #ff5a5f;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        
+        &:before {
+          opacity: 1;
+        }
+      }
+      
+      &.selected {
+        border-color: #ff5a5f;
+        box-shadow: 0 5px 15px rgba(255, 90, 95, 0.15);
+        
+        &:before {
+          opacity: 1;
+        }
+      }
+      
+      .voucher-info {
+        padding-right: 30px;
+      }
+      
+      .voucher-name {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+      }
+      
+      .voucher-discount {
+        font-size: 20px;
+        font-weight: 700;
+        color: #ff5a5f;
+        margin-bottom: 5px;
+      }
+      
+      .voucher-code {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+        padding: 3px 0;
+        border-top: 1px dashed #eee;
+        border-bottom: 1px dashed #eee;
+      }
+      
+      .voucher-expiry {
+        font-size: 12px;
+        color: #999;
+      }
+      
+      .voucher-selected-mark {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 24px;
+        height: 24px;
+        background-color: #ff5a5f;
+        color: white;
+        border-radius: 50%;
+      display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+  
+  // Payment methods
+  .payment-methods {
+    margin-bottom: 25px;
     
     h3 {
       font-size: 18px;
@@ -1332,47 +1351,63 @@
       color: #444;
     }
     
-    .payment-methods {
-      display: flex;
+    &__list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 15px;
+    }
       
       .payment-method {
-        flex: 1;
         display: flex;
-        flex-direction: column;
         align-items: center;
-        padding: 20px;
+      padding: 15px;
         border: 1px solid #e0e0e0;
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.3s ease;
+      position: relative;
         
         &:hover {
-          transform: translateY(-3px);
+        transform: translateY(-2px);
           box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
         
         &.selected {
           border-color: #ff5a5f;
-          box-shadow: 0 5px 15px rgba(255, 90, 95, 0.1);
+        background-color: rgba(255, 90, 95, 0.05);
         }
         
-        .payment-icon {
-          font-size: 24px;
-          margin-bottom: 10px;
+      &__icon {
+        font-size: 22px;
           color: #555;
+        margin-right: 15px;
         }
         
-        span {
+      &__name {
           font-weight: 500;
           color: #333;
         }
+      
+      &__selected {
+        position: absolute;
+        top: 50%;
+        right: 15px;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        background-color: #ff5a5f;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     }
   }
   
-  &__notes {
-    margin-bottom: 30px;
+  // Customer notes
+  .customer-notes {
+    margin-bottom: 25px;
     
     h3 {
       font-size: 18px;
@@ -1381,7 +1416,7 @@
       color: #444;
     }
     
-    textarea {
+    &__input {
       width: 100%;
       padding: 12px;
       border: 1px solid #e0e0e0;
@@ -1389,6 +1424,7 @@
       resize: vertical;
       font-family: inherit;
       font-size: 14px;
+      min-height: 100px;
       
       &:focus {
         outline: none;
@@ -1397,172 +1433,1087 @@
     }
   }
   
-  &__policies {
-    margin-bottom: 30px;
+  // Payment summary
+  .payment-summary {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
     
-    h3 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 15px;
-      color: #444;
-    }
-    
-    ul {
-      list-style-type: disc;
-      padding-left: 20px;
+    &__item {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
       
-      li {
-        margin-bottom: 8px;
-        color: #555;
-        font-size: 14px;
+      &:first-child {
+        background-color: #f2f2f2;
+      }
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .label {
+        font-weight: 500;
+        color: #666;
+      }
+      
+      .value {
+        font-weight: 600;
+        color: #333;
+      }
+      
+      &.discount {
+        background-color: #fff8f8;
+        color: #ff5a5f;
         
-        &:last-child {
-          margin-bottom: 0;
+        .value {
+          color: #ff5a5f;
+          font-weight: 600;
+        }
+      }
+      
+      &.total {
+        background-color: #333;
+        padding: 18px 20px;
+        font-size: 18px;
+        
+        .label {
+          font-weight: 600;
+          color: #fff;
+        }
+        
+        .value {
+          font-weight: 700;
+          color: #fff;
         }
       }
     }
   }
 }
 
-// Add confirm button style
-.booking-actions {
-  &__confirm {
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 12px 30px;
+@media (max-width: 768px) {
+  .payment-confirmation {
+    &__details {
+      gap: 20px;
+    }
+    
+    .vouchers-list {
+      grid-template-columns: 1fr;
+    }
+    
+    .payment-methods {
+      &__list {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .booking-summary {
+      &__item {
+        flex-direction: column;
+        
+        .label {
+          width: 100%;
+          margin-bottom: 5px;
+        }
+      }
+    }
+  }
+}
+
+// Service Selection Component Styles
+.service-selection {
+  padding: 20px 0;
+  max-width: 900px;
+  margin: 0 auto;
+  
+  &__title {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 28px;
     font-weight: 600;
+    color: #333;
+  }
+  
+  &__subtitle {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #666;
+    font-size: 16px;
+  }
+  
+  &__list {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  
+  &__card {
+    display: flex;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    border: 2px solid transparent;
     
     &:hover {
-      background-color: darken(#4caf50, 10%);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
     }
     
-    &:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
+    &.selected {
+      border-color: #ff5a5f;
+      box-shadow: 0 5px 15px rgba(255, 90, 95, 0.2);
     }
     
-    .icon {
-      margin-left: 8px;
+    &-image {
+      width: 150px;
+      height: 150px;
+      flex-shrink: 0;
+      
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
-  }
-}
-
-.retry-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  
-  &:hover {
-    background-color: #388e3c;
-  }
-}
-
-.debug-button {
-  background-color: #333;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 10px;
-  
-  &:hover {
-    background-color: #555;
-  }
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-// Authentication Modal
-.auth-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  
-  &__content {
-    background-color: white;
-    border-radius: 8px;
-    padding: 30px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
     
-    h3 {
-      font-size: 22px;
+    &-content {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    &-title {
+      font-size: 18px;
       font-weight: 600;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
       color: #333;
     }
+    
+    &-description {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.4;
+      margin-bottom: auto;
+      flex-grow: 1;
+    }
+    
+    &-details {
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    &-price {
+      font-size: 18px;
+      font-weight: 600;
+      color: #ff5a5f;
+    }
+    
+    &-duration {
+      background-color: #f0f0f0;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #555;
+    }
+    
+    &-selector {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+    }
+    
+    &-selected {
+      background-color: #ff5a5f;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    &-add {
+      border: 2px dashed #ccc;
+      color: #999;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        border-color: #ff5a5f;
+        color: #ff5a5f;
+      }
+    }
+  }
+  
+  &__empty {
+    text-align: center;
+    padding: 40px 0;
     
     p {
-      font-size: 16px;
-      color: #666;
       margin-bottom: 20px;
+      color: #666;
+    }
+    
+    &-back-link {
+      color: #ff5a5f;
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
   
-  &__close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 20px;
-    color: #999;
-    cursor: pointer;
+  &__summary {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
     
-    &:hover {
+    &-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    &-details {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    &-count {
+      font-size: 16px;
       color: #333;
+      font-weight: 500;
+    }
+    
+    &-total {
+      font-size: 18px;
+      font-weight: 600;
+      color: #ff5a5f;
     }
   }
   
   &__actions {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
     
-    .login-button {
+    &-left {
+      display: flex;
+      align-items: center;
+    }
+    
+    &-cancel {
+      color: #666;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.3s;
+      
+      &:hover {
+        color: #ff5a5f;
+        text-decoration: underline;
+      }
+    }
+    
+    &-next {
       background-color: #ff5a5f;
       color: white;
       border: none;
-      padding: 12px 30px;
-      border-radius: 4px;
-      font-size: 16px;
-      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
       cursor: pointer;
       transition: all 0.3s ease;
+      
+      .icon {
+        margin-left: 8px;
+      }
       
       &:hover {
         background-color: darken(#ff5a5f, 10%);
         transform: translateY(-2px);
       }
+      
+      &:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+    }
+  }
+  
+  &__loading, &__error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 0;
+    text-align: center;
+    
+    .loading-icon {
+      font-size: 30px;
+      color: #ff5a5f;
+      margin-bottom: 15px;
+      animation: spin 1s linear infinite;
+    }
+    
+    p {
+      color: #666;
+    }
+    
+    h3 {
+      margin-bottom: 10px;
+      color: #333;
+      font-size: 20px;
+    }
+    
+    .error-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #f44336;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+      
+      .error-x {
+        color: white;
+        font-size: 30px;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Step indicators
+.step-indicators {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+  padding: 0 20px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  
+  // Horizontal line connecting steps
+  &::before {
+    content: '';
+    position: absolute;
+    top: 29px;
+    left: 16%;
+    right: 16%;
+    height: 1px;
+    background-color: #e0e0e0;
+    z-index: 1;
+  }
+  
+  .step-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 5;
+    flex: 1;
+    
+    &__number {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #666;
+      transition: all 0.3s ease;
+      z-index: 2;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      
+      .check-icon {
+        color: white;
+      }
+    }
+    
+    &__label {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    
+    &.active {
+      .step-indicator__number {
+        background-color: #ff5a5f;
+        border-color: #ff5a5f;
+        color: white;
+        box-shadow: 0 2px 4px rgba(255, 90, 95, 0.3);
+      }
+      
+      .step-indicator__label {
+        color: #ff5a5f;
+        font-weight: 500;
+      }
+    }
+    
+    &.completed {
+      .step-indicator__number {
+        background-color: #4CAF50;
+        border-color: #4CAF50;
+        color: white;
+      }
+      
+      .step-indicator__label {
+        color: #4CAF50;
+      }
+    }
+  }
+}
+
+// Container for the booking form
+.booking-container {
+  padding: 40px 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  
+  .auth-required {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    margin-top: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    
+    &__content {
+      max-width: 450px;
+      margin: 0 auto;
+    }
+    
+    &__icon {
+      width: 70px;
+      height: 70px;
+      background-color: #f0f0f0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      color: #666;
+    }
+    
+    h2 {
+      margin-bottom: 15px;
+      color: #333;
+      font-size: 24px;
+    }
+    
+    p {
+      margin-bottom: 25px;
+      color: #666;
+      line-height: 1.5;
+    }
+    
+    &__actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      
+      button {
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        
+        &.btn-primary {
+          background-color: #ff5a5f;
+          color: white;
+          
+          &:hover {
+            background-color: darken(#ff5a5f, 10%);
+          }
+        }
+        
+        &.btn-secondary {
+          background-color: #f0f0f0;
+          color: #666;
+          
+          &:hover {
+            background-color: #e0e0e0;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .service-selection {
+    &__card {
+      flex-direction: column;
+      
+      &-image {
+        width: 100%;
+        height: 150px;
+      }
+      
+      &-selector {
+        top: 10px;
+        right: 10px;
+      }
+    }
+    
+    &__summary {
+      &-content {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      &-details {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+    }
+    
+    &__actions {
+      flex-direction: column;
+      gap: 15px;
+      
+      &-left {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      &-next {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+  
+  .step-indicators {
+    .step-indicator {
+      &__label {
+        font-size: 12px;
+      }
+      
+      &__number {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+      }
+    }
+  }
+  
+  .booking-container {
+    padding: 20px 15px;
+    
+    .auth-required {
+      padding: 25px 15px;
+      
+      &__actions {
+        flex-direction: column;
+        
+        button {
+          width: 100%;
+        }
+      }
+    }
+  }
+}
+
+// Adding service card book button styles to the existing file
+.service-card {
+  &__bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+  }
+  
+  &__price {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  &__book-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ff5a5f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    .icon {
+      margin-right: 6px;
+      font-size: 14px;
+    }
+    
+    span {
+      display: inline-block;
+    }
+    
+    &:hover {
+      background-color: darken(#ff5a5f, 10%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(255, 90, 95, 0.3);
+    }
+  }
+  
+  &__cart-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    color: #666;
+    border: none;
+    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background-color: #e0e0e0;
+      color: #333;
+    }
+  }
+}
+
+// Pending Bookings Component Styles
+.pending-bookings {
+  padding: 40px 0;
+  max-width: 900px;
+  margin: 0 auto;
+  
+  &__title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    color: #333;
+  }
+  
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .pending-booking-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    &__header {
+      background-color: #f5f5f5;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      
+      .status-badge {
+        background-color: #ff9800;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      
+      .booking-id {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+      }
+    }
+    
+    &__content {
+      padding: 20px;
+    }
+    
+    .booking-info {
+      margin-bottom: 20px;
+      
+      .info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        .icon {
+          color: #ff5a5f;
+          margin-right: 10px;
+          font-size: 16px;
+        }
+        
+        span {
+          color: #333;
+          font-weight: 500;
+        }
+      }
+    }
+    
+    .services-list {
+      margin-bottom: 20px;
+      
+      h4 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+      }
+      
+      ul {
+        padding-left: 15px;
+        
+        li {
+        color: #555;
+          margin-bottom: 5px;
+        
+        &:last-child {
+          margin-bottom: 0;
+          }
+        }
+      }
+    }
+    
+    .payment-methods {
+      margin-bottom: 20px;
+      
+      h4 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #333;
+      }
+      
+      &__options {
+        display: flex;
+        gap: 15px;
+        
+        .payment-option {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          padding: 15px;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            border-color: #ff5a5f;
+            background-color: rgba(255, 90, 95, 0.05);
+          }
+          
+          &.selected {
+            border-color: #ff5a5f;
+            background-color: rgba(255, 90, 95, 0.05);
+            box-shadow: 0 2px 5px rgba(255, 90, 95, 0.2);
+          }
+          
+          .icon {
+            font-size: 20px;
+            color: #555;
+            margin-right: 10px;
+          }
+          
+          span {
+            font-weight: 500;
+            color: #333;
+          }
+        }
+      }
+    }
+    
+    .payment-processing {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      
+      .spinner-icon {
+        font-size: 24px;
+        color: #ff5a5f;
+        margin-bottom: 10px;
+        animation: spin 1s linear infinite;
+      }
+      
+      p {
+        color: #666;
+      }
+    }
+    
+    &__footer {
+      padding: 0 20px 20px;
+      
+      .btn-proceed-payment {
+        width: 100%;
+        background-color: #ff5a5f;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          background-color: darken(#ff5a5f, 10%);
+        }
+        
+        &:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+  
+  &__loading,
+  &__error,
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    
+    .loading-icon {
+      font-size: 30px;
+      color: #ff5a5f;
+      margin-bottom: 15px;
+      animation: spin 1s linear infinite;
+    }
+    
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    p {
+      color: #666;
+      margin-bottom: 20px;
+    }
+    
+    .btn-retry {
+      background-color: #ff5a5f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background-color: darken(#ff5a5f, 10%);
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .pending-bookings {
+    padding: 30px 15px;
+    
+    .pending-booking-card {
+      .payment-methods {
+        &__options {
+          flex-direction: column;
+        }
+      }
+    }
+  }
+}
+
+// Therapist preview styling for auth required view
+.therapist-preview {
+  width: 100%;
+  margin: 1.5rem 0;
+
+  h3 {
+    font-size: 1.4rem;
+    color: #333;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  &__items {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__item {
+    flex: 1;
+    min-width: 220px;
+    max-width: 280px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px);
+    }
+  }
+
+  &__image-blur {
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(45deg, #e6e6e6, #f0f0f0);
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('/assets/img/therapists/default.jpg') no-repeat center center;
+      background-size: cover;
+      filter: blur(8px);
+      opacity: 0.5;
+    }
+    
+    &::after {
+      content: 'Login to View';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+  }
+
+  h4 {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+  }
+}
+
+@media (max-width: 768px) {
+  .pending-bookings {
+    padding: 30px 15px;
+    
+    .pending-booking-card {
+      .payment-methods {
+        &__options {
+          flex-direction: column;
+        }
+      }
+    }
+  }
+  
+  .auth-required {
+    padding: 1.5rem;
+    
+    &__actions {
+      flex-direction: column;
+      
+      button {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+    }
+  }
+  
+  .therapist-preview,
+  .service-preview {
+    &__items {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    &__item {
+      width: 100%;
+      max-width: 300px;
+      margin-bottom: 1rem;
     }
   }
 } 

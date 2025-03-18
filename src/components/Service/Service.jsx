@@ -22,17 +22,33 @@ export const Service = () => {
   const { addToCart } = useCart();
   
   const [searchTerm, setSearchTerm] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 1000]);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [sortedServices, setSortedServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
-  // Fetch all services on component mount
+  // Check authentication on component mount
   useEffect(() => {
+const checkAuth = () => {
+      const authenticated = isAuthenticated();
+      if (!authenticated) {
+        // Don't call redirectToLogin here as it will cause error
+        // We'll handle this in the render phase
+        return false;
+      }
+      return true;
+    };
+    
+    const authenticated = checkAuth();
+    setIsAuthChecked(authenticated);
+    
+    if (authenticated) {
     console.log("Service: Fetching services...");
     getAllServices().then(result => {
       console.log("Service: Services fetched, count:", result?.length || 0);
     });
+    }
   }, []);
 
   // Update sorted services when data changes
@@ -49,7 +65,7 @@ export const Service = () => {
     }
   }, [services]);
 
-  // Filter services based on search, price, and category
+  // Filter services based on search and category
   useEffect(() => {
     if (sortedServices.length > 0) {
       const filtered = sortedServices.filter(service => {
@@ -59,10 +75,6 @@ export const Service = () => {
         const matchesSearch = searchTerm === "" || 
           name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           description.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        // Filter by price
-        const price = service.price || 0;
-        const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
         
         // Filter by category
         const category = service.category || "";

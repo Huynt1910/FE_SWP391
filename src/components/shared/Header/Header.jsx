@@ -26,6 +26,7 @@ export const Header = () => {
   const logOut = async () => {
     deleteCookie("token");
     deleteCookie("userRole");
+    deleteCookie("userId");
     window.location.reload();
   };
 

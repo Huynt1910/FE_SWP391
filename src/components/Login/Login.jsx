@@ -33,22 +33,13 @@ export const Login = () => {
         username: formData.username,
         password: formData.password,
       });
-
-      if (response.result.success) {
-        const { token, role } = response.result;
-
-        // Set auth cookies
-        setCookie("token", token);
-        setCookie("userRole", role);
-
-        // Redirect based on role
-        if (role === "admin") {
-          router.push("/admin");
-        } else {
-          router.push("/"); // Customer goes to home page
-        }
-
-        showToast.success("Login successful!");
+      
+      // Check if there's a redirect URL stored
+      const redirectUrl = localStorage.getItem('redirectAfterLogin');
+      if (redirectUrl) {
+        console.log("Redirecting to:", redirectUrl);
+        localStorage.removeItem('redirectAfterLogin');
+        router.push(redirectUrl);
       }
     } catch (error) {
       showToast.error("Invalid username or password");

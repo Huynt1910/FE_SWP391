@@ -1,5 +1,6 @@
 import { getCookie } from "cookies-next";
-import { API_URL, END_POINTS } from "./constant";
+import { API_URL, END_POINTS, ACTIONS } from "./constant";
+import { getToken, handleAuthError, redirectToLogin } from "@/utils/auth";
 
 export class APIClient {
   static async request(url, method, data, headers, query, options = {}) {
@@ -37,27 +38,126 @@ export class APIClient {
       // Log response status
       console.log("API Response status:", response.status, response.statusText);
       
-      // Handle non-2xx responses
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("API Error:", { 
-          status: response.status, 
-          statusText: response.statusText,
-          data: errorData 
-        });
-        
-        throw new Error(
-          errorData.message || 
-          `Request failed with status ${response.status}: ${response.statusText}`
-        );
-      }
-      
-      const responseData = await response.json();
-      console.log("API Response data:", responseData);
-      return responseData;
+      // Handle API response
+      const handleResponse = async (response, options = {}) => {
+        // Check if response is OK (status in the range 200-299)
+        if (response.ok) {
+          try {
+            const data = await response.json();
+            return data;
+          } catch (error) {
+            console.error("Error parsing JSON response:", error);
+            return { success: false, message: "Invalid response format" };
+          }
+        }
+
+        // Handle specific error status codes
+        if (response.status === 401) {
+          console.error("Authentication error (401):", response.statusText);
+          
+          // If this endpoint doesn't require authentication, return empty data instead of error
+          if (options.requiresAuth === false) {
+            console.log("Non-authenticated endpoint received 401, returning empty data");
+            return { success: false, message: "Authentication required", result: [] };
+          }
+          
+          // For endpoints that do require auth, handle normally
+          if (!options.preventRedirect) {
+            // Redirect to login page if not prevented
+            if (typeof window !== "undefined") {
+              window.location.href = "/login";
+            }
+          }
+          
+          return { 
+            success: false, 
+            message: "Authentication required. Please log in.", 
+            status: response.status 
+          };
+        }
+
+        if (response.status === 403) {
+          console.error("Authorization error (403):", response.statusText);
+          return { 
+            success: false, 
+            message: "You don't have permission to access this resource.", 
+            status: response.status 
+          };
+        }
+
+        if (response.status === 404) {
+          console.error("Not found error (404):", response.statusText);
+          return { 
+            success: false, 
+            message: "The requested resource was not found.", 
+            status: response.status 
+          };
+        }
+
+        if (response.status === 500) {
+          console.error("Server error (500):", response.statusText);
+          return { 
+            success: false, 
+            message: "An internal server error occurred. Please try again later.", 
+            status: response.status 
+          };
+        }
+
+        // For other error status codes
+        try {
+          const errorData = await response.json();
+          console.error(`Error (${response.status}):`, errorData);
+          return { 
+            success: false, 
+            message: errorData.message || `Error: ${response.statusText}`, 
+            status: response.status,
+            ...errorData 
+          };
+        } catch (error) {
+          console.error(`Error (${response.status}):`, response.statusText);
+          return { 
+            success: false, 
+            message: `Error: ${response.statusText}`, 
+            status: response.status 
+          };
+        }
+      };
+
+      return await handleResponse(response, options);
     } catch (error) {
       console.error("API Request failed:", error);
-      throw error;
+      
+      // Special handling for "not found" errors
+      if (error.message === "Service not found" || 
+          error.message?.includes("not found") || 
+          error.status === 404) {
+        console.log("Not found error in catch - handling gracefully");
+        return { success: false, result: null, message: error.message };
+      }
+      
+      // For public access endpoints, return empty data on error
+      if (options.publicAccess) {
+        console.log("Public access endpoint returning empty data for caught error");
+        return { success: true, result: [] };
+      }
+      
+      // For non-secure endpoints, return empty data on error
+      if (options.isNonSecure) {
+        console.log("Non-secure endpoint returning empty data for caught error");
+        return { success: true, result: [] };
+      }
+      
+      // Handle authentication errors
+      if (!options.preventRedirect && handleAuthError(error)) {
+        return { success: false, message: "Authentication required" };
+      }
+
+      // Ensure we have a proper error message
+      const errorMessage = error.message || "An unexpected error occurred";
+      const enhancedError = new Error(errorMessage);
+      enhancedError.originalError = error;
+      enhancedError.status = error.status || 500;
+      throw enhancedError;
     }
   }
 
@@ -78,21 +178,10 @@ export class APIClient {
       const { path, method, secure, parameterized } = END_POINTS[action];
 
       const headers = {};
-      if (secure) {
-        // Add access token to headers
-        const token = getCookie("token");
-        console.log("Token for secure request:", token ? "Found" : "Not found");
-        
-        if (!token) {
-          // Instead of throwing an error, we'll redirect to login
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-            return { success: false, message: "Authentication required. Redirecting to login..." };
-          } else {
-            throw new Error("Unauthenticated: Authentication token is missing");
-          }
-        }
-        
+      const token = getToken();
+      
+      // Add token if available
+      if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
       
@@ -186,9 +275,8 @@ export class APIClient {
       }
       
       // Handle authentication errors
-      if (error.message && error.message.includes("Unauthenticated") && typeof window !== 'undefined') {
-        window.location.href = '/login';
-        return { success: false, message: "Authentication required. Redirecting to login..." };
+      if (!params?.options?.preventRedirect && handleAuthError(error)) {
+        return { success: false, message: "Authentication required" };
       }
       
       throw error;
