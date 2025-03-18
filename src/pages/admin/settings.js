@@ -8,7 +8,7 @@ const breadcrumbsData = [
     path: "/admin",
   },
   {
-    label: "Cài đặt",
+    label: "Quản lý Voucher",
     path: "/admin/settings",
   },
 ];
@@ -16,7 +16,10 @@ const breadcrumbsData = [
 const SettingsPage = () => {
   return (
     <AuthGuard>
-      <AdminLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Cài đặt">
+      <AdminLayout
+        breadcrumb={breadcrumbsData}
+        breadcrumbTitle="Quản lý Voucher"
+      >
         <Settings />
       </AdminLayout>
     </AuthGuard>

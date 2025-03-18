@@ -10,8 +10,11 @@ const TherapistEditModal = ({ therapist, onClose, onConfirm, isLoading }) => {
     gender: "Male",
     birthDate: "",
     yearExperience: 0,
+    imgUrl: "",
   });
 
+  const [file, setFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -24,9 +27,20 @@ const TherapistEditModal = ({ therapist, onClose, onConfirm, isLoading }) => {
         gender: therapist.gender || "Male",
         birthDate: therapist.birthDate?.split("T")[0] || "",
         yearExperience: therapist.yearExperience || 0,
+        imgUrl: therapist.imgUrl || "",
       });
+      setImagePreview(therapist.imgUrl);
     }
   }, [therapist]);
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      const previewUrl = URL.createObjectURL(selectedFile);
+      setImagePreview(previewUrl);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -51,8 +65,30 @@ const TherapistEditModal = ({ therapist, onClose, onConfirm, isLoading }) => {
       return;
     }
 
-    onConfirm(therapist.id, formData);
+    // Create FormData object
+    const submitData = new FormData();
+    Object.keys(formData).forEach((key) => {
+      if (key !== "imgUrl") {
+        submitData.append(key, formData[key]);
+      }
+    });
+
+    // Append file if new image is selected
+    if (file) {
+      submitData.append("imgUrl", file);
+    }
+
+    onConfirm(therapist.id, submitData);
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview !== therapist.imgUrl) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview, therapist.imgUrl]);
 
   return (
     <div className="admin-page__modal">
@@ -156,6 +192,33 @@ const TherapistEditModal = ({ therapist, onClose, onConfirm, isLoading }) => {
               }
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label>Hình ảnh</label>
+            <div className="image-upload-container">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="form-control"
+              />
+              {imagePreview && (
+                <div className="image-preview">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    style={{
+                      maxWidth: "200px",
+                      maxHeight: "200px",
+                      objectFit: "cover",
+                      borderRadius: "4px",
+                      marginTop: "10px",
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="admin-page__modal-content-footer">

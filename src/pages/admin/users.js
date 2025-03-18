@@ -19,10 +19,7 @@ const breadcrumbsData = [
 
 const UsersPage = () => {
   return (
-    <AdminLayout
-      breadcrumb={breadcrumbsData}
-      breadcrumbTitle="Manage Users"
-    >
+    <AdminLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Manage Users">
       <Users />
     </AdminLayout>
   );

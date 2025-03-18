@@ -52,33 +52,21 @@ export const useTherapistActions = () => {
 
   const useAddTherapist = () => {
     return useMutation({
-      mutationFn: async (data) => {
-        const formattedData = {
-          username: data.username,
-          password: data.password,
-          firstName: data.fullName.split(" ").pop(),
-          lastName: data.fullName.split(" ").slice(0, -1).join(" "),
-          email: data.email,
-          phone: data.phone,
-          address: data.address,
-          gender: data.gender,
-          birthDate: data.birthDate,
-          yearExperience: data.yearExperience,
-        };
-
-        const response = await axios.post(
-          `${API_URL}/therapists`,
-          formattedData,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+      mutationFn: async (formData) => {
+        const response = await axios.post(`${API_URL}/therapists`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         return response.data;
       },
       onSuccess: () => {
-        toast.success("Thêm therapist mới thành công!");
-        queryClient.invalidateQueries(["therapists"]);
+        queryClient.invalidateQueries(["allTherapists"]);
+        queryClient.invalidateQueries(["activeTherapists"]);
       },
-      onError: () => {
-        toast.error("Có lỗi xảy ra khi thêm therapist!");
+      onError: (error) => {
+        throw error;
       },
     });
   };
@@ -89,13 +77,19 @@ export const useTherapistActions = () => {
         const response = await axios.put(
           `${API_URL}/therapists/updateTherapist/${id}`,
           data,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         return response.data;
       },
       onSuccess: () => {
         toast.success("Cập nhật thông tin thành công!");
-        queryClient.invalidateQueries(["therapists"]);
+        queryClient.invalidateQueries(["allTherapists"]);
+        queryClient.invalidateQueries(["activeTherapists"]);
       },
       onError: () => {
         toast.error("Có lỗi xảy ra khi cập nhật thông tin!");

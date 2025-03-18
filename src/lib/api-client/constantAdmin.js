@@ -99,6 +99,80 @@ export const END_POINTS = {
     method: "PUT",
     secure: true,
   },
+  getTherapistScheduleByDate: {
+    path: "/schedule/therapist",
+    method: "GET",
+    secure: true,
+  },
+  createTherapistSchedule: {
+    path: "/schedule/therapist",
+    method: "POST",
+    secure: true,
+  },
+  updateTherapistSchedule: {
+    path: "/schedule/therapist/update",
+    method: "PUT",
+    secure: true,
+  },
+  deleteTherapistSchedule: {
+    path: "/schedule/therapist",
+    method: "DELETE",
+    secure: true,
+  },
+  getTherapistScheduleByMonth: {
+    path: "/schedule/therapist/month",
+    method: "GET",
+    secure: true,
+  },
+  getAllSlots: {
+    path: "/slot/getAllSlot",
+    method: "GET",
+    secure: true,
+  },
+  therapistSchedule: {
+    getByDate: {
+      path: "/schedule/therapist",
+      method: "GET",
+      secure: true,
+    },
+    getById: {
+      path: "/schedule/therapist/getById",
+      method: "GET",
+      secure: true,
+    },
+    getByMonth: {
+      path: "/schedule/therapist/month",
+      method: "GET",
+      secure: true,
+    },
+    create: {
+      path: "/schedule/therapist",
+      method: "POST",
+      secure: true,
+    },
+    update: {
+      path: "/schedule/therapist/update",
+      method: "PUT",
+      secure: true,
+    },
+    delete: {
+      path: "/schedule/therapist",
+      method: "DELETE",
+      secure: true,
+    },
+  },
+  vouchers: {
+    getAll: {
+      path: "/vouchers",
+      method: "GET",
+      secure: true,
+    },
+    create: {
+      path: "/vouchers",
+      method: "POST",
+      secure: true,
+    },
+  },
 };
 export const ACTIONS = {
   SYSTEM_LOGIN: "systemLogin",
@@ -120,6 +194,9 @@ export const ACTIONS = {
   CREATE_THERAPIST: "createTherapist",
   UPDATE_THERAPIST: "updateTherapist",
   RESET_PASSWORD: "resetPassword",
+  GET_ALL_SLOTS: "getAllSlots",
+  GET_ALL_VOUCHERS: "getAllVouchers",
+  CREATE_VOUCHER: "createVoucher",
 };
 
 export const USER_ROLES = {

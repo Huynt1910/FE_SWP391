@@ -7,8 +7,6 @@ import { setCookie } from "cookies-next";
 
 export const Login = () => {
   const router = useRouter();
-  const { returnUrl } = router.query;
-
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -34,21 +32,15 @@ export const Login = () => {
         password: formData.password,
       });
 
-      if (response.result.success) {
-        const { token, role } = response.result;
-
-        // Set auth cookies
-        setCookie("token", token);
-        setCookie("userRole", role);
+      if (response.success) {
+        showToast.success("Login successful!");
 
         // Redirect based on role
-        if (role === "admin") {
+        if (response.role === "ADMIN") {
           router.push("/admin");
         } else {
-          router.push("/"); // Customer goes to home page
+          router.push("/");
         }
-
-        showToast.success("Login successful!");
       }
     } catch (error) {
       showToast.error("Invalid username or password");
@@ -65,7 +57,7 @@ export const Login = () => {
             style={{ backgroundImage: `url('/assets/img/login-form__bg.png')` }}
           >
             <form onSubmit={handleSubmit}>
-              <h3>Customer Login</h3>
+              <h3>Login</h3>
               <SocialLogin />
 
               <div className="box-field">

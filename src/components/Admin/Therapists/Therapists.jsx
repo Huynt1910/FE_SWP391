@@ -6,10 +6,13 @@ import TherapistTable from "./components/TherapistTable";
 import TherapistEditModal from "./components/TherapistEditModal";
 import TherapistAddModal from "./components/TherapistAddModal";
 import ResetPasswordModal from "./components/ResetPasswordModal";
+import { useQueryClient } from "@tanstack/react-query"; // Thêm dòng này
 
 import { toast } from "react-toastify";
 
 const Therapists = () => {
+  const queryClient = useQueryClient(); // Thêm dòng này
+
   const {
     useGetAllTherapists,
     useGetActiveTherapists,
