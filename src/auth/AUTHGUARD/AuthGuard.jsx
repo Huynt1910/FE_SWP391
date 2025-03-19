@@ -2,13 +2,39 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { getCookie } from "cookies-next";
 
-export const AuthGuard = ({ children }) => {
+export const AuthGuard = ({ children, requiredRole }) => {
   const router = useRouter();
   const token = getCookie("token");
   const userRole = getCookie("userRole");
 
   useEffect(() => {
-    if (!token) {
+    if (!authenticated) {
+      redirectToLogin();
+      return;
+    }
+
+    if (requiredRole && userRole !== requiredRole) {
+      console.log("Unauthorized role. Redirecting to home...");
+      router.push("/");
+    }
+  }, [authenticated, userRole, requiredRole, router]);
+
+  // Show nothing while checking authentication
+  if (!authenticated || (requiredRole && userRole !== requiredRole)) {
+    return null;
+  }
+
+  return <>{children}</>;
+};
+
+// Export the SystemAuthGuard as well if it's needed elsewhere
+export const SystemAuthGuard = ({ children }) => {
+  const router = useRouter();
+  const authenticated = isAuthenticated();
+  const userRole = getUserRole();
+
+  useEffect(() => {
+    if (!authenticated || userRole !== "admin") {
       router.push("/login");
       return;
     }
@@ -19,13 +45,9 @@ export const AuthGuard = ({ children }) => {
         router.push("/unauthorized");
       }
     }
-  }, [token, userRole, router]);
+  }, [authenticated, userRole, router]);
 
-  // Don't render anything while checking authentication
-  if (
-    !token ||
-    (router.pathname.startsWith("/admin") && userRole !== "ADMIN")
-  ) {
+  if (!authenticated || userRole !== "admin") {
     return null;
   }
 
