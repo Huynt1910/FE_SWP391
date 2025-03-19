@@ -1,16 +1,21 @@
 // src/components/Admin/Navbar/Navbar.jsx
 import React, { useState } from "react";
-import {
-  FaBars,
-  FaSearch,
-  FaBell,
-  FaUser,
-  FaCog,
-  FaSignOutAlt,
-} from "react-icons/fa";
+import { FaBars, FaBell, FaUser, FaSignOutAlt, FaCog } from "react-icons/fa";
+import { deleteCookie } from "cookies-next";
+import { useRouter } from "next/router";
 
 const Navbar = ({ onToggleSidebar }) => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // Remove all authentication cookies
+    deleteCookie("token");
+    deleteCookie("userRole");
+    deleteCookie("username");
+    // Redirect to login page
+    router.push("/login");
+  };
 
   return (
     <div className="navbar">
@@ -18,10 +23,10 @@ const Navbar = ({ onToggleSidebar }) => {
         <button className="toggle-btn" onClick={onToggleSidebar}>
           <FaBars />
         </button>
-        <div className="search-bar">
+        {/* <div className="search-bar">
           <FaSearch />
           <input type="text" placeholder="Tìm kiếm..." />
-        </div>
+        </div> */}
       </div>
 
       <div className="navbar-right">
@@ -41,18 +46,14 @@ const Navbar = ({ onToggleSidebar }) => {
 
           {showDropdown && (
             <div className="dropdown-menu">
-              <a href="/admin/profile">
+              <a href="/admin/profile" className="dropdown-item">
                 <FaUser />
-                Thông tin cá nhân
+                <span>Thông tin cá nhân</span>
               </a>
-              <a href="/admin/settings">
-                <FaCog />
-                Cài đặt
-              </a>
-              <a href="/logout">
+              <button onClick={handleLogout} className="dropdown-item">
                 <FaSignOutAlt />
-                Đăng xuất
-              </a>
+                <span>Đăng xuất</span>
+              </button>
             </div>
           )}
         </div>

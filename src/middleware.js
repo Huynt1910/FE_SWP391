@@ -16,10 +16,22 @@ export async function middleware(request) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  // Get tokens from cookies
+  const token = request.cookies.get("token");
+  const userRole = request.cookies.get("userRole");
+
+  // Check if trying to access admin paths
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    // If no token or role, redirect to login
+    if (!token || !userRole) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
 // Specify the routes where the middleware should run
 export const config = {
-  matcher: ["/login"],
+  matcher: ["/login", "/admin/:path*"],
 };

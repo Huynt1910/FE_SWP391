@@ -173,9 +173,57 @@ export const END_POINTS = {
       secure: true,
     },
   },
+  services: {
+    getAll: {
+      path: "/services",
+      method: "GET",
+      secure: true,
+    },
+    create: {
+      path: "/services",
+      method: "POST",
+      secure: true,
+    },
+    update: {
+      path: "/services/update",
+      method: "PUT",
+      secure: true,
+    },
+    deactivate: {
+      path: "/services/deactive",
+      method: "PUT",
+      secure: true,
+    },
+    activate: {
+      path: "/services/active",
+      method: "PUT",
+      secure: true,
+    },
+  },
+  dashboard: {
+    countBookings: {
+      path: "/admin/booking/count",
+      method: "GET",
+      secure: true,
+    },
+    getTotalMoney: {
+      path: "/admin/booking/total-money/month",
+      method: "GET",
+      secure: true,
+    },
+    countCustomers: {
+      path: "/admin/customer/count",
+      method: "GET",
+      secure: true,
+    },
+    countServices: {
+      path: "/admin/service/count",
+      method: "GET",
+      secure: true,
+    },
+  },
 };
 export const ACTIONS = {
-  SYSTEM_LOGIN: "systemLogin",
   GET_SYSTEM_USER_INFO: "getSystemUserInfo",
   GET_ALL_USERS: "getAllUsers",
   GET_ACTIVE_USERS: "getActiveUsers",
@@ -197,12 +245,31 @@ export const ACTIONS = {
   GET_ALL_SLOTS: "getAllSlots",
   GET_ALL_VOUCHERS: "getAllVouchers",
   CREATE_VOUCHER: "createVoucher",
+  COUNT_BOOKINGS: "countBookings",
+  GET_TOTAL_MONEY: "getTotalMoney",
+  COUNT_CUSTOMERS: "countCustomers",
+  COUNT_SERVICES: "countServices",
 };
 
-export const USER_ROLES = {
-  ADMIN: "admin",
-  STAFF: "staff",
-  THERAPIST: "therapist",
+export const ROLES = {
+  ADMIN: "ADMIN",
+  STAFF: "STAFF",
+  THERAPIST: "THERAPIST",
+  CUSTOMER: "CUSTOMER",
+};
+
+export const ADMIN_AREA_ROLES = [ROLES.ADMIN, ROLES.STAFF, ROLES.THERAPIST];
+
+export const PAGE_ACCESS = {
+  "/admin/dashboard": [ROLES.ADMIN, ROLES.STAFF],
+  "/admin/customers": [ROLES.ADMIN, ROLES.STAFF],
+  "/admin/bookings": [ROLES.ADMIN, ROLES.STAFF],
+  "/admin/schedules": [ROLES.ADMIN, ROLES.STAFF, ROLES.THERAPIST],
+  "/admin/therapists": [ROLES.ADMIN],
+  "/admin/services": [ROLES.ADMIN],
+  "/admin/settings": [ROLES.ADMIN],
+  "/admin/staffs": [ROLES.ADMIN],
+  "/admin/users": [ROLES.ADMIN],
 };
 
 export const API_URL =

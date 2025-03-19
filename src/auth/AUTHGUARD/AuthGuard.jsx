@@ -1,6 +1,20 @@
-import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { getCookie } from "cookies-next";
+import { useRouter } from "next/router";
+import { getCookie, deleteCookie } from "cookies-next";
+
+const PAGE_ACCESS = {
+  "/admin/dashboard": ["ADMIN", "STAFF"],
+  "/admin/customers": ["ADMIN", "STAFF"],
+  "/admin/bookings": ["ADMIN", "STAFF"],
+  "/admin/schedules": ["ADMIN", "STAFF", "THERAPIST"],
+  "/admin/therapists": ["ADMIN"],
+  "/admin/staffs": ["ADMIN"],
+  "/admin/services": ["ADMIN"],
+  "/admin/settings": ["ADMIN"],
+  "/admin/feedback": ["THERAPIST"],
+  "/admin/profile": ["ADMIN", "STAFF", "THERAPIST"],
+  "/admin/therapist-schedule": ["THERAPIST"],
+};
 
 export const AuthGuard = ({ children }) => {
   const router = useRouter();
@@ -8,26 +22,37 @@ export const AuthGuard = ({ children }) => {
   const userRole = getCookie("userRole");
 
   useEffect(() => {
-    if (!token) {
+    const isAdminPath = router.pathname.startsWith("/admin");
+
+    if (isAdminPath && !token) {
       router.push("/login");
       return;
     }
 
-    // Check for admin routes
-    if (router.pathname.startsWith("/admin")) {
-      if (userRole !== "ADMIN") {
-        router.push("/unauthorized");
+    if (token && !userRole) {
+      deleteCookie("token");
+      router.push("/login");
+      return;
+    }
+
+    if (isAdminPath) {
+      const allowedRoles = PAGE_ACCESS[router.pathname];
+
+      if (!allowedRoles || !allowedRoles.includes(userRole)) {
+        const firstAllowedPage = Object.entries(PAGE_ACCESS).find(
+          ([_, roles]) => roles.includes(userRole)
+        )?.[0];
+
+        if (firstAllowedPage) {
+          router.push(firstAllowedPage);
+        } else {
+          deleteCookie("token");
+          deleteCookie("userRole");
+          router.push("/login");
+        }
       }
     }
-  }, [token, userRole, router]);
-
-  // Don't render anything while checking authentication
-  if (
-    !token ||
-    (router.pathname.startsWith("/admin") && userRole !== "ADMIN")
-  ) {
-    return null;
-  }
+  }, [router.pathname, token, userRole]);
 
   return <>{children}</>;
 };

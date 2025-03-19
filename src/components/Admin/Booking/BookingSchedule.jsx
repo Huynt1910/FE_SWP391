@@ -1,89 +1,68 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useBookingActions } from "@/auth/hook/admin/useBookingActions";
 import {
+  FaSpinner,
   FaCalendarAlt,
   FaSearch,
-  FaSpinner,
-  FaEdit,
-  FaTrash,
-  FaCheckCircle,
   FaClock,
-  FaBan,
-  FaEye,
-  FaTimes,
+  FaCheckCircle,
   FaCheck,
-  FaPlay,
+  FaEye,
+  FaBan,
+  FaTimes,
 } from "react-icons/fa";
+import { format } from "date-fns";
+import { toast } from "react-toastify";
 
 const BookingSchedule = () => {
-  const [bookings, setBookings] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // State management
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState(""); // view, edit, add
-  const [selectedBooking, setSelectedBooking] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [bookingsPerPage] = useState(10);
-
-  // Form state for modal
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState(null);
   const [formData, setFormData] = useState({
-    customerName: "",
+    slotId: "",
+    bookingDate: new Date().toISOString().split("T")[0],
+    serviceId: [],
+    therapistId: "",
+    voucherId: "",
     phone: "",
-    service: "",
-    therapist: "",
-    date: "",
-    time: "",
-    notes: "",
   });
 
-  // Simulated booking data - replace with actual API call
-  useEffect(() => {
-    fetchBookings();
-  }, [selectedDate, filterStatus]);
+  // Get data from custom hook
+  const {
+    getAllBookings,
+    getAllServices,
+    getAvailableTherapists,
+    getActiveVouchers,
+    getAllSlots,
+    createBooking,
+  } = useBookingActions(formData.bookingDate);
 
-  const fetchBookings = () => {
-    setIsLoading(true);
-    // Simulate API call - replace with actual API call
-    setTimeout(() => {
-      const dummyBookings = [
-        {
-          id: 1,
-          customerName: "Nguyen Van A",
-          service: "Facial Treatment",
-          therapist: "Dr. Tran",
-          time: "09:00",
-          status: "confirmed",
-          phone: "0123456789",
-        },
-        {
-          id: 2,
-          customerName: "Tran Thi B",
-          service: "Massage",
-          therapist: "Dr. Nguyen",
-          time: "10:30",
-          status: "pending",
-          phone: "0987654321",
-        },
-        // Add more dummy data as needed
-      ];
-      setBookings(dummyBookings);
-      setIsLoading(false);
-    }, 1000);
-  };
+  // Safe data access
+  const bookings = getAllBookings.data?.data || [];
+  const services = getAllServices.data?.data || [];
+  const therapists = getAvailableTherapists.data?.data || [];
+  const vouchers = getActiveVouchers.data?.data || [];
+  const slots = getAllSlots.data?.data || [];
 
+  // Filter bookings
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =
-      booking.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.phone.includes(searchTerm);
+      booking.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.userPhone?.includes(searchTerm);
     const matchesStatus =
-      filterStatus === "all" || booking.status === filterStatus;
+      filterStatus === "all" || booking.status?.toLowerCase() === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
-  // Calculate pagination
+  // Pagination
+  const bookingsPerPage = 10;
   const indexOfLastBooking = currentPage * bookingsPerPage;
   const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage;
   const currentBookings = filteredBookings.slice(
@@ -96,25 +75,10 @@ const BookingSchedule = () => {
   const openModal = (mode, booking = null) => {
     setModalMode(mode);
     setSelectedBooking(booking);
-    if (booking && (mode === "edit" || mode === "view")) {
+    if (mode === "add") {
       setFormData({
-        customerName: booking.customerName,
-        phone: booking.phone,
-        service: booking.service,
-        therapist: booking.therapist,
-        date: selectedDate,
-        time: booking.time,
-        notes: booking.notes || "",
-      });
-    } else {
-      setFormData({
-        customerName: "",
-        phone: "",
-        service: "",
-        therapist: "",
-        date: selectedDate,
-        time: "",
-        notes: "",
+        ...formData,
+        bookingDate: selectedDate,
       });
     }
     setShowModal(true);
@@ -125,29 +89,217 @@ const BookingSchedule = () => {
     setModalMode("");
     setSelectedBooking(null);
     setFormData({
-      customerName: "",
+      slotId: "",
+      bookingDate: selectedDate,
+      serviceId: [],
+      therapistId: "",
+      voucherId: "",
       phone: "",
-      service: "",
-      therapist: "",
-      date: "",
-      time: "",
-      notes: "",
     });
   };
 
-  const handleSubmit = (e) => {
+  // Form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission based on modalMode
-    // Add API call here
-    closeModal();
+    try {
+      await createBooking.mutateAsync({
+        phoneNumber: formData.phone,
+        slotId: parseInt(formData.slotId),
+        bookingDate: formData.bookingDate,
+        serviceId: formData.serviceId.map((id) => parseInt(id)),
+        therapistId: parseInt(formData.therapistId),
+        voucherId: formData.voucherId ? parseInt(formData.voucherId) : null,
+      });
+      closeModal();
+    } catch (error) {
+      console.error("Booking error:", error);
+    }
   };
 
-  const handleStatusUpdate = (id, status) => {
-    // Handle status update logic here
+  // Service selection component
+  const ServiceSelection = () => {
+    const handleServiceChange = (e) => {
+      const selectedOptions = Array.from(e.target.selectedOptions);
+      const selectedIds = selectedOptions.map((option) =>
+        parseInt(option.value)
+      );
+      setFormData((prev) => ({
+        ...prev,
+        serviceId: selectedIds,
+      }));
+    };
+
+    return (
+      <div className="form-group">
+        <label>Dịch vụ:</label>
+        <select
+          multiple
+          name="serviceId"
+          value={formData.serviceId}
+          onChange={handleServiceChange}
+          required
+          className="form-control"
+        >
+          {services.map((service) => (
+            <option key={service.id} value={service.id}>
+              {service.name}
+            </option>
+          ))}
+        </select>
+        {getAllServices.isLoading && (
+          <div className="loading-text">Đang tải dịch vụ...</div>
+        )}
+        <small className="help-text">Giữ Ctrl để chọn nhiều dịch vụ</small>
+      </div>
+    );
   };
 
+  // Render booking form
+  const renderForm = () => (
+    <form onSubmit={handleSubmit} className="booking-form">
+      <div className="form-group">
+        <label>Số điện thoại</label>
+        <input
+          type="tel"
+          name="phone"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          required
+          pattern="[0-9]{10}"
+          placeholder="Nhập số điện thoại khách hàng"
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Ngày</label>
+        <input
+          type="date"
+          name="bookingDate"
+          value={formData.bookingDate}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              bookingDate: e.target.value,
+              therapistId: "",
+              slotId: "",
+            })
+          }
+          min={new Date().toISOString().split("T")[0]}
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Chuyên viên</label>
+        <select
+          name="therapistId"
+          value={formData.therapistId}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              therapistId: e.target.value,
+            })
+          }
+          required
+          disabled={!formData.bookingDate}
+        >
+          <option value="">
+            {!formData.bookingDate
+              ? "Vui lòng chọn ngày trước"
+              : "Chọn chuyên viên"}
+          </option>
+          {therapists.map((therapist) => (
+            <option key={therapist.id} value={therapist.id}>
+              {therapist.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="form-group">
+        <label>Khung giờ</label>
+        <select
+          name="slotId"
+          value={formData.slotId}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              slotId: e.target.value,
+            })
+          }
+          required
+          disabled={!formData.therapistId}
+        >
+          <option value="">Chọn khung giờ</option>
+          {slots.map((slot) => (
+            <option key={slot.id} value={slot.id}>
+              {slot.startTime} - {slot.endTime}
+            </option>
+          ))}
+        </select>
+        {getAllSlots.isLoading && (
+          <div className="loading-text">Đang tải khung giờ...</div>
+        )}
+      </div>
+
+      <ServiceSelection />
+
+      <div className="form-group">
+        <label>Voucher (không bắt buộc)</label>
+        <select
+          name="voucherId"
+          value={formData.voucherId}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              voucherId: e.target.value,
+            })
+          }
+        >
+          <option value="">Không sử dụng voucher</option>
+          {vouchers.map((voucher) => (
+            <option key={voucher.id} value={voucher.id}>
+              {voucher.code} - Giảm {voucher.discountAmount}%
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="form-actions">
+        <button className="btn-primary" onClick={handleSubmit}>
+          Tạo lịch hẹn
+        </button>
+      </div>
+    </form>
+  );
+
+  // Render booking details
+  const renderBookingDetails = () => (
+    <div className="booking-details">
+      <p>
+        <strong>Khách hàng:</strong> {selectedBooking.userName}
+      </p>
+      <p>
+        <strong>Số điện thoại:</strong> {selectedBooking.userPhone}
+      </p>
+      <p>
+        <strong>Chuyên viên:</strong> {selectedBooking.therapistName}
+      </p>
+      <p>
+        <strong>Thời gian:</strong>{" "}
+        {format(new Date(selectedBooking.date), "dd/MM/yyyy")}{" "}
+        {selectedBooking.time}
+      </p>
+      <p>
+        <strong>Trạng thái:</strong> {selectedBooking.status}
+      </p>
+    </div>
+  );
+
+  // Main render
   return (
-    <div className="schedule">
+    <div className="schedule-container">
+      {/* Header */}
       <div className="schedule__header">
         <div className="schedule__header-title">
           <h1>Quản lý lịch hẹn</h1>
@@ -161,6 +313,7 @@ const BookingSchedule = () => {
         </div>
       </div>
 
+      {/* Toolbar */}
       <div className="schedule__toolbar">
         <div className="search-box">
           <FaSearch />
@@ -187,20 +340,21 @@ const BookingSchedule = () => {
             <option value="all">Tất cả trạng thái</option>
             <option value="pending">Chờ xác nhận</option>
             <option value="confirmed">Đã xác nhận</option>
-            <option value="in_progress">Đang thực hiện</option>
             <option value="completed">Hoàn thành</option>
             <option value="cancelled">Đã hủy</option>
           </select>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="loading">
-          <FaSpinner />
+      {/* Content */}
+      {getAllBookings.isLoading ? (
+        <div className="loading-container">
+          <FaSpinner className="spinner" />
           <p>Đang tải dữ liệu...</p>
         </div>
       ) : (
         <>
+          {/* Table */}
           <div className="schedule__table">
             <table>
               <thead>
@@ -208,8 +362,7 @@ const BookingSchedule = () => {
                   <th>Thời gian</th>
                   <th>Khách hàng</th>
                   <th>Số điện thoại</th>
-                  <th>Dịch vụ</th>
-                  <th>Bác sĩ/Chuyên viên</th>
+                  <th>Chuyên viên</th>
                   <th>Trạng thái</th>
                   <th>Thao tác</th>
                 </tr>
@@ -218,35 +371,29 @@ const BookingSchedule = () => {
                 {currentBookings.map((booking) => (
                   <tr key={booking.id}>
                     <td>{booking.time}</td>
-                    <td>{booking.customerName}</td>
-                    <td>{booking.phone}</td>
-                    <td>{booking.service}</td>
-                    <td>{booking.therapist}</td>
+                    <td>{booking.userName}</td>
+                    <td>{booking.userPhone}</td>
+                    <td>{booking.therapistName}</td>
                     <td>
                       <span
-                        className={`status-badge status-badge--${booking.status}`}
+                        className={`status-badge ${booking.status.toLowerCase()}`}
                       >
-                        {booking.status === "pending" && (
+                        {booking.status === "PENDING" && (
                           <>
                             <FaClock /> Chờ xác nhận
                           </>
                         )}
-                        {booking.status === "confirmed" && (
+                        {booking.status === "CONFIRMED" && (
                           <>
                             <FaCheckCircle /> Đã xác nhận
                           </>
                         )}
-                        {booking.status === "in_progress" && (
-                          <>
-                            <FaPlay /> Đang thực hiện
-                          </>
-                        )}
-                        {booking.status === "completed" && (
+                        {booking.status === "COMPLETED" && (
                           <>
                             <FaCheck /> Hoàn thành
                           </>
                         )}
-                        {booking.status === "cancelled" && (
+                        {booking.status === "CANCELLED" && (
                           <>
                             <FaBan /> Đã hủy
                           </>
@@ -262,60 +409,6 @@ const BookingSchedule = () => {
                         >
                           <FaEye />
                         </button>
-                        <button
-                          className="edit-btn"
-                          title="Sửa"
-                          onClick={() => openModal("edit", booking)}
-                        >
-                          <FaEdit />
-                        </button>
-                        <button className="delete-btn" title="Xóa">
-                          <FaTrash />
-                        </button>
-                        {booking.status === "pending" && (
-                          <button
-                            className="status-btn confirm-btn"
-                            title="Xác nhận lịch hẹn"
-                            onClick={() =>
-                              handleStatusUpdate(booking.id, "confirmed")
-                            }
-                          >
-                            <FaCheckCircle />
-                          </button>
-                        )}
-                        {booking.status === "confirmed" && (
-                          <button
-                            className="status-btn start-btn"
-                            title="Bắt đầu thực hiện"
-                            onClick={() =>
-                              handleStatusUpdate(booking.id, "in_progress")
-                            }
-                          >
-                            <FaPlay />
-                          </button>
-                        )}
-                        {booking.status === "in_progress" && (
-                          <button
-                            className="status-btn complete-btn"
-                            title="Hoàn thành"
-                            onClick={() =>
-                              handleStatusUpdate(booking.id, "completed")
-                            }
-                          >
-                            <FaCheck />
-                          </button>
-                        )}
-                        {["pending", "confirmed"].includes(booking.status) && (
-                          <button
-                            className="status-btn cancel-btn"
-                            title="Hủy lịch hẹn"
-                            onClick={() =>
-                              handleStatusUpdate(booking.id, "cancelled")
-                            }
-                          >
-                            <FaBan />
-                          </button>
-                        )}
                       </div>
                     </td>
                   </tr>
@@ -367,8 +460,6 @@ const BookingSchedule = () => {
               <h2>
                 {modalMode === "view"
                   ? "Chi tiết lịch hẹn"
-                  : modalMode === "edit"
-                  ? "Chỉnh sửa lịch hẹn"
                   : "Tạo lịch hẹn mới"}
               </h2>
               <button className="close-btn" onClick={closeModal}>
@@ -377,130 +468,7 @@ const BookingSchedule = () => {
             </div>
 
             <div className="schedule__modal-body">
-              {modalMode === "view" ? (
-                <div className="booking-details">
-                  <p>
-                    <strong>Khách hàng:</strong> {selectedBooking.customerName}
-                  </p>
-                  <p>
-                    <strong>Số điện thoại:</strong> {selectedBooking.phone}
-                  </p>
-                  <p>
-                    <strong>Dịch vụ:</strong> {selectedBooking.service}
-                  </p>
-                  <p>
-                    <strong>Bác sĩ/Chuyên viên:</strong>{" "}
-                    {selectedBooking.therapist}
-                  </p>
-                  <p>
-                    <strong>Thời gian:</strong> {selectedBooking.time}
-                  </p>
-                  <p>
-                    <strong>Trạng thái:</strong> {selectedBooking.status}
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit}>
-                  <div className="form-group">
-                    <label>Khách hàng</label>
-                    <input
-                      type="text"
-                      name="customerName"
-                      value={formData.customerName}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          customerName: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Số điện thoại</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Dịch vụ</label>
-                    <select
-                      name="service"
-                      value={formData.service}
-                      onChange={(e) =>
-                        setFormData({ ...formData, service: e.target.value })
-                      }
-                      required
-                    >
-                      <option value="">Chọn dịch vụ</option>
-                      {/* Add service options */}
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Bác sĩ/Chuyên viên</label>
-                    <select
-                      name="therapist"
-                      value={formData.therapist}
-                      onChange={(e) =>
-                        setFormData({ ...formData, therapist: e.target.value })
-                      }
-                      required
-                    >
-                      <option value="">Chọn bác sĩ/chuyên viên</option>
-                      {/* Add therapist options */}
-                    </select>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Ngày</label>
-                      <input
-                        type="date"
-                        name="date"
-                        value={formData.date}
-                        onChange={(e) =>
-                          setFormData({ ...formData, date: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Giờ</label>
-                      <input
-                        type="time"
-                        name="time"
-                        value={formData.time}
-                        onChange={(e) =>
-                          setFormData({ ...formData, time: e.target.value })
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Ghi chú</label>
-                    <textarea
-                      name="notes"
-                      value={formData.notes}
-                      onChange={(e) =>
-                        setFormData({ ...formData, notes: e.target.value })
-                      }
-                      rows="3"
-                    ></textarea>
-                  </div>
-                </form>
-              )}
+              {modalMode === "view" ? renderBookingDetails() : renderForm()}
             </div>
 
             <div className="schedule__modal-footer">
@@ -508,8 +476,18 @@ const BookingSchedule = () => {
                 Đóng
               </button>
               {modalMode !== "view" && (
-                <button className="btn-primary" onClick={handleSubmit}>
-                  {modalMode === "add" ? "Tạo lịch hẹn" : "Lưu thay đổi"}
+                <button
+                  className="btn-primary"
+                  onClick={handleSubmit}
+                  disabled={createBooking.isLoading}
+                >
+                  {createBooking.isLoading ? (
+                    <>
+                      <FaSpinner className="spinner" /> Đang xử lý...
+                    </>
+                  ) : (
+                    "Tạo lịch hẹn"
+                  )}
                 </button>
               )}
             </div>

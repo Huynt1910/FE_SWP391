@@ -1,4 +1,4 @@
-import { useSignIn } from "@auth/hook/useSinginHook";
+import { useSignIn } from "@/auth/hook/useSinginHook";
 import { SocialLogin } from "@components/shared/SocialLogin/SocialLogin";
 import { showToast } from "@utils/toast";
 import { useRouter } from "next/router";
@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { setCookie } from "cookies-next";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { ROLES } from "@/lib/api-client/constantAdmin";
 
 export const Login = () => {
   const router = useRouter();
@@ -30,7 +31,7 @@ export const Login = () => {
 
     try {
       const response = await signIn({
-        username: formData.username,
+        username: formData.username.trim(),
         password: formData.password,
       });
 
@@ -38,14 +39,26 @@ export const Login = () => {
         showToast.success("Login successful!");
 
         // Redirect based on role
-        if (response.role === "ADMIN") {
-          router.push("/admin");
-        } else {
-          router.push("/");
+        switch (response.role) {
+          case "ADMIN":
+          case "STAFF":
+          case "THERAPIST":
+            router.push("/admin");
+            break;
+          case "CUSTOMER":
+            router.push("/");
+            break;
+          default:
+            console.error("Unknown role:", response.role);
+            router.push("/");
         }
       }
     } catch (error) {
-      showToast.error("Invalid username or password");
+      showToast.error(
+        error.message ||
+          error.response?.data?.message ||
+          "Login failed. Please try again."
+      );
     }
   };
 

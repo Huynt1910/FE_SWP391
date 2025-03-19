@@ -1,33 +1,65 @@
 import React, { useState } from "react";
-import { FaSpinner, FaSpa } from "react-icons/fa";
-import { useServiceActions } from "@/auth/hook/admin/useServiceActions";
+import { FaSpinner } from "react-icons/fa";
+import { useServiceActions } from "@/auth/hook/admin/useServiceActionsHook";
 import ServiceTable from "./components/ServiceTable";
 import ServiceAddModal from "./components/ServiceAddModal";
-import { toast } from "react-toastify";
+import ServiceEditModal from "./components/ServiceEditModal";
 
 const Services = () => {
-  const [showAddModal, setShowAddModal] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 
+  // Get all hooks from useServiceActions
   const {
     useGetAllServices,
-    useCreateService,
-    useUpdateService,
-    useDeleteService,
+    createService,
+    updateService,
+    useDeactivateService,
+    useActivateService,
   } = useServiceActions();
 
+  // Use the hooks
   const { data: services, isLoading } = useGetAllServices();
-  const { mutate: createService, isLoading: isCreating } = useCreateService();
-  const { mutate: updateService, isLoading: isUpdating } = useUpdateService();
-  const { mutate: deleteService } = useDeleteService();
+  const { mutate: deactivateService } = useDeactivateService();
+  const { mutate: activateService } = useActivateService();
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc muốn xóa dịch vụ này?")) {
-      try {
-        await deleteService(id);
-      } catch (error) {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
+  // Handle create service
+  const handleAdd = async (formData) => {
+    try {
+      await createService.mutateAsync(formData);
+      setShowAddModal(false);
+    } catch (error) {
+      console.error("Add service failed:", error);
+    }
+  };
+
+  // Handle update service
+  const handleEdit = (service) => {
+    setSelectedService(service);
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async (serviceId, formData) => {
+    try {
+      await updateService.mutateAsync({ id: serviceId, data: formData });
+      setShowEditModal(false);
+      setSelectedService(null);
+    } catch (error) {
+      console.error("Update service failed:", error);
+    }
+  };
+
+  // Handle toggle service status
+  const handleToggleStatus = async (service) => {
+    try {
+      if (service.isActive) {
+        await deactivateService(service.serviceId);
+      } else {
+        await activateService(service.serviceId);
       }
+    } catch (error) {
+      console.error("Toggle status failed:", error);
     }
   };
 
@@ -35,7 +67,6 @@ const Services = () => {
     return (
       <div className="admin-page__loading">
         <FaSpinner className="spinner" />
-        <p>Đang tải dữ liệu...</p>
       </div>
     );
   }
@@ -43,38 +74,38 @@ const Services = () => {
   return (
     <div className="admin-page">
       <div className="admin-page__header">
-        <div className="admin-page__header-title">
-          <h1>Quản lý Dịch vụ</h1>
-          <p>Quản lý và cập nhật các dịch vụ spa</p>
-        </div>
-        <div className="admin-page__header-actions">
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowAddModal(true)}
-          >
-            <FaSpa /> Thêm Dịch vụ
-          </button>
-        </div>
+        <h1>Quản lý Dịch vụ</h1>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowAddModal(true)}
+        >
+          Thêm Dịch vụ
+        </button>
       </div>
 
       <ServiceTable
-        services={services || []}
-        onEdit={(service) => {
-          setSelectedService(service);
-          setShowAddModal(true);
-        }}
-        onDelete={handleDelete}
+        services={services}
+        onEdit={handleEdit}
+        onToggleStatus={handleToggleStatus}
       />
 
       {showAddModal && (
         <ServiceAddModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAdd}
+          isLoading={createService.isLoading}
+        />
+      )}
+
+      {showEditModal && selectedService && (
+        <ServiceEditModal
           service={selectedService}
           onClose={() => {
-            setShowAddModal(false);
+            setShowEditModal(false);
             setSelectedService(null);
           }}
-          onConfirm={selectedService ? updateService : createService}
-          isLoading={selectedService ? isUpdating : isCreating}
+          onConfirm={handleUpdate}
+          isLoading={updateService.isLoading}
         />
       )}
     </div>

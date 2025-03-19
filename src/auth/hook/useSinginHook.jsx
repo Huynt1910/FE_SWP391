@@ -1,55 +1,57 @@
-import { ACTIONS } from "@lib/api-client/constant";
-import { APIClient } from "@lib/api-client";
-import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { setCookie } from "cookies-next";
-import { useRouter } from "next/router";
+import axios from "axios";
+import { API_URL, END_POINTS } from "@/lib/api-client/constant"; // Changed to constant.js instead of constantAdmin.js
 
 export function useSignIn() {
-  const router = useRouter();
+  const [isPending, setIsPending] = useState(false);
 
-  const { mutateAsync: signIn, isPending } = useMutation({
-    mutationFn: async (params) => {
-      try {
-        // Step 1: Login and get token
-        const loginResponse = await APIClient.invoke({
-          action: ACTIONS.SIGN_IN,
-          data: params,
-        });
-
-        if (!loginResponse?.result?.token) {
-          throw new Error("Invalid login response");
-        }
-
-        const token = loginResponse.result.token;
-        setCookie("token", token);
-
-        // Step 2: Get user info using token
-        const userInfoResponse = await APIClient.invoke({
-          action: ACTIONS.MY_INFO,
+  const signIn = async (credentials) => {
+    setIsPending(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}${END_POINTS.signIn.path}`, // Using the correct endpoint from constant.js
+        credentials,
+        {
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
+        }
+      );
+
+      if (response.data.success && response.data.result) {
+        const { token, role } = response.data.result;
+
+        // Store token and role cookies
+        setCookie("token", token, {
+          maxAge: 60 * 60 * 24,
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
         });
 
-        if (!userInfoResponse?.result) {
-          throw new Error("Failed to get user info");
-        }
-
-        const userRole = userInfoResponse.result.role;
-        setCookie("userRole", userRole);
+        setCookie("userRole", role, {
+          maxAge: 60 * 60 * 24,
+          path: "/",
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+        });
 
         return {
           success: true,
-          token,
-          role: userRole,
-          user: userInfoResponse.result,
+          role: role,
+          token: token,
         };
-      } catch (error) {
-        console.error("Login error:", error);
-        throw error;
       }
-    },
-  });
+
+      return { success: false };
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   return { signIn, isPending };
 }
