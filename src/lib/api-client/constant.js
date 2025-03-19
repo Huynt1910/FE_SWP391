@@ -45,39 +45,70 @@ export const END_POINTS = {
     method: "PUT",
     secure: true,
   },
-  getActiveTherapists: { path: "/therapists/activeTherapists", method: "GET", secure: true },
-  getTherapistsByService: { path: "/booking/therapists", method: "POST", secure: false },
+  getActiveTherapists: {
+    path: "/therapists/activeTherapists",
+    method: "GET",
+    secure: true,
+  },
+  getTherapistsByService: {
+    path: "/booking/therapists",
+    method: "POST",
+    secure: false,
+  },
   getAvailableSlots: { path: "/booking/slots", method: "POST", secure: false },
-  createBooking: { path: "/booking/createBooking", method: "POST", secure: false },
-  getTherapistSchedule: { path: "/schedule/therapist/month/:month/:year", method: "GET", parameterized: true, secure: false },
-  getTherapistScheduleById: { path: "/schedule/therapist/getById/:id", method: "GET", parameterized: true, secure: false },
+  createBooking: {
+    path: "/booking/createBooking",
+    method: "POST",
+    secure: false,
+  },
+  getTherapistSchedule: {
+    path: "/schedule/therapist/month/:month/:year",
+    method: "GET",
+    parameterized: true,
+    secure: false,
+  },
+  getTherapistScheduleById: {
+    path: "/schedule/therapist/getById/:id",
+    method: "GET",
+    parameterized: true,
+    secure: false,
+  },
   getVouchers: { path: "/vouchers", method: "GET", secure: false },
   getAllTherapists: { path: "/therapists", method: "GET", secure: false },
   getAllServices: { path: "/services", method: "GET", secure: false },
-  getServiceById: { path: "/services/:id", method: "GET", parameterized: true, secure: false },
-  refreshToken: { path: "/authentication/refresh-token", method: "POST", secure: true },
-  getCustomerPendingBookings: { 
-    path: "/booking/customer/:userId/pending", 
-    method: "GET", 
-    parameterized: true, 
-    secure: false
+  getServiceById: {
+    path: "/services/:id",
+    method: "GET",
+    parameterized: true,
+    secure: false,
+  },
+  refreshToken: {
+    path: "/authentication/refresh-token",
+    method: "POST",
+    secure: true,
+  },
+  getCustomerPendingBookings: {
+    path: "/booking/customer/:userId/pending",
+    method: "GET",
+    parameterized: true,
+    secure: false,
   },
   deleteBooking: {
     path: "/booking/delete/:bookingId",
     method: "DELETE",
     parameterized: true,
-    secure: true
+    secure: true,
   },
   finishBooking: {
     path: "/booking/:bookingId/finish",
     method: "POST",
     parameterized: true,
-    secure: true
+    secure: true,
   },
   submitFeedback: {
     path: "/feedback",
     method: "POST",
-    secure: true
+    secure: true,
   },
 };
 
