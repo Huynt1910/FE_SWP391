@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ProfileAside } from "./ProfileAside/ProfileAside";
-import BookingListPending from "./BookingListPending/BookingListPending";
+import BookingListPending from "./BookingList/BookingListPending";
 import { ProfileMyInfo } from "./ProfileMyInfo/ProfileMyInfo";
 
 export const Profile = () => {

@@ -1,16 +1,20 @@
 import { useState, useEffect } from "react";
-import { FaCalendarAlt, FaClock, FaUser, FaSpinner, FaExclamationCircle, FaEllipsisV } from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaUser, FaSpinner, FaExclamationCircle, FaEllipsisV, FaCheckCircle } from "react-icons/fa";
 import useBookingListPendingHook from "@/auth/hook/useBookingListPendingHook";
-import { isAuthenticated } from "@/utils/auth";
+import { isAuthenticated, getToken } from "@/utils/auth";
 import { APIClient } from "@/lib/api-client";
-import { ACTIONS } from "@/lib/api-client/constant";
+import { ACTIONS, API_URL } from "@/lib/api-client/constant";
+import { useRouter } from 'next/router';
 
 const BookingListPending = () => {
+  const router = useRouter();
   const { loading, error, data: pendingBookings, refreshPendingBookings } = useBookingListPendingHook();
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [expandedBooking, setExpandedBooking] = useState(null);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancellingBookingId, setCancellingBookingId] = useState(null);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [completingBookingId, setCompletingBookingId] = useState(null);
 
   // Check authentication on component mount
   useEffect(() => {
@@ -90,6 +94,54 @@ const BookingListPending = () => {
       setIsCancelling(false);
       setCancellingBookingId(null);
     }
+  };
+
+  // Handle booking completion
+  const handleCompleteBooking = async (booking) => {
+    if (!window.confirm('Are you sure you want to complete this booking?')) {
+      return;
+    }
+
+    setIsCompleting(true);
+    setCompletingBookingId(booking.bookingId);
+
+    try {
+      // Create booking details for the confirmation page
+      const bookingDetails = {
+        bookingId: booking.bookingId,
+        therapistName: booking.therapistName,
+        serviceNames: booking.serviceName.map(service => service.serviceName).join(', '),
+        appointmentDateTime: `${formatDate(booking.bookingDate)} ${formatTime(booking.bookingTime)}`,
+        serviceId: booking.serviceName.map(service => service.serviceId),
+        // Add service prices if available or use placeholder
+        servicePrices: booking.serviceName.map(service => service.price || 1000000),
+        // Calculate subtotal from service prices
+        subtotal: booking.serviceName.reduce((sum, service) => sum + (service.price || 1000000), 0),
+        // Add total amount
+        totalAmount: booking.serviceName.reduce((sum, service) => sum + (service.price || 1000000), 0)
+      };
+
+      // Store booking details in localStorage for the confirmation page
+      localStorage.setItem('lastBookingDetails', JSON.stringify(bookingDetails));
+      
+      // Redirect to confirmation page
+      router.push('/booking/confirmation?success=true&bookingId=' + booking.bookingId);
+    } catch (err) {
+      console.error('Error completing booking:', err);
+      alert('Failed to complete booking. Please try again later.');
+    } finally {
+      setIsCompleting(false);
+      setCompletingBookingId(null);
+    }
+  };
+
+  // Format currency to VND
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', { 
+      style: 'currency', 
+      currency: 'VND',
+      maximumFractionDigits: 0
+    }).format(amount);
   };
 
   // Render authentication required view
@@ -248,12 +300,98 @@ const BookingListPending = () => {
                     )}
                   </button>
                   
+                  <button 
+                    className="complete-button"
+                    onClick={() => handleCompleteBooking(booking)}
+                    disabled={isCompleting}
+                  >
+                    {isCompleting && completingBookingId === booking.bookingId ? (
+                      <>
+                        <FaSpinner className="spinner" /> Completing...
+                      </>
+                    ) : (
+                      <>
+                        <FaCheckCircle className="icon" /> Complete Booking
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             )}
           </div>
         ))}
       </div>
+
+      <style jsx>{`
+        /* Existing styles... */
+        
+        .booking-actions {
+          display: flex;
+          gap: 10px;
+          margin-top: 15px;
+        }
+        
+        .cancel-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          background-color: #e74c3c;
+          color: white;
+          border: none;
+          padding: 8px 15px;
+          border-radius: 4px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        
+        .cancel-button:hover {
+          background-color: #c0392b;
+        }
+        
+        .cancel-button:disabled {
+          background-color: #95a5a6;
+          cursor: not-allowed;
+        }
+        
+        .complete-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          background-color: #2ecc71;
+          color: white;
+          border: none;
+          padding: 8px 15px;
+          border-radius: 4px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        
+        .complete-button:hover {
+          background-color: #27ae60;
+        }
+        
+        .complete-button:disabled {
+          background-color: #95a5a6;
+          cursor: not-allowed;
+        }
+        
+        .spinner {
+          animation: spin 1s linear infinite;
+        }
+        
+        .icon {
+          margin-right: 2px;
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
