@@ -36,7 +36,7 @@ export const Login = () => {
       });
 
       if (response.success) {
-        showToast.success("Login successful!");
+        showToast("Login successful!", "success");
 
         // Redirect based on role
         switch (response.role) {

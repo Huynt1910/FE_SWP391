@@ -55,15 +55,15 @@ export const ForgotPassword = () => {
   const handleResendOtp = async () => {
     try {
       setIsResendingOtp(true);
-      showToast.loading("Sending new verification code...");
+      showToast("Sending new verification code...", "info");
       
       const result = await verifyEmail(email);
       if (result.success) {
-        showToast.success("New verification code sent successfully!");
+        showToast("New verification code sent successfully!", "success");
         setOtp(""); // Clear the previous OTP input
       }
     } catch (error) {
-      showToast.error("Failed to send verification code. Please try again.");
+      showToast("Failed to send verification code. Please try again.", "error");
     } finally {
       setIsResendingOtp(false);
     }
@@ -73,12 +73,12 @@ export const ForgotPassword = () => {
     e.preventDefault();
     
     if (!email) {
-      showToast.error("Please enter your email address");
+      showToast("Please enter your email address", "error");
       return;
     }
     
     if (!/\S+@\S+\.\S+/.test(email)) {
-      showToast.error("Please enter a valid email address");
+      showToast("Please enter a valid email address", "error");
       return;
     }
     
@@ -88,7 +88,7 @@ export const ForgotPassword = () => {
         setStep(2);
       }
     } catch (error) {
-      showToast.error("Failed to send OTP. Please try again.");
+      showToast("Failed to send OTP. Please try again.", "error");
     }
   };
 
@@ -96,7 +96,7 @@ export const ForgotPassword = () => {
     e.preventDefault();
     
     if (!otp) {
-      showToast.error("Please enter the verification code");
+      showToast("Please enter the verification code", "error");
       return;
     }
     
@@ -106,7 +106,7 @@ export const ForgotPassword = () => {
         setStep(3);
       }
     } catch (error) {
-      showToast.error("Failed to verify OTP. Please try again.");
+      showToast("Failed to verify OTP. Please try again.", "error");
     }
   };
 
@@ -114,17 +114,17 @@ export const ForgotPassword = () => {
     e.preventDefault();
     
     if (!password || !confirmPassword) {
-      showToast.error("Please enter and confirm your new password");
+      showToast("Please enter and confirm your new password", "error");
       return;
     }
     
     if (password.length < 8) {
-      showToast.error("Password must be at least 8 characters long");
+      showToast("Password must be at least 8 characters long", "error");
       return;
     }
     
     if (password !== confirmPassword) {
-      showToast.error("Passwords do not match");
+      showToast("Passwords do not match", "error");
       return;
     }
     
@@ -136,16 +136,16 @@ export const ForgotPassword = () => {
       });
       
       if (result.success) {
-        showToast.success("Password reset successful");
+        showToast("Password reset successful", "success");
         router.push("/login");
       }
     } catch (error) {
-      showToast.error("Failed to reset password. Please try again.");
+      showToast("Failed to reset password. Please try again.", "error");
     }
   };
 
   const renderEmailForm = () => (
-    <form onSubmit={handleEmailSubmit} className="forgot-password-form">
+    <form onSubmit={handleEmailSubmit} className="forgot-password-form js-img">
       <h3 className="form-title">Forgot Password</h3>
       <p className="form-subtitle">Enter your email to receive a verification code</p>
       
@@ -163,7 +163,7 @@ export const ForgotPassword = () => {
       <button className="btn" type="submit" disabled={isVerifyingEmail}>
         {isVerifyingEmail ? (
           <>
-            <FaSpinner className="icon-spinner spin" /> Sending...
+            <FaSpinner className="icon-spinner" /> Sending...
           </>
         ) : (
           "Send Verification Code"
@@ -180,8 +180,7 @@ export const ForgotPassword = () => {
   );
 
   const renderOtpForm = () => (
-    <form onSubmit={handleOtpSubmit} className="forgot-password-form">
-      
+    <form onSubmit={handleOtpSubmit} className="forgot-password-form js-img">
       <h3 className="form-title">Verify OTP</h3>
       <p className="form-subtitle">Enter the verification code sent to {email}</p>
       
@@ -199,7 +198,7 @@ export const ForgotPassword = () => {
       <button className="btn" type="submit" disabled={isVerifyingOtp}>
         {isVerifyingOtp ? (
           <>
-            <FaSpinner className="icon-spinner spin" /> Verifying...
+            <FaSpinner className="icon-spinner" /> Verifying...
           </>
         ) : (
           "Verify Code"
@@ -217,7 +216,7 @@ export const ForgotPassword = () => {
           >
             {isResendingOtp ? (
               <>
-                <FaSpinner className="icon-spinner spin" /> Sending...
+                <FaSpinner className="icon-spinner" /> Sending...
               </>
             ) : (
               "Resend Code"
@@ -232,8 +231,7 @@ export const ForgotPassword = () => {
   );
 
   const renderPasswordForm = () => (
-    <form onSubmit={handlePasswordSubmit} className="forgot-password-form">
-      
+    <form onSubmit={handlePasswordSubmit} className="forgot-password-form js-img">
       <h3 className="form-title">Reset Password</h3>
       <p className="form-subtitle">Create a new password for your account</p>
       
@@ -278,7 +276,7 @@ export const ForgotPassword = () => {
       <button className="btn" type="submit" disabled={isChangingPassword}>
         {isChangingPassword ? (
           <>
-            <FaSpinner className="icon-spinner spin" /> Resetting...
+            <FaSpinner className="icon-spinner" /> Resetting...
           </>
         ) : (
           "Reset Password"
@@ -288,23 +286,12 @@ export const ForgotPassword = () => {
   );
 
   return (
-    <>
-      {/* <!-- BEGIN FORGOT PASSWORD --> */}
-      <div className="forgot-password">
-        <div className="wrapper">
-          <div
-            className="forgot-password-form js-img"
-            style={{
-              backgroundImage: `url('/assets/img/forgot-password-form__bg.png')`,
-            }}
-          >
-            {step === 1 && renderEmailForm()}
-            {step === 2 && renderOtpForm()}
-            {step === 3 && renderPasswordForm()}
-          </div>
-        </div>
+    <div className="forgot-password">
+      <div className="wrapper">
+        {step === 1 && renderEmailForm()}
+        {step === 2 && renderOtpForm()}
+        {step === 3 && renderPasswordForm()}
       </div>
-      {/* <!-- FORGOT PASSWORD EOF --> */}
-    </>
+    </div>
   );
 };

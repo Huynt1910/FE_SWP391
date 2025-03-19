@@ -13,7 +13,9 @@
 @import "components/_booking-service"; // Booking service styles
 @import "components/_therapist-list"; // Therapists list styles
 @import "components/_service"; // Service styles
-
+@import "components/_booking-list"; // Booking list styles
+@import "components/_forgot-password"; // Forgot password styles
+@import "components/_registration"; // Registration styles
 
 @import "components/_survey"; // Survey styles
 @import "layout/_header";
@@ -35,3 +37,35 @@
 @import "admin/components/services";
 @import "admin/components/settings";
 @import "admin/components/shared";
+
+// // Base
+// @import "base/variables";
+// @import "base/mixins";
+// @import "base/reset";
+// @import "base/base";
+// @import "base/typography";
+
+// // Layout
+// @import "layout/header";
+// @import "layout/footer";
+// @import "layout/navigation";
+// @import "layout/sidebar";
+// @import "layout/forms";
+// @import "layout/grid";
+
+// // Components
+// @import "components/buttons";
+// @import "components/cards";
+// @import "components/modals";
+// @import "components/alerts";
+// @import "components/forgot-password";
+
+// // Utils
+// @import "utils/helpers";
+// @import "utils/animations";
+// @import "utils/responsive";
+
+// // Admin
+// @import "admin/dashboard";
+// @import "admin/tables";
+// @import "admin/forms";

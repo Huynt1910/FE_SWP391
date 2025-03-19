@@ -16,10 +16,10 @@ const PAGE_ACCESS = {
   "/admin/therapist-schedule": ["THERAPIST"],
 };
 
-export const AuthGuard = ({ children }) => {
+export const AuthGuard = ({ children, requiredRole }) => {
   const router = useRouter();
-  const token = getCookie("token");
-  const userRole = getCookie("userRole");
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const isAdminPath = router.pathname.startsWith("/admin");

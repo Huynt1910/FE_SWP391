@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { ProfileAside } from "./ProfileAside/ProfileAside";
-import { ProfileOrders } from "./ProfileOrders/ProfileOrders";
-import { ProfileWishlist } from "./ProfileWishlist/ProfileWishlist";
+import BookingListPending from "./BookingList/BookingListPending";
 import { ProfileMyInfo } from "./ProfileMyInfo/ProfileMyInfo";
 
 export const Profile = () => {
-  const [activeTab, setActiveTab] = useState("orders");
+  const [activeTab, setActiveTab] = useState("bookings");
 
   return (
     <>
@@ -21,26 +20,19 @@ export const Profile = () => {
                     onClick={() => setActiveTab("myInfo")}
                     className={activeTab === "myInfo" ? "active" : ""}
                   >
-                    My info
+                    My Info
                   </li>
                   <li
-                    onClick={() => setActiveTab("orders")}
-                    className={activeTab === "orders" ? "active" : ""}
+                    onClick={() => setActiveTab("bookings")}
+                    className={activeTab === "bookings" ? "active" : ""}
                   >
-                    My orders
-                  </li>
-                  <li
-                    onClick={() => setActiveTab("wishList")}
-                    className={activeTab === "wishList" ? "active" : ""}
-                  >
-                    Wishlist
+                    My Bookings Pending
                   </li>
                 </ul>
 
                 <div className="box-tab-cont">
                   {activeTab === "myInfo" && <ProfileMyInfo />}
-                  {activeTab === "orders" && <ProfileOrders />}
-                  {activeTab === "wishList" && <ProfileWishlist />}
+                  {activeTab === "bookings" && <BookingListPending />}
                 </div>
               </div>
             </div>

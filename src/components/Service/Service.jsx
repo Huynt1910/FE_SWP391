@@ -7,6 +7,7 @@ import useListAllServices from "@/auth/hook/useListAllServices";
 import { PagingList } from "@components/shared/PagingList/PagingList";
 import { usePagination } from "@components/utils/Pagination/Pagination";
 import { useCart } from "@/context/CartContext";
+
 import { showToast } from "@/utils/toast";
 import { isAuthenticated, redirectToLogin } from "@/utils/auth";
 
@@ -87,6 +88,18 @@ export const Service = () => {
       setFilteredServices(filtered);
     }
   }, [sortedServices, searchTerm, categoryFilter]);
+
+  // Categorize services by price range
+  const categorizeServices = (services) => {
+    return {
+      basic: services.filter(service => service.price < 500000),
+      medium: services.filter(service => service.price >= 500000 && service.price <= 2000000),
+      advance: services.filter(service => service.price > 2000000)
+    };
+  };
+
+  // Get services for each category
+  const categorizedServices = categorizeServices(filteredServices);
 
   // Handle sorting
   const handleSort = (value) => {
@@ -176,27 +189,27 @@ export const Service = () => {
   };
 
   // Show authentication required state
-  if (!isAuthChecked) {
-    return (
-      <div className="service">
-        <div className="wrapper">
-          <div className="service-list__error">
-            <div className="error-icon">
-              <FaLock size={24} color="white" />
-            </div>
-            <h3>Login Required</h3>
-            <p>You need to be logged in to view our services.</p>
-            <button 
-              className="login-button"
-              onClick={() => router.push('/login')}
-            >
-              Log In
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (!isAuthChecked) {
+  //   return (
+  //     <div className="service">
+  //       <div className="wrapper">
+  //         <div className="service-list__error">
+  //           <div className="error-icon">
+  //             <FaLock size={24} color="white" />
+  //           </div>
+  //           <h3>Login Required</h3>
+  //           <p>You need to be logged in to view our services.</p>
+  //           <button 
+  //             className="login-button"
+  //             onClick={() => router.push('/login')}
+  //           >
+  //             Log In
+  //           </button>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Update loading state to include placeholder cards
   if (loading) {
@@ -308,59 +321,183 @@ export const Service = () => {
                 </div>
               </div>
               <div className="shop-main__items">
-                {paginate?.currentData().length > 0 ? (
-                  <div className="services-grid">
-                    {paginate?.currentData().map((service) => (
-                      <div key={service.id} className="service-card">
-                        <div className="service-card__image">
-                          <img 
-                            src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
-                            alt={service.name || "Service"} 
-                          />
-                        </div>
-                        <div className="service-card__info">
-                          <h3 className="service-card__name">{service.name || "Unnamed Service"}</h3>
-                          {service.category && service.category !== "General" && (
-                            <p className="service-card__category">{service.category}</p>
-                          )}
-                          <div className="service-card__description-container">
-                            <p className="service-card__description" style={{
-                              maxHeight: expandedDescriptions[service.id] ? 'none' : '4.5em',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              display: '-webkit-box',
-                              WebkitLineClamp: expandedDescriptions[service.id] ? 'unset' : '3',
-                              WebkitBoxOrient: 'vertical',
-                            }}>
-                              {service.description || "No description available."}
-                            </p>
-                            {service.description && service.description.length > 100 && (
+                {/* Basic Services Section */}
+                {categorizedServices.basic.length > 0 && (
+                  <div className="service-category">
+                    <h2 className="service-category__title">Basic Services</h2>
+
+                    <div className="services-grid">
+                      {categorizedServices.basic.map((service) => (
+                        <div key={service.id} className="service-card">
+                          <div className="service-card__image">
+                            <img 
+                              src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
+                              alt={service.name || "Service"} 
+                            />
+                          </div>
+                          <div className="service-card__info">
+                            <h3 className="service-card__name">{service.name || "Unnamed Service"}</h3>
+                            {service.category && service.category !== "General" && (
+                              <p className="service-card__category">{service.category}</p>
+                            )}
+                            <div className="service-card__description-container">
+                              <p className="service-card__description" style={{
+                                maxHeight: expandedDescriptions[service.id] ? 'none' : '4.5em',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: expandedDescriptions[service.id] ? 'unset' : '3',
+                                WebkitBoxOrient: 'vertical',
+                              }}>
+                                {service.description || "No description available."}
+                              </p>
+                              {service.description && service.description.length > 100 && (
+                                <button 
+                                  className="service-card__book-btn"
+                                  onClick={(e) => toggleDescription(service.id, e)}
+                                >
+                                  {expandedDescriptions[service.id] 
+                                    ? <>View less <FaAngleUp className="icon" /></> 
+                                    : <>View more <FaAngleDown className="icon" /></>}
+                                </button>
+                              )}
+                            </div>
+                            <div className="service-card__bottom">
+                              <span className="service-card__price">{formatPrice(service.price || 0)}</span>
                               <button 
                                 className="service-card__book-btn"
-                                onClick={(e) => toggleDescription(service.id, e)}
+                                onClick={(e) => handleBookService(service, e)}
                               >
-                                {expandedDescriptions[service.id] 
-                                  ? <>View less <FaAngleUp className="icon" /></> 
-                                  : <>View more <FaAngleDown className="icon" /></>}
+                                <FaCalendarAlt className="icon" />
+                                <span>Book Now</span>
                               </button>
-                            )}
+                            </div>
                           </div>
-                          <div className="service-card__bottom">
-                            <span className="service-card__price">{formatPrice(service.price || 0)}</span>
-                            <button 
-                              className="service-card__book-btn"
-                              onClick={(e) => handleBookService(service, e)}
-                            >
-                              <FaCalendarAlt className="icon" />
-                              <span>Book Now</span>
-                            </button>
-                          </div>
+                          <div className="service-card__overlay" onClick={() => handleSelectService(service.id)}></div>
                         </div>
-                        <div className="service-card__overlay" onClick={() => handleSelectService(service.id)}></div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                ) : (
+                )}
+
+                {/* Medium Services Section */}
+                {categorizedServices.medium.length > 0 && (
+                  <div className="service-category">
+                    <h2 className="service-category__title">Medium Services</h2>
+                    <div className="services-grid">
+                      {categorizedServices.medium.map((service) => (
+                        <div key={service.id} className="service-card">
+                          <div className="service-card__image">
+                            <img 
+                              src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
+                              alt={service.name || "Service"} 
+                            />
+                          </div>
+                          <div className="service-card__info">
+                            <h3 className="service-card__name">{service.name || "Unnamed Service"}</h3>
+                            {service.category && service.category !== "General" && (
+                              <p className="service-card__category">{service.category}</p>
+                            )}
+                            <div className="service-card__description-container">
+                              <p className="service-card__description" style={{
+                                maxHeight: expandedDescriptions[service.id] ? 'none' : '4.5em',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: expandedDescriptions[service.id] ? 'unset' : '3',
+                                WebkitBoxOrient: 'vertical',
+                              }}>
+                                {service.description || "No description available."}
+                              </p>
+                              {service.description && service.description.length > 100 && (
+                                <button 
+                                  className="service-card__book-btn"
+                                  onClick={(e) => toggleDescription(service.id, e)}
+                                >
+                                  {expandedDescriptions[service.id] 
+                                    ? <>View less <FaAngleUp className="icon" /></> 
+                                    : <>View more <FaAngleDown className="icon" /></>}
+                                </button>
+                              )}
+                            </div>
+                            <div className="service-card__bottom">
+                              <span className="service-card__price">{formatPrice(service.price || 0)}</span>
+                              <button 
+                                className="service-card__book-btn"
+                                onClick={(e) => handleBookService(service, e)}
+                              >
+                                <FaCalendarAlt className="icon" />
+                                <span>Book Now</span>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="service-card__overlay" onClick={() => handleSelectService(service.id)}></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Advanced Services Section */}
+                {categorizedServices.advance.length > 0 && (
+                  <div className="service-category">
+                    <h2 className="service-category__title">Advanced Services</h2>                    
+                    <div className="services-grid">
+                      {categorizedServices.advance.map((service) => (
+                        <div key={service.id} className="service-card">
+                          <div className="service-card__image">
+                            <img 
+                              src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
+                              alt={service.name || "Service"} 
+                            />
+                          </div>
+                          <div className="service-card__info">
+                            <h3 className="service-card__name">{service.name || "Unnamed Service"}</h3>
+                            {service.category && service.category !== "General" && (
+                              <p className="service-card__category">{service.category}</p>
+                            )}
+                            <div className="service-card__description-container">
+                              <p className="service-card__description" style={{
+                                maxHeight: expandedDescriptions[service.id] ? 'none' : '4.5em',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: expandedDescriptions[service.id] ? 'unset' : '3',
+                                WebkitBoxOrient: 'vertical',
+                              }}>
+                                {service.description || "No description available."}
+                              </p>
+                              {service.description && service.description.length > 100 && (
+                                <button 
+                                  className="service-card__book-btn"
+                                  onClick={(e) => toggleDescription(service.id, e)}
+                                >
+                                  {expandedDescriptions[service.id] 
+                                    ? <>View less <FaAngleUp className="icon" /></> 
+                                    : <>View more <FaAngleDown className="icon" /></>}
+                                </button>
+                              )}
+                            </div>
+                            <div className="service-card__bottom">
+                              <span className="service-card__price">{formatPrice(service.price || 0)}</span>
+                              <button 
+                                className="service-card__book-btn"
+                                onClick={(e) => handleBookService(service, e)}
+                              >
+                                <FaCalendarAlt className="icon" />
+                                <span>Book Now</span>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="service-card__overlay" onClick={() => handleSelectService(service.id)}></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Show empty state if no services found */}
+                {filteredServices.length === 0 && (
                   <div className="service-list__empty">
                     <h3>No Services Found</h3>
                     <p>We couldn't find any services matching your search criteria.</p>
@@ -400,6 +537,60 @@ export const Service = () => {
         />
       </div>
       {/* <!-- SERVICE EOF   --> */}
+
+      <style jsx>{`
+        .service-category {
+          margin-bottom: 40px;
+          padding: 20px;
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .service-category:first-child {
+          border-top: 4px solid #4CAF50;
+        }
+
+        .service-category:nth-child(2) {
+          border-top: 4px solid #2196F3;
+        }
+
+        .service-category:nth-child(3) {
+          border-top: 4px solid #9C27B0;
+        }
+
+        .service-category__title {
+          font-size: 24px;
+          color: #333;
+          margin-bottom: 8px;
+        }
+
+        .service-category__description {
+          color: #666;
+          margin-bottom: 20px;
+          font-size: 14px;
+        }
+
+        .services-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+          .service-category {
+            padding: 15px;
+          }
+
+          .service-category__title {
+            font-size: 20px;
+          }
+
+          .services-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </div>
   );
 };

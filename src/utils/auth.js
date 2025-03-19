@@ -2,6 +2,8 @@ import { getCookie, setCookie, deleteCookie } from "cookies-next";
 import { showToast } from "./toast";
 import { API_URL } from '@/lib/api-client/constant';
 import Router from 'next/router';
+import { APIClient } from "@/lib/api-client";
+import { ACTIONS } from "@/lib/api-client/constant";
 
 // Check if user is authenticated
 export const isAuthenticated = () => {
@@ -18,10 +20,34 @@ export const getUserRole = () => {
   return getCookie("userRole") || "customer";
 };
 
+// Get current user information
+export const getMyInfo = async () => {
+  try {
+    if (!isAuthenticated()) {
+      console.log("User is not authenticated");
+      return null;
+    }
+
+    const response = await APIClient.invoke({
+      action: ACTIONS.MY_INFO,
+      options: { preventRedirect: true }
+    });
+
+    if (response && response.success && response.result) {
+      return response.result;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error fetching user info:", error);
+    return null;
+  }
+};
+
 // Set authentication data
 export const setAuthData = (token, userRole = "customer") => {
-  // Set cookies with a reasonable expiration (e.g., 7 days)
-  const options = { maxAge: 60 * 60 * 24 * 7 }; // 7 days
+  // Set cookies with a reasonable expiration (e.g., 24 hours)
+  const options = { maxAge: 60 * 60 * 24, path: '/' }; // 24 hours
   setCookie("token", token, options);
   setCookie("userRole", userRole, options);
 };
@@ -30,6 +56,13 @@ export const setAuthData = (token, userRole = "customer") => {
 export const clearAuthData = () => {
   deleteCookie("token");
   deleteCookie("userRole");
+  deleteCookie("userId");
+  // Remove any other auth-related data
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('userId');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('redirectAfterLogin');
+  }
 };
 
 // Handle login redirect
