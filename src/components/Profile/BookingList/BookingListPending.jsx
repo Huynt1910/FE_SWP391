@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { FaCalendarAlt, FaClock, FaUser, FaSpinner, FaExclamationCircle, FaEllipsisV, FaCheckCircle } from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaUser, FaSpinner, FaExclamationCircle, FaEllipsisV, FaCheckCircle, FaStar } from "react-icons/fa";
 import useBookingListPendingHook from "@/auth/hook/useBookingListPendingHook";
 import { isAuthenticated, getToken } from "@/utils/auth";
 import { APIClient } from "@/lib/api-client";
 import { ACTIONS, API_URL } from "@/lib/api-client/constant";
 import { useRouter } from 'next/router';
+import { showToast } from "@/utils/toast";
 
 const BookingListPending = () => {
   const router = useRouter();
@@ -15,6 +16,12 @@ const BookingListPending = () => {
   const [cancellingBookingId, setCancellingBookingId] = useState(null);
   const [isCompleting, setIsCompleting] = useState(false);
   const [completingBookingId, setCompletingBookingId] = useState(null);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [selectedBookingForFeedback, setSelectedBookingForFeedback] = useState(null);
+  const [feedbackContent, setFeedbackContent] = useState("");
+  const [feedbackScore, setFeedbackScore] = useState(5);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [submittedFeedbackBookings, setSubmittedFeedbackBookings] = useState([]);
 
   // Check authentication on component mount
   useEffect(() => {
@@ -142,6 +149,83 @@ const BookingListPending = () => {
       currency: 'VND',
       maximumFractionDigits: 0
     }).format(amount);
+  };
+
+  // Handle showing feedback modal
+  const handleShowFeedback = (booking) => {
+    setSelectedBookingForFeedback(booking);
+    setShowFeedbackModal(true);
+    setFeedbackContent("");
+    setFeedbackScore(5);
+  };
+
+  // Handle submitting feedback
+  const handleSubmitFeedback = async () => {
+    if (!selectedBookingForFeedback) return;
+
+    // Validate required fields
+    if (!feedbackContent.trim()) {
+      showToast("Please enter your feedback comments", "error");
+      return;
+    }
+
+    if (!feedbackScore) {
+      showToast("Please select a rating", "error");
+      return;
+    }
+
+    setIsSubmittingFeedback(true);
+    try {
+      // Get user info from localStorage
+      const userString = localStorage.getItem('user');
+      const user = userString ? JSON.parse(userString) : null;
+      
+      if (!user || !user.id) {
+        showToast("User information not found. Please log in again.", "error");
+        return;
+      }
+
+      const feedbackData = {
+        date: new Date().toISOString().split('T')[0],
+        content: feedbackContent.trim(),
+        score: Number(feedbackScore),
+        userId: Number(user.id),
+        bookingId: Number(selectedBookingForFeedback.bookingId)
+      };
+
+      console.log("Submitting feedback:", feedbackData);
+
+      const response = await APIClient.invoke({
+        action: ACTIONS.SUBMIT_FEEDBACK,
+        data: feedbackData,
+        options: { 
+          preventRedirect: true,
+          secure: true
+        }
+      });
+
+      console.log("Feedback response:", response);
+
+      if (response?.success) {
+        showToast("Thank you for your feedback!", "success");
+        setShowFeedbackModal(false);
+        setFeedbackContent("");
+        setFeedbackScore(5);
+        // Add the booking ID to submitted feedback list
+        setSubmittedFeedbackBookings(prev => [...prev, selectedBookingForFeedback.bookingId]);
+        refreshPendingBookings();
+      } else {
+        throw new Error(response?.message || "Failed to submit feedback");
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      showToast(
+        error?.response?.message || error.message || "Unable to submit feedback. Please try again later.", 
+        "error"
+      );
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
   };
 
   // Render authentication required view
@@ -315,12 +399,79 @@ const BookingListPending = () => {
                       </>
                     )}
                   </button>
+
+                  {!submittedFeedbackBookings.includes(booking.bookingId) && (
+                    <button 
+                      className="feedback-button"
+                      onClick={() => handleShowFeedback(booking)}
+                    >
+                      <FaStar className="icon" /> Leave Feedback
+                    </button>
+                  )}
                 </div>
               </div>
             )}
           </div>
         ))}
       </div>
+
+      {showFeedbackModal && (
+        <div className="feedback-modal">
+          <div className="feedback-modal__content">
+            <h3>Leave Your Feedback</h3>
+            <p>Booking #{selectedBookingForFeedback?.bookingId}</p>
+            
+            <div className="rating-section">
+              <p>Your Rating:</p>
+              <div className="stars">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    className={`star-button ${star <= feedbackScore ? 'active' : ''}`}
+                    onClick={() => setFeedbackScore(star)}
+                  >
+                    <FaStar />
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="feedback-input">
+              <label htmlFor="feedback">Your Comments:</label>
+              <textarea
+                id="feedback"
+                value={feedbackContent}
+                onChange={(e) => setFeedbackContent(e.target.value)}
+                placeholder="Tell us about your experience..."
+                rows={4}
+              />
+            </div>
+            
+            <div className="feedback-actions">
+              <button 
+                className="cancel-button"
+                onClick={() => setShowFeedbackModal(false)}
+                disabled={isSubmittingFeedback}
+              >
+                Cancel
+              </button>
+              <button 
+                className="submit-button"
+                onClick={handleSubmitFeedback}
+                disabled={isSubmittingFeedback || !feedbackContent.trim()}
+              >
+                {isSubmittingFeedback ? (
+                  <>
+                    <FaSpinner className="spinner" /> Submitting...
+                  </>
+                ) : (
+                  'Submit Feedback'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         /* Existing styles... */
@@ -390,6 +541,120 @@ const BookingListPending = () => {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+
+        .feedback-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .feedback-modal__content {
+          background-color: white;
+          padding: 30px;
+          border-radius: 8px;
+          width: 90%;
+          max-width: 500px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .feedback-modal__content h3 {
+          margin: 0 0 15px 0;
+          font-size: 1.5rem;
+          color: #333;
+        }
+
+        .rating-section {
+          margin: 20px 0;
+        }
+
+        .stars {
+          display: flex;
+          gap: 10px;
+          margin-top: 10px;
+        }
+
+        .star-button {
+          background: none;
+          border: none;
+          font-size: 24px;
+          color: #ddd;
+          cursor: pointer;
+          padding: 0;
+          transition: color 0.2s;
+        }
+
+        .star-button.active {
+          color: #ffc107;
+        }
+
+        .feedback-input {
+          margin: 20px 0;
+        }
+
+        .feedback-input label {
+          display: block;
+          margin-bottom: 8px;
+          color: #555;
+        }
+
+        .feedback-input textarea {
+          width: 100%;
+          padding: 12px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          resize: vertical;
+          font-family: inherit;
+        }
+
+        .feedback-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-top: 20px;
+        }
+
+        .feedback-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          background-color: #ffc107;
+          color: #333;
+          border: none;
+          padding: 8px 15px;
+          border-radius: 4px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .feedback-button:hover {
+          background-color: #ffb300;
+        }
+
+        .submit-button {
+          background-color: #4CAF50;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 4px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .submit-button:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
         }
       `}</style>
     </div>
