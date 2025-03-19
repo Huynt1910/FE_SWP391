@@ -104,7 +104,7 @@ export const BookingServiceForm = () => {
       // Note: The vouchers will be handled by the PaymentConfirmation component
     } catch (error) {
       console.error("Error fetching vouchers:", error);
-      showToast("Error loading vouchers", "error");
+      showToast.error("Error loading vouchers");
     }
   };
 
@@ -118,7 +118,7 @@ export const BookingServiceForm = () => {
       console.log("Services fetched:", servicesData?.length || 0);
     } catch (error) {
       console.error("Error fetching services:", error);
-      showToast("Error loading services", "error");
+      showToast.error("Error loading services");
     }
   };
 
@@ -409,46 +409,6 @@ export const BookingServiceForm = () => {
 
   const handlePaymentMethodSelect = (method) => {
     setPaymentMethod(method);
-    console.log("Selected payment method:", method);
-  };
-
-  // Generate sample available dates (7 days from today)
-  const getAvailableDates = () => {
-    const dates = [];
-    const today = new Date();
-    
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      
-      const options = { weekday: 'short' };
-      const dayName = date.toLocaleDateString('en-US', options);
-      
-      const dateValue = date.toISOString().split('T')[0];
-      const dateDisplay = `${date.getDate()}/${date.getMonth() + 1}`;
-      
-      dates.push({
-        value: dateValue,
-        date: `${dayName}, ${dateDisplay}`
-      });
-    }
-    
-    return dates;
-  };
-
-  // Generate sample time slots
-  const generateSampleTimeSlots = () => {
-    return [
-      { id: 1, time: "09:00", displayTime: "9:00 AM" },
-      { id: 2, time: "10:00", displayTime: "10:00 AM" },
-      { id: 3, time: "11:00", displayTime: "11:00 AM" },
-      { id: 4, time: "12:00", displayTime: "12:00 PM" },
-      { id: 5, time: "13:00", displayTime: "1:00 PM" },
-      { id: 6, time: "14:00", displayTime: "2:00 PM" },
-      { id: 7, time: "15:00", displayTime: "3:00 PM" },
-      { id: 8, time: "16:00", displayTime: "4:00 PM" },
-      { id: 9, time: "17:00", displayTime: "5:00 PM" },
-    ];
   };
 
   const handleVoucherSelect = (voucher) => {
@@ -463,7 +423,7 @@ export const BookingServiceForm = () => {
       case 1: // Service selection
         canProceed = selectedServices.length > 0;
         if (!canProceed) {
-          showToast("Please select at least one service", "error");
+          showToast.error("Please select at least one service");
         }
         break;
       case 2: // Therapist selection
@@ -473,19 +433,19 @@ export const BookingServiceForm = () => {
           const randomTherapist = therapists[randomIndex];
           
           setSelectedTherapist(randomTherapist);
-          showToast(`Auto-selected random therapist: ${randomTherapist.fullName || randomTherapist.name}`, "info");
+          showToast.info(`Auto-selected random therapist: ${randomTherapist.fullName || randomTherapist.name}`);
           canProceed = true;
         } else {
           canProceed = selectedTherapist !== null;
           if (!canProceed) {
-            showToast("Please select a therapist", "error");
+            showToast.error("Please select a therapist");
           }
         }
         break;
       case 3: // Schedule selection
         canProceed = selectedDate && selectedTime && selectedSlot;
         if (!canProceed) {
-          showToast("Please select a date and time", "error");
+          showToast.error("Please select a date and time");
         }
         break;
       case 4: // Confirmation
@@ -717,7 +677,7 @@ export const BookingServiceForm = () => {
         localStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
         
         // Show success message
-        showToast("Booking successful! Your appointment has been confirmed.", "success");
+        showToast.success("Booking successful! Your appointment has been confirmed.");
         
         // Redirect to confirmation page
         router.push({
@@ -729,7 +689,7 @@ export const BookingServiceForm = () => {
         });
       } else {
         console.error("Booking submission failed - result was falsy");
-        showToast("Failed to submit booking. Please check your selections and try again.", "error");
+        showToast.error("Failed to submit booking. Please check your selections and try again.");
       }
     } catch (error) {
       console.error("Error submitting booking:", error);
@@ -745,7 +705,7 @@ export const BookingServiceForm = () => {
         errorMessage += ` ${error.message || "Unknown error"}`;
       }
       
-      showToast(errorMessage, "error");
+      showToast.error(errorMessage);
     } finally {
       setIsPending(false);
     }

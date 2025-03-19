@@ -80,7 +80,7 @@ export function useSignIn() {
               console.error("Error fetching user info:", error);
             }
             
-            showToast("Login successful!", "success");
+            showToast.success("Login successful!");
             
             // Redirect based on role
             if (userRole === "admin" || userRole === "staff" || userRole === "therapist") {
@@ -92,18 +92,18 @@ export function useSignIn() {
             return { success: true };
           } else {
             console.error("No token found in response:", loginResponse);
-            showToast("Login failed: No authentication token received", "error");
+            showToast.error("Login failed: No authentication token received");
             return { success: false, error: "No authentication token received" };
           }
         } else {
           const errorMessage = loginResponse?.message || "Login failed. Please check your credentials.";
-          showToast(errorMessage, "error");
+          showToast.error(errorMessage);
           return { success: false, error: errorMessage };
         }
       } catch (error) {
         console.error("Login error:", error);
         const errorMessage = error?.response?.message || error.message || "An error occurred during login.";
-        showToast(errorMessage, "error");
+        showToast.error(errorMessage);
         return { success: false, error: errorMessage };
       }
     },

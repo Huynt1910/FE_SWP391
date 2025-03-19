@@ -1,26 +1,42 @@
 import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { getCookie } from "cookies-next";
+import { useEffect, useState } from "react";
+import { isAuthenticated, getUserRole, redirectToLogin } from "@/utils/auth";
 
 export const AuthGuard = ({ children, requiredRole }) => {
   const router = useRouter();
-  const token = getCookie("token");
-  const userRole = getCookie("userRole");
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authenticated) {
-      redirectToLogin();
-      return;
-    }
+    const checkAuth = () => {
+      const authenticated = isAuthenticated();
+      const userRole = getUserRole();
 
-    if (requiredRole && userRole !== requiredRole) {
-      console.log("Unauthorized role. Redirecting to home...");
-      router.push("/");
-    }
-  }, [authenticated, userRole, requiredRole, router]);
+      console.log(
+        "AuthGuard checking authentication:",
+        authenticated ? "Authenticated" : "Not authenticated"
+      );
+      console.log("AuthGuard checking role:", userRole);
+      console.log("AuthGuard required role:", requiredRole || "none");
 
-  // Show nothing while checking authentication
-  if (!authenticated || (requiredRole && userRole !== requiredRole)) {
+      if (!authenticated) {
+        redirectToLogin();
+        setIsAuthorized(false);
+      } else if (requiredRole && userRole !== requiredRole) {
+        console.log("Unauthorized role. Redirecting to home...");
+        router.push("/");
+        setIsAuthorized(false);
+      } else {
+        setIsAuthorized(true);
+      }
+      setIsLoading(false);
+    };
+
+    checkAuth();
+  }, [requiredRole, router]);
+
+  // Show nothing while loading or if not authorized
+  if (isLoading || !isAuthorized) {
     return null;
   }
 
@@ -30,24 +46,28 @@ export const AuthGuard = ({ children, requiredRole }) => {
 // Export the SystemAuthGuard as well if it's needed elsewhere
 export const SystemAuthGuard = ({ children }) => {
   const router = useRouter();
-  const authenticated = isAuthenticated();
-  const userRole = getUserRole();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authenticated || userRole !== "admin") {
-      router.push("/login");
-      return;
-    }
+    const checkAuth = () => {
+      const authenticated = isAuthenticated();
+      const userRole = getUserRole();
 
-    // Check for admin routes
-    if (router.pathname.startsWith("/admin")) {
-      if (userRole !== "ADMIN") {
-        router.push("/unauthorized");
+      if (!authenticated || userRole !== "admin") {
+        router.push("/login");
+        setIsAuthorized(false);
+      } else {
+        setIsAuthorized(true);
       }
-    }
-  }, [authenticated, userRole, router]);
+      setIsLoading(false);
+    };
 
-  if (!authenticated || userRole !== "admin") {
+    checkAuth();
+  }, [router]);
+
+  // Show nothing while loading or if not authorized
+  if (isLoading || !isAuthorized) {
     return null;
   }
 
