@@ -74,6 +74,11 @@ export const END_POINTS = {
     parameterized: true,
     secure: true
   },
+  submitFeedback: {
+    path: "/feedback",
+    method: "POST",
+    secure: true
+  },
 };
 
 export const ACTIONS = {
@@ -103,6 +108,7 @@ export const ACTIONS = {
   GET_CUSTOMER_PENDING_BOOKINGS: "getCustomerPendingBookings",
   DELETE_BOOKING: "deleteBooking",
   FINISH_BOOKING: "finishBooking",
+  SUBMIT_FEEDBACK: "submitFeedback",
 };
 
 export const API_URL =
