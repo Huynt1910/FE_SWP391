@@ -35,7 +35,7 @@ export const Login = () => {
       });
 
       if (response.success) {
-        showToast.success("Login successful!");
+        showToast("Login successful!", "success");
 
         // Redirect based on role
         if (response.role === "ADMIN") {
@@ -45,7 +45,7 @@ export const Login = () => {
         }
       }
     } catch (error) {
-      showToast.error("Invalid username or password");
+      showToast("Invalid username or password", "error");
     }
   };
 

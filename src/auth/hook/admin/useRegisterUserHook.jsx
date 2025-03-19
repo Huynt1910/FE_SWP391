@@ -36,7 +36,7 @@ export function useRegisterUser() {
   return useMutation({
     mutationFn: registerUser,
     onSuccess: (data, variables) => {
-      showToast.success("Tạo tài khoản thành công!");
+      showToast("Tạo tài khoản thành công!", "success");
       // Invalidate relevant queries based on role
       switch (variables.role) {
         case "CUSTOMER":
@@ -51,7 +51,7 @@ export function useRegisterUser() {
       }
     },
     onError: (error) => {
-      showToast.error(error.response?.data?.message || "Có lỗi xảy ra");
+      showToast(error.response?.data?.message || "Có lỗi xảy ra", "error");
     },
   });
 }

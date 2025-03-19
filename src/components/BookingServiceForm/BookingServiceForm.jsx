@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { FaArrowLeft, FaArrowRight, FaCheck, FaCreditCard, FaMoneyBill, FaLock } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaArrowRight,
+  FaCheck,
+  FaCreditCard,
+  FaMoneyBill,
+  FaLock,
+} from "react-icons/fa";
 import useBookingHook from "@/auth/hook/useBookingHook";
 import useListAllServices from "@/auth/hook/useListAllServices";
 import TherapistSelection from "./TherapistSelection";
@@ -20,23 +27,28 @@ export const BookingServiceForm = () => {
   // Initialize router and hooks
   const router = useRouter();
   const { therapistId, step } = router.query;
-  const { 
-    loading: bookingLoading, 
-    error: bookingError, 
-    data: therapistsData, 
+  const {
+    loading: bookingLoading,
+    error: bookingError,
+    data: therapistsData,
     availableSlots,
     getActiveTherapists,
     getAvailableSlots,
     getTherapistScheduleForMonth,
     submitBooking,
     getAvailableVouchers,
-    checkAuthentication
+    checkAuthentication,
   } = useBookingHook();
-  const { loading: servicesLoading, error: servicesError, data: services, getAllServices } = useListAllServices();
-  
+  const {
+    loading: servicesLoading,
+    error: servicesError,
+    data: services,
+    getAllServices,
+  } = useListAllServices();
+
   // Authentication state
   const [isAuthChecked, setIsAuthChecked] = useState(false);
-  
+
   // Step tracking - initialize from URL query parameter if available
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4; // 4 steps: Service, Therapist, Schedule, Confirm
@@ -74,21 +86,23 @@ export const BookingServiceForm = () => {
       if (services?.length === 0) {
         fetchServices();
       }
-      
+
       if (therapistsData?.length === 0 && selectedServices.length > 0) {
         fetchTherapists();
       }
-      
+
       // Fetch vouchers when authenticated
       fetchVouchers();
     }
   }, [isAuthChecked]);
-  
+
   // Fetch active therapists when service selection changes
   useEffect(() => {
     if (isAuthChecked && selectedServices.length > 0) {
-      console.log("Service selection changed, fetching therapists for services:", 
-        selectedServices.map(s => `${s.name} (ID: ${s.id})`).join(", "));
+      console.log(
+        "Service selection changed, fetching therapists for services:",
+        selectedServices.map((s) => `${s.name} (ID: ${s.id})`).join(", ")
+      );
       fetchTherapists();
     }
   }, [selectedServices, isAuthChecked]);
@@ -96,7 +110,7 @@ export const BookingServiceForm = () => {
   // Fetch available vouchers
   const fetchVouchers = async () => {
     if (!isAuthChecked) return; // Don't fetch if not authenticated
-    
+
     try {
       console.log("Fetching available vouchers...");
       const vouchers = await getAvailableVouchers();
@@ -104,39 +118,39 @@ export const BookingServiceForm = () => {
       // Note: The vouchers will be handled by the PaymentConfirmation component
     } catch (error) {
       console.error("Error fetching vouchers:", error);
-      showToast.error("Error loading vouchers");
+      showToast("Error loading vouchers", "error");
     }
   };
 
   // Fetch services
   const fetchServices = async () => {
     if (!isAuthChecked) return; // Don't fetch if not authenticated
-    
+
     try {
       console.log("Fetching services...");
       const servicesData = await getAllServices();
       console.log("Services fetched:", servicesData?.length || 0);
     } catch (error) {
       console.error("Error fetching services:", error);
-      showToast.error("Error loading services");
+      showToast("Error loading services", "error");
     }
   };
 
   // Fetch therapists based on selected services
-    const fetchTherapists = async () => {
+  const fetchTherapists = async () => {
     if (!isAuthChecked) return; // Don't fetch if not authenticated
-    
-      try {
+
+    try {
       if (selectedServices.length > 0) {
         setLoading(true);
-        const serviceIds = selectedServices.map(service => service.id);
+        const serviceIds = selectedServices.map((service) => service.id);
         const data = await getActiveTherapists(serviceIds);
-        
+
         // Format therapist data
         if (data && data.length > 0) {
           console.log("Fetched therapists:", data);
           setTherapists(data);
-          
+
           // If a therapist ID was provided in the URL, pre-select it
           if (therapistId) {
             const preselectedTherapist = data.find(
@@ -172,18 +186,18 @@ export const BookingServiceForm = () => {
   useEffect(() => {
     if (router.isReady) {
       try {
-        const storedService = localStorage.getItem('selectedService');
+        const storedService = localStorage.getItem("selectedService");
         if (storedService) {
           const service = JSON.parse(storedService);
           setSelectedServices([service]);
-          
+
           // If the step has been set to 2+ (from direct booking), fetch therapists for this service
           if (currentStep >= 2 && service.id) {
             getActiveTherapists([service.id]);
           }
-          
+
           // Clear localStorage to prevent it from being used again on page refresh
-          localStorage.removeItem('selectedService');
+          localStorage.removeItem("selectedService");
         }
       } catch (error) {
         console.error("Error parsing stored service:", error);
@@ -197,48 +211,54 @@ export const BookingServiceForm = () => {
       if (selectedTherapist) {
         try {
           setLoading(true);
-          
+
           // Skip using the problematic API call for now
-          console.log(`Skip API call for therapist ${selectedTherapist.id}, using direct dates`);
-          
+          console.log(
+            `Skip API call for therapist ${selectedTherapist.id}, using direct dates`
+          );
+
           // Generate dates for the next 14 days as a workaround
           const dates = [];
           const today = new Date();
-          
+
           for (let i = 1; i <= 14; i++) {
             const date = new Date(today);
             date.setDate(today.getDate() + i);
-            
+
             // Skip weekends (0 = Sunday, 6 = Saturday)
             const dayOfWeek = date.getDay();
             if (dayOfWeek !== 0 && dayOfWeek !== 6) {
               dates.push({
-                date: date.toISOString().split('T')[0],
+                date: date.toISOString().split("T")[0],
                 available: true,
                 shifts: [1],
-                therapistName: selectedTherapist.fullName || selectedTherapist.name || "Therapist"
+                therapistName:
+                  selectedTherapist.fullName ||
+                  selectedTherapist.name ||
+                  "Therapist",
               });
             }
           }
-          
-          console.log(`Generated ${dates.length} available dates for therapist ${selectedTherapist.id}`);
+
+          console.log(
+            `Generated ${dates.length} available dates for therapist ${selectedTherapist.id}`
+          );
           setAvailableDates(dates);
-          
+
           // Clear any previously selected date and time
           setSelectedDate("");
           setSelectedTime("");
           setSelectedSlot(null);
-          
         } catch (err) {
           console.error("Error setting up available dates:", err);
           setError(err.message || "Failed to set up available dates");
           setAvailableDates([]);
-      } finally {
-        setLoading(false);
+        } finally {
+          setLoading(false);
         }
       }
     };
-    
+
     if (selectedTherapist) {
       fetchAvailableDates();
     }
@@ -250,28 +270,35 @@ export const BookingServiceForm = () => {
       if (selectedTherapist && selectedDate) {
         try {
           setLoading(true);
-          const serviceIds = selectedServices.map(service => service.id);
-          const slots = await getAvailableSlots(selectedTherapist.id, serviceIds, selectedDate);
-          
+          const serviceIds = selectedServices.map((service) => service.id);
+          const slots = await getAvailableSlots(
+            selectedTherapist.id,
+            serviceIds,
+            selectedDate
+          );
+
           if (slots && slots.length > 0) {
             console.log("Available slots:", slots);
             // Filter out deleted/invalid slots and map to UI format
             const validSlots = slots
-              .filter(slot => !slot.deleted) // Only include non-deleted slots
-              .map(slot => ({
+              .filter((slot) => !slot.deleted) // Only include non-deleted slots
+              .map((slot) => ({
                 id: slot.slotid,
                 time: slot.slottime,
-                available: true // All non-deleted slots are available
+                available: true, // All non-deleted slots are available
               }));
-            
+
             setAvailableTimeSlots(validSlots);
-            
+
             // Reset time selection if previously selected slot is no longer available
-            if (selectedTime && !validSlots.some(slot => slot.time === selectedTime)) {
+            if (
+              selectedTime &&
+              !validSlots.some((slot) => slot.time === selectedTime)
+            ) {
               setSelectedTime("");
               setSelectedSlot(null);
             }
-            
+
             console.log("Valid time slots:", validSlots);
           } else {
             setAvailableTimeSlots([]);
@@ -285,7 +312,7 @@ export const BookingServiceForm = () => {
         }
       }
     };
-    
+
     if (selectedTherapist && selectedDate) {
       fetchAvailableSlots();
     }
@@ -298,10 +325,10 @@ export const BookingServiceForm = () => {
       selectedTherapist,
       selectedDate,
       selectedTime,
-      currentStep
+      currentStep,
     };
     localStorage.setItem("bookingState", JSON.stringify(bookingState));
-    
+
     // Redirect to login
     router.push("/login?redirect=/booking");
   };
@@ -313,17 +340,17 @@ export const BookingServiceForm = () => {
   //         <div className="auth-required__icon">
   //           <FaLock size={50} color="#007bff" />
   //         </div>
-        
+
   //         <div className="service-preview">
   //           <h3>Login Requireds</h3>
   //           <div className="service-preview__items">
   //             {services && services.length > 0 ? (
   //               services.slice(0, 3).map((service) => (
   //                 <div key={service.id} className="service-preview__item">
-  //                   <img 
-  //                     src={service.imageUrl || "https://via.placeholder.com/100"} 
-  //                     alt={service.name} 
-  //                     className="service-preview__image" 
+  //                   <img
+  //                     src={service.imageUrl || "https://via.placeholder.com/100"}
+  //                     alt={service.name}
+  //                     className="service-preview__image"
   //                   />
   //                   <h4>{service.name}</h4>
   //                   <p>{service.shortDescription || service.description?.substring(0, 80) + "..."}</p>
@@ -335,13 +362,13 @@ export const BookingServiceForm = () => {
   //           </div>
   //         </div>
   //         <div className="auth-required__actions">
-  //           <button 
+  //           <button
   //             className="btn-primary"
   //             onClick={handleLogin}
   //           >
   //             Log In to Book Services
   //           </button>
-  //           <button 
+  //           <button
   //             className="btn-secondary"
   //             onClick={() => router.push("/registration")}
   //           >
@@ -359,15 +386,15 @@ export const BookingServiceForm = () => {
           <div className="service-list__error">
             <div className="error-icon">
               <FaLock size={24} color="white" />
-        </div>
+            </div>
             <h3>Login Requireds</h3>
             <p>You need to be logged in to view our services.</p>
-        <button 
+            <button
               className="login-button"
-              onClick={() => router.push('/login')}
-        >
+              onClick={() => router.push("/login")}
+            >
               Log In
-        </button>
+            </button>
           </div>
         </div>
       </div>
@@ -376,14 +403,14 @@ export const BookingServiceForm = () => {
 
   const handleSelectService = (service) => {
     // Check if service is already selected
-    const isSelected = selectedServices.some(s => s.id === service.id);
-    
+    const isSelected = selectedServices.some((s) => s.id === service.id);
+
     if (isSelected) {
       // Remove service from selection
-      setSelectedServices(prev => prev.filter(s => s.id !== service.id));
+      setSelectedServices((prev) => prev.filter((s) => s.id !== service.id));
     } else {
       // Add service to selection
-      setSelectedServices(prev => [...prev, service]);
+      setSelectedServices((prev) => [...prev, service]);
     }
   };
 
@@ -417,13 +444,13 @@ export const BookingServiceForm = () => {
 
   const handleNextStep = () => {
     let canProceed = false;
-    
+
     // Validation logic for each step
     switch (currentStep) {
       case 1: // Service selection
         canProceed = selectedServices.length > 0;
         if (!canProceed) {
-          showToast.error("Please select at least one service");
+          showToast("Please select at least one service", "error");
         }
         break;
       case 2: // Therapist selection
@@ -431,9 +458,14 @@ export const BookingServiceForm = () => {
         if (selectedTherapist === null && therapists && therapists.length > 0) {
           const randomIndex = Math.floor(Math.random() * therapists.length);
           const randomTherapist = therapists[randomIndex];
-          
+
           setSelectedTherapist(randomTherapist);
-          showToast(`Auto-selected random therapist: ${randomTherapist.fullName || randomTherapist.name}`, "info");
+          showToast(
+            `Auto-selected random therapist: ${
+              randomTherapist.fullName || randomTherapist.name
+            }`,
+            "info"
+          );
           canProceed = true;
         } else {
           canProceed = selectedTherapist !== null;
@@ -445,7 +477,7 @@ export const BookingServiceForm = () => {
       case 3: // Schedule selection
         canProceed = selectedDate && selectedTime && selectedSlot;
         if (!canProceed) {
-          showToast.error("Please select a date and time");
+          showToast("Please select a date and time", "error");
         }
         break;
       case 4: // Confirmation
@@ -455,7 +487,7 @@ export const BookingServiceForm = () => {
       default:
         canProceed = true;
     }
-    
+
     if (canProceed && currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
@@ -471,22 +503,28 @@ export const BookingServiceForm = () => {
     return (
       <div className="step-indicators">
         {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
-          <div 
-            key={step} 
-            className={`step-indicator ${currentStep >= step ? 'active' : ''} ${currentStep > step ? 'completed' : ''}`}
+          <div
+            key={step}
+            className={`step-indicator ${currentStep >= step ? "active" : ""} ${
+              currentStep > step ? "completed" : ""
+            }`}
           >
             <div className="step-indicator__number">
               {currentStep > step ? <FaCheck className="check-icon" /> : step}
             </div>
             <div className="step-indicator__label">
-              {step === 1 && 'Select Services'}
-              {step === 2 && 'Choose Therapist'}
-              {step === 3 && 'Schedule'}
-              {step === 4 && 'Confirm'}
+              {step === 1 && "Select Services"}
+              {step === 2 && "Choose Therapist"}
+              {step === 3 && "Schedule"}
+              {step === 4 && "Confirm"}
             </div>
             {step < totalSteps && (
               <div className="step-indicator__connector">
-                <div className={`connector-line ${currentStep > step ? 'completed' : ''}`}></div>
+                <div
+                  className={`connector-line ${
+                    currentStep > step ? "completed" : ""
+                  }`}
+                ></div>
               </div>
             )}
           </div>
@@ -500,7 +538,7 @@ export const BookingServiceForm = () => {
     if (!isAuthChecked) {
       return renderAuthRequired();
     }
-    
+
     // Display loading/error states
     if (loading || bookingLoading || servicesLoading) {
       return (
@@ -510,19 +548,22 @@ export const BookingServiceForm = () => {
         </div>
       );
     }
-    
+
     if (error || bookingError || servicesError) {
       return (
         <div className="error-container">
           <h3>Something went wrong</h3>
           <p>{error || bookingError || servicesError}</p>
-          <button className="btn-primary" onClick={() => window.location.reload()}>
+          <button
+            className="btn-primary"
+            onClick={() => window.location.reload()}
+          >
             Try Again
           </button>
         </div>
       );
     }
-    
+
     switch (currentStep) {
       case 1:
         return (
@@ -537,7 +578,7 @@ export const BookingServiceForm = () => {
         );
       case 2:
         return (
-          <TherapistSelection 
+          <TherapistSelection
             therapists={therapists}
             selectedTherapist={selectedTherapist}
             onSelectTherapist={handleSelectTherapist}
@@ -584,36 +625,44 @@ export const BookingServiceForm = () => {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    
+
     try {
       setIsPending(true);
-      
+
       // Get user ID with priority: cookies > localStorage > default
       let userId = null;
-      
+
       // Try to get from cookies first
       const userIdCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('userId='));
-      
+        .split("; ")
+        .find((row) => row.startsWith("userId="));
+
       if (userIdCookie) {
-        userId = parseInt(userIdCookie.split('=')[1], 10);
+        userId = parseInt(userIdCookie.split("=")[1], 10);
         console.log("Found user ID in cookies:", userId, typeof userId);
-      } 
+      }
       // Then try localStorage
       else {
-        const directUserId = localStorage.getItem('userId');
+        const directUserId = localStorage.getItem("userId");
         if (directUserId) {
           userId = parseInt(directUserId, 10);
-          console.log("Found user ID directly in localStorage:", userId, typeof userId);
+          console.log(
+            "Found user ID directly in localStorage:",
+            userId,
+            typeof userId
+          );
         } else {
-          const userString = localStorage.getItem('user');
+          const userString = localStorage.getItem("user");
           if (userString) {
             try {
               const user = JSON.parse(userString);
               if (user && user.id) {
                 userId = parseInt(user.id, 10);
-                console.log("Found user ID from user object in localStorage:", userId, typeof userId);
+                console.log(
+                  "Found user ID from user object in localStorage:",
+                  userId,
+                  typeof userId
+                );
               }
             } catch (error) {
               console.error("Error parsing user from localStorage:", error);
@@ -621,36 +670,36 @@ export const BookingServiceForm = () => {
           }
         }
       }
-      
+
       console.log("Final userId before sending to API:", userId, typeof userId);
-      
+
       // Build booking data based on API requirements
       const bookingData = {
         userId: userId,
         slotId: Number(selectedSlot),
         bookingDate: selectedDate,
-        serviceId: selectedServices.map(service => service.id),
+        serviceId: selectedServices.map((service) => service.id),
         therapistId: Number(selectedTherapist.id),
         voucherId: selectedVoucher ? Number(selectedVoucher.voucherId) : null,
-        email: "customer@example.com" // Add a default email to ensure the booking goes through
+        email: "customer@example.com", // Add a default email to ensure the booking goes through
       };
-      
+
       // Try to get real email if possible
       try {
-        const user = JSON.parse(localStorage.getItem('user'));
+        const user = JSON.parse(localStorage.getItem("user"));
         if (user && user.email) {
           bookingData.email = user.email;
         }
       } catch (err) {
         console.warn("Using default email for booking");
       }
-      
+
       // Log the exact data being sent
       console.log("Submitting booking with data:", JSON.stringify(bookingData));
-      
+
       // Submit booking to API
       const result = await submitBooking(bookingData);
-      
+
       if (result) {
         // Prepare booking details for confirmation page
         const bookingDetails = {
@@ -658,54 +707,77 @@ export const BookingServiceForm = () => {
           therapistName: selectedTherapist.fullName || selectedTherapist.name,
           bookingDate: selectedDate,
           bookingTime: selectedTime,
-          servicePrices: selectedServices.map(service => ({
+          servicePrices: selectedServices.map((service) => ({
             name: service.name,
-            price: service.price
+            price: service.price,
           })),
-          subtotal: selectedServices.reduce((total, service) => total + service.price, 0),
+          subtotal: selectedServices.reduce(
+            (total, service) => total + service.price,
+            0
+          ),
           voucherName: selectedVoucher?.voucherName,
           voucherDiscount: selectedVoucher?.percentDiscount || 0,
-          discountAmount: selectedVoucher ? 
-            (selectedServices.reduce((total, service) => total + service.price, 0) * selectedVoucher.percentDiscount / 100) : 0,
-          totalAmount: selectedVoucher ? 
-            (selectedServices.reduce((total, service) => total + service.price, 0) * (1 - selectedVoucher.percentDiscount / 100)) :
-            selectedServices.reduce((total, service) => total + service.price, 0),
-          customerNotes: customerNotes
+          discountAmount: selectedVoucher
+            ? (selectedServices.reduce(
+                (total, service) => total + service.price,
+                0
+              ) *
+                selectedVoucher.percentDiscount) /
+              100
+            : 0,
+          totalAmount: selectedVoucher
+            ? selectedServices.reduce(
+                (total, service) => total + service.price,
+                0
+              ) *
+              (1 - selectedVoucher.percentDiscount / 100)
+            : selectedServices.reduce(
+                (total, service) => total + service.price,
+                0
+              ),
+          customerNotes: customerNotes,
         };
-        
+
         // Store booking details in localStorage
-        localStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
-        
+        localStorage.setItem("bookingDetails", JSON.stringify(bookingDetails));
+
         // Show success message
-        showToast("Booking successful! Your appointment has been confirmed.", "success");
-        
+        showToast(
+          "Booking successful! Your appointment has been confirmed.",
+          "success"
+        );
+
         // Redirect to confirmation page
         router.push({
           pathname: "/booking/confirmation",
-          query: { 
+          query: {
             success: true,
-            bookingId: result.bookingId
-          }
+            bookingId: result.bookingId,
+          },
         });
       } else {
         console.error("Booking submission failed - result was falsy");
-        showToast.error("Failed to submit booking. Please check your selections and try again.");
+        showToast(
+          "Failed to submit booking. Please check your selections and try again.",
+          "error"
+        );
       }
     } catch (error) {
       console.error("Error submitting booking:", error);
-      
+
       let errorMessage = "Failed to submit booking.";
-      
+
       if (error.response) {
         errorMessage += ` Server error: ${error.response.status}`;
         console.error("Server response:", error.response.data);
       } else if (error.request) {
-        errorMessage += " No response from server. Please check your internet connection.";
+        errorMessage +=
+          " No response from server. Please check your internet connection.";
       } else {
         errorMessage += ` ${error.message || "Unknown error"}`;
       }
-      
-      showToast.error(errorMessage);
+
+      showToast(errorMessage, "error");
     } finally {
       setIsPending(false);
     }
@@ -713,8 +785,8 @@ export const BookingServiceForm = () => {
 
   return (
     <div className="booking-container">
-          {renderStepIndicators()}
-          {renderStep()}
+      {renderStepIndicators()}
+      {renderStep()}
     </div>
   );
 };
