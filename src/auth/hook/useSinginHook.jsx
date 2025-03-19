@@ -65,16 +65,10 @@ export function useSignIn() {
               console.log("User info response:", userInfoResponse);
               
               if (userInfoResponse && userInfoResponse.success && userInfoResponse.result && userInfoResponse.result.id) {
-                // Store user ID in cookies
+                // Store only user ID in cookies
                 const userId = userInfoResponse.result.id;
                 document.cookie = `userId=${userId}; path=/; max-age=86400`;
                 console.log("Stored user ID in cookies:", userId);
-                
-                // Also store in localStorage for backup
-                localStorage.setItem('userId', userId);
-                
-                // Store full user object in localStorage
-                localStorage.setItem('user', JSON.stringify(userInfoResponse.result));
               }
             } catch (error) {
               console.error("Error fetching user info:", error);

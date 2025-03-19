@@ -433,12 +433,12 @@ export const BookingServiceForm = () => {
           const randomTherapist = therapists[randomIndex];
           
           setSelectedTherapist(randomTherapist);
-          showToast.info(`Auto-selected random therapist: ${randomTherapist.fullName || randomTherapist.name}`);
+          showToast(`Auto-selected random therapist: ${randomTherapist.fullName || randomTherapist.name}`, "info");
           canProceed = true;
         } else {
           canProceed = selectedTherapist !== null;
           if (!canProceed) {
-            showToast.error("Please select a therapist");
+            showToast("Please select a therapist", "error");
           }
         }
         break;
@@ -677,7 +677,7 @@ export const BookingServiceForm = () => {
         localStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
         
         // Show success message
-        showToast.success("Booking successful! Your appointment has been confirmed.");
+        showToast("Booking successful! Your appointment has been confirmed.", "success");
         
         // Redirect to confirmation page
         router.push({

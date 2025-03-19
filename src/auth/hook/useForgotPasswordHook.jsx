@@ -14,15 +14,15 @@ export function useForgotPassword() {
         });
 
         if (response.success) {
-          showToast.success("OTP sent to your email");
+          showToast("OTP sent to your email", "success");
           return { success: true, email };
         } else {
-          showToast.error(response.message || "Failed to send OTP");
+          showToast(response.message || "Failed to send OTP", "error");
           return { success: false };
         }
       } catch (error) {
         console.error("Verify email error:", error);
-        showToast.error("Failed to send OTP. Please try again.");
+        showToast("Failed to send OTP. Please try again.", "error");
         return { success: false };
       }
     },
@@ -38,15 +38,15 @@ export function useForgotPassword() {
         });
 
         if (response.success) {
-          showToast.success("OTP verified successfully");
+          showToast("OTP verified successfully", "success");
           return { success: true, email };
         } else {
-          showToast.error(response.message || "Invalid OTP");
+          showToast(response.message || "Invalid OTP", "error");
           return { success: false };
         }
       } catch (error) {
         console.error("Verify OTP error:", error);
-        showToast.error("Failed to verify OTP. Please try again.");
+        showToast("Failed to verify OTP. Please try again.", "error");
         return { success: false };
       }
     },
@@ -62,15 +62,15 @@ export function useForgotPassword() {
         });
 
         if (response.success) {
-          showToast.success("Password changed successfully");
+          showToast("Password changed successfully", "success");
           return { success: true };
         } else {
-          showToast.error(response.message || "Failed to change password");
+          showToast(response.message || "Failed to change password", "error");
           return { success: false };
         }
       } catch (error) {
         console.error("Change password error:", error);
-        showToast.error("Failed to change password. Please try again.");
+        showToast("Failed to change password. Please try again.", "error");
         return { success: false };
       }
     },
