@@ -29,6 +29,16 @@ const BookingListPending = () => {
     const isUserAuthenticated = isAuthenticated();
     console.log("BookingListPending: User authentication status:", isUserAuthenticated);
     setIsAuthChecked(isUserAuthenticated);
+
+    // Load submitted feedback bookings from localStorage
+    try {
+      const storedFeedbacks = JSON.parse(localStorage.getItem('submittedFeedbackBookings') || '[]');
+      setSubmittedFeedbackBookings(storedFeedbacks);
+    } catch (error) {
+      console.error('Error loading submitted feedbacks:', error);
+      // If there's an error reading from localStorage, reset it
+      localStorage.setItem('submittedFeedbackBookings', '[]');
+    }
   }, []);
 
   // Refresh data periodically (every 60 seconds)
@@ -154,6 +164,12 @@ const BookingListPending = () => {
 
   // Handle showing feedback modal
   const handleShowFeedback = (booking) => {
+    // Check if feedback was already submitted
+    if (submittedFeedbackBookings.includes(booking.bookingId)) {
+      showToast("You have already submitted feedback for this booking", "info");
+      return;
+    }
+    
     setSelectedBookingForFeedback(booking);
     setShowFeedbackModal(true);
     setFeedbackContent("");
@@ -164,6 +180,13 @@ const BookingListPending = () => {
   const handleSubmitFeedback = async () => {
     if (!selectedBookingForFeedback) {
       showToast("No booking selected for feedback", "error");
+      return;
+    }
+
+    // Check if feedback was already submitted
+    if (submittedFeedbackBookings.includes(selectedBookingForFeedback.bookingId)) {
+      showToast("You have already submitted feedback for this booking", "info");
+      setShowFeedbackModal(false);
       return;
     }
 
@@ -210,19 +233,30 @@ const BookingListPending = () => {
       console.log("Feedback response:", response);
 
       if (response?.success) {
-        // Store submitted feedback in localStorage
-        const storedFeedbacks = JSON.parse(localStorage.getItem('submittedFeedbackBookings') || '[]');
-        const updatedFeedbacks = [...storedFeedbacks, selectedBookingForFeedback.bookingId];
+        try {
+          // Update localStorage with the new feedback
+          const updatedFeedbacks = [...submittedFeedbackBookings, selectedBookingForFeedback.bookingId];
+          localStorage.setItem('submittedFeedbackBookings', JSON.stringify(updatedFeedbacks));
+          
+          // Update state
+          setSubmittedFeedbackBookings(updatedFeedbacks);
+          
+          showToast("Thank you for your feedback!", "success");
+          setShowFeedbackModal(false);
+          setFeedbackContent("");
+          setFeedbackScore(5);
+          refreshPendingBookings();
+        } catch (error) {
+          console.error('Error updating localStorage:', error);
+        }
+      } else if (response?.message?.toLowerCase().includes('already submitted')) {
+        // If feedback was already submitted, update our local state
+        const updatedFeedbacks = [...submittedFeedbackBookings, selectedBookingForFeedback.bookingId];
         localStorage.setItem('submittedFeedbackBookings', JSON.stringify(updatedFeedbacks));
-        
-        // Update state
         setSubmittedFeedbackBookings(updatedFeedbacks);
         
-        showToast("Thank you for your feedback!", "success");
+        showToast("You have already submitted feedback for this booking", "info");
         setShowFeedbackModal(false);
-        setFeedbackContent("");
-        setFeedbackScore(5);
-        refreshPendingBookings();
       } else {
         throw new Error(response?.message || "Failed to submit feedback");
       }
