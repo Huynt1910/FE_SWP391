@@ -6,10 +6,17 @@ import { useContext, useEffect, useState } from "react";
 import { Nav } from "./Nav/Nav";
 import { useSelf } from "@store/self.store";
 import { deleteCookie } from "cookies-next";
-import { useCart } from "@/context/CartContext";
+import useCart from "../../../context/CartContext";
 
 export const Header = () => {
-  const { cart, cartCount } = useCart();
+  let cartData = { cart: [], cartCount: 0 };
+  try {
+    cartData = useCart() || { cart: [], cartCount: 0 };
+  } catch (error) {
+    console.error("Error using cart context:", error);
+  }
+  
+  const { cart, cartCount } = cartData;
   const [promo, setPromo] = useState(true);
   const [fixedNav, setFixedNav] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);

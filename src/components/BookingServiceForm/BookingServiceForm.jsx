@@ -5,16 +5,16 @@ import useBookingHook from "@/auth/hook/useBookingHook";
 import useListAllServices from "@/auth/hook/useListAllServices";
 import TherapistSelection from "./TherapistSelection";
 import ScheduleSelection from "./ScheduleSelection";
-import PaymentConfirmation from "./PaymentConfirmation";
+import ConfirmBooking from "./ConfirmBooking";
 import ServiceSelection from "./ServiceSelection";
 import { showToast } from "@/utils/toast";
 import { isAuthenticated } from "@/utils/auth";
 
-// Payment methods
-const paymentMethods = [
-  { id: 1, name: "Credit Card", icon: <FaCreditCard /> },
-  { id: 2, name: "Cash", icon: <FaMoneyBill /> },
-];
+// // Payment methods
+// const paymentMethods = [
+//   { id: 1, name: "Credit Card", icon: <FaCreditCard /> },
+//   { id: 2, name: "Cash", icon: <FaMoneyBill /> },
+// ];
 
 export const BookingServiceForm = () => {
   // Initialize router and hooks
@@ -39,7 +39,7 @@ export const BookingServiceForm = () => {
   
   // Step tracking - initialize from URL query parameter if available
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4; // 4 steps: Service, Therapist, Schedule, Payment/Confirm
+  const totalSteps = 4; // 4 steps: Service, Therapist, Schedule, Confirm
 
   // Form state
   const [selectedServices, setSelectedServices] = useState([]);
@@ -469,7 +469,6 @@ export const BookingServiceForm = () => {
       case 2: // Therapist selection
         // Auto-select a therapist if none is selected and therapists are available
         if (selectedTherapist === null && therapists && therapists.length > 0) {
-          // Randomly select a therapist
           const randomIndex = Math.floor(Math.random() * therapists.length);
           const randomTherapist = therapists[randomIndex];
           
@@ -489,22 +488,16 @@ export const BookingServiceForm = () => {
           showToast("Please select a date and time", "error");
         }
         break;
-      case 4: // Payment and confirmation
-        canProceed = paymentMethod !== null;
-        if (!canProceed) {
-          showToast("Please select a payment method", "error");
-        }
+      case 4: // Confirmation
+        canProceed = true; // No specific validation needed for confirmation
+        handleSubmit(); // Submit booking on final step
         break;
       default:
         canProceed = true;
     }
     
-    if (canProceed) {
-      if (currentStep < totalSteps) {
+    if (canProceed && currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
-      } else {
-        handleSubmit();
-      }
     }
   };
 
@@ -529,7 +522,7 @@ export const BookingServiceForm = () => {
               {step === 1 && 'Select Services'}
               {step === 2 && 'Choose Therapist'}
               {step === 3 && 'Schedule'}
-              {step === 4 && 'Payment'}
+              {step === 4 && 'Confirm'}
             </div>
             {step < totalSteps && (
               <div className="step-indicator__connector">
@@ -610,14 +603,11 @@ export const BookingServiceForm = () => {
         );
       case 4:
         return (
-          <PaymentConfirmation
+          <ConfirmBooking
             selectedTherapist={selectedTherapist}
             selectedServices={selectedServices}
             selectedDate={selectedDate}
             selectedTime={selectedTime}
-            paymentMethods={paymentMethods}
-            selectedPaymentMethod={paymentMethod}
-            onPaymentMethodSelect={handlePaymentMethodSelect}
             selectedVoucher={selectedVoucher}
             onVoucherSelect={handleVoucherSelect}
             customerNotes={customerNotes}
@@ -647,24 +637,22 @@ export const BookingServiceForm = () => {
         .find(row => row.startsWith('userId='));
       
       if (userIdCookie) {
-        userId = parseInt(userIdCookie.split('=')[1], 10); // Convert to number
+        userId = parseInt(userIdCookie.split('=')[1], 10);
         console.log("Found user ID in cookies:", userId, typeof userId);
       } 
       // Then try localStorage
       else {
-        // Direct userId from localStorage
         const directUserId = localStorage.getItem('userId');
         if (directUserId) {
-          userId = parseInt(directUserId, 10); // Convert to number
+          userId = parseInt(directUserId, 10);
           console.log("Found user ID directly in localStorage:", userId, typeof userId);
         } else {
-          // Try from user object in localStorage
           const userString = localStorage.getItem('user');
           if (userString) {
             try {
               const user = JSON.parse(userString);
               if (user && user.id) {
-                userId = parseInt(user.id, 10); // Convert to number
+                userId = parseInt(user.id, 10);
                 console.log("Found user ID from user object in localStorage:", userId, typeof userId);
               }
             } catch (error) {
@@ -676,16 +664,9 @@ export const BookingServiceForm = () => {
       
       console.log("Final userId before sending to API:", userId, typeof userId);
       
-      // // If still no user ID, use default with warning
-      // if (!userId) {
-      //   userId = 1; // Default ID
-      //   console.warn("USING DEFAULT USER ID (1). This is only for development!");
-      //   showToast("Using default account. For your own bookings, please log in.", "warning");
-      // }
-      
       // Build booking data based on API requirements
       const bookingData = {
-        userId: userId ,// || 1,  Ensure a valid userId (use 1 as fallback)
+        userId: userId,
         slotId: Number(selectedSlot),
         bookingDate: selectedDate,
         serviceId: selectedServices.map(service => service.id),
@@ -706,37 +687,44 @@ export const BookingServiceForm = () => {
       
       // Log the exact data being sent
       console.log("Submitting booking with data:", JSON.stringify(bookingData));
-      console.log("User ID type:", typeof bookingData.userId);
-      console.log("SlotId type:", typeof bookingData.slotId);
-      console.log("TherapistId type:", typeof bookingData.therapistId);
       
       // Submit booking to API
       const result = await submitBooking(bookingData);
       
       if (result) {
-        // Set booking details for display on confirmation page
+        // Prepare booking details for confirmation page
         const bookingDetails = {
-          ...bookingData,
-          appointmentDateTime: `${selectedDate} ${selectedTime}`,
+          bookingId: result.bookingId,
           therapistName: selectedTherapist.fullName || selectedTherapist.name,
-          serviceNames: selectedServices.map(service => service.name).join(", "),
-          voucherName: selectedVoucher?.voucherName || null,
+          bookingDate: selectedDate,
+          bookingTime: selectedTime,
+          servicePrices: selectedServices.map(service => ({
+            name: service.name,
+            price: service.price
+          })),
+          subtotal: selectedServices.reduce((total, service) => total + service.price, 0),
+          voucherName: selectedVoucher?.voucherName,
           voucherDiscount: selectedVoucher?.percentDiscount || 0,
-          
+          discountAmount: selectedVoucher ? 
+            (selectedServices.reduce((total, service) => total + service.price, 0) * selectedVoucher.percentDiscount / 100) : 0,
+          totalAmount: selectedVoucher ? 
+            (selectedServices.reduce((total, service) => total + service.price, 0) * (1 - selectedVoucher.percentDiscount / 100)) :
+            selectedServices.reduce((total, service) => total + service.price, 0),
+          customerNotes: customerNotes
         };
         
-        // Store booking details in localStorage for access if needed
-        localStorage.setItem('lastBookingDetails', JSON.stringify(bookingDetails));
+        // Store booking details in localStorage
+        localStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
         
-        // Show success message with booking confirmation
+        // Show success message
         showToast("Booking successful! Your appointment has been confirmed.", "success");
         
-        // Redirect to booking confirmation page
+        // Redirect to confirmation page
         router.push({
           pathname: "/booking/confirmation",
           query: { 
             success: true,
-            bookingId: bookingDetails.bookingId
+            bookingId: result.bookingId
           }
         });
       } else {
@@ -746,18 +734,14 @@ export const BookingServiceForm = () => {
     } catch (error) {
       console.error("Error submitting booking:", error);
       
-      // Show more detailed error message to help diagnose the issue
       let errorMessage = "Failed to submit booking.";
       
       if (error.response) {
-        // Server responded with an error
         errorMessage += ` Server error: ${error.response.status}`;
         console.error("Server response:", error.response.data);
       } else if (error.request) {
-        // Request was made but no response received
         errorMessage += " No response from server. Please check your internet connection.";
       } else {
-        // Error in setting up the request
         errorMessage += ` ${error.message || "Unknown error"}`;
       }
       

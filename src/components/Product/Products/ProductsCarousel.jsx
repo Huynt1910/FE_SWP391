@@ -3,12 +3,20 @@ import {
   SlickArrowNext,
 } from "@components/utils/SlickArrows/SlickArrows";
 import Slider from "react-slick";
-import { useCart } from "@/context/CartContext";
+import useCart from "../../../context/CartContext";
 import { SingleProduct } from "./SingleProduct/SingleProduct";
 import { toast } from "react-toastify";
 
 export const ProductsCarousel = ({ products }) => {
-  const { cart, addToCart } = useCart();
+  // Add error handling for useCart
+  let cartData = { cart: [], addToCart: () => {} };
+  try {
+    cartData = useCart() || { cart: [], addToCart: () => {} };
+  } catch (error) {
+    console.error("Error using cart context:", error);
+  }
+  
+  const { cart, addToCart } = cartData;
 
   const handleAddToCart = (id) => {
     const product = products?.find((pd) => pd.id === id);
