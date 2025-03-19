@@ -1,7 +1,6 @@
 import { ACTIONS } from "@lib/api-client/constant";
 import { APIClient } from "@lib/api-client";
 import { useMutation } from "@tanstack/react-query";
-import { setCookie } from "cookies-next";
 import { showToast } from "@utils/toast";
 import { useRouter } from "next/router";
 
@@ -54,13 +53,15 @@ export function useSignUp() {
     },
     onSuccess: (response) => {
       if (response.success) {
-        setCookie("user", JSON.stringify(response.result)); // Store the result in a cookie
-
-        showToast.success(
-          "Successfully signed up! Please check your email to verify your account."
+        showToast(
+          "Successfully signed up! Please check your email to verify your account.",
+          "success"
         );
 
-        router.push("/login"); // Navigate to login page on success
+        // Short delay before redirect to ensure toast is seen
+        setTimeout(() => {
+          router.push("/login"); // Navigate to login page on success
+        }, 1500);
       }
     },
   });

@@ -142,7 +142,7 @@ export const Registration = () => {
     e.preventDefault();
     
     if (!validateForm()) {
-      showToast.error("Please fix the errors in the form");
+      showToast("Please fix the errors in the form", "error");
       return;
     }
 
@@ -162,7 +162,15 @@ export const Registration = () => {
       
       const result = await signUp(payload);
       
-      if (!result.success) {
+      if (result.success) {
+        // Show success message
+        showToast("Registration successful! Please log in.", "success");
+        
+        // Short delay before redirect to ensure toast is seen
+        setTimeout(() => {
+          router.push("/login");
+        }, 1500);
+      } else {
         // Handle specific field errors
         if (result.field) {
           setErrors(prev => ({
@@ -178,11 +186,12 @@ export const Registration = () => {
           }
         } else {
           // General error
-          showToast.error(result.error || "Registration failed. Please try again.");
+          showToast(result.error || "Registration failed. Please try again.", "error");
         }
       }
     } catch (error) {
-      showToast.error("An unexpected error occurred. Please try again.");
+      console.error("Registration error:", error);
+      showToast("An unexpected error occurred. Please try again.", "error");
     }
   };
 
