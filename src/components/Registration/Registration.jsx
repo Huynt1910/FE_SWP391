@@ -128,14 +128,6 @@ export const Registration = () => {
       }
     }
 
-<<<<<<< HEAD
-=======
-    // // Terms validation
-    // if (!formData.agreeToTerms) {
-    //   newErrors.agreeToTerms = "You must agree to the terms and conditions";
-    // }
-
->>>>>>> HK
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -158,22 +150,13 @@ export const Registration = () => {
         phone: formData.phone,
         address: formData.address,
         gender: formData.gender,
-<<<<<<< HEAD
         birthDate: formData.birthDate,
-=======
-        birthDate: formData.birthDate, // API expects YYYY-MM-DD format
->>>>>>> HK
       };
 
       const result = await signUp(payload);
 
       if (result.success) {
         showToast("Registration successful! Please log in.", "success");
-<<<<<<< HEAD
-=======
-
-        // Short delay before redirect to ensure toast is seen
->>>>>>> HK
         setTimeout(() => {
           router.push("/login");
         }, 1500);
@@ -183,21 +166,12 @@ export const Registration = () => {
             ...prev,
             [result.field]: result.error,
           }));
-<<<<<<< HEAD
-=======
-
-          // Scroll to the field with error
->>>>>>> HK
           const element = document.querySelector(`[name="${result.field}"]`);
           if (element) {
             element.scrollIntoView({ behavior: "smooth", block: "center" });
             element.focus();
           }
         } else {
-<<<<<<< HEAD
-=======
-          // General error
->>>>>>> HK
           showToast(
             result.error || "Registration failed. Please try again.",
             "error"
@@ -469,9 +443,6 @@ export const Registration = () => {
     </div>
   );
 };
-<<<<<<< HEAD
 
 export default Registration;
 //
-=======
->>>>>>> HK
