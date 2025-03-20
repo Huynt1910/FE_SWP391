@@ -325,22 +325,25 @@ const BookingListPending = () => {
         throw new Error("Authentication required");
       }
 
-      // Use the correct action name and pathParams
-      const response = await APIClient.invoke({
-        action: "finishBooking",
-        pathParams: { bookingId: bookingId.toString() },
-        options: {
-          preventRedirect: true,
-          secure: true,
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+      // Make direct API call to match Postman structure
+      const finishUrl = `${API_URL}/booking/${bookingId}/finish`;
+      console.log('Finish booking URL:', finishUrl);
+      
+      const response = await fetch(finishUrl, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
 
-      console.log('Finish booking response:', response);
+      console.log('Finish booking response status:', response.status);
+      
+      const responseData = await response.json();
+      console.log('Finish booking response:', responseData);
 
-      if (response && response.success) {
+      if (response.ok && responseData.success) {
         // Update localStorage and state with the completed booking
         const updatedCompletedBookings = [...completedBookings, bookingId];
         localStorage.setItem('completedBookings', JSON.stringify(updatedCompletedBookings));
@@ -354,7 +357,7 @@ const BookingListPending = () => {
         // Refresh booking list
         refreshPendingBookings();
       } else {
-        throw new Error(response?.message || "Failed to complete booking");
+        throw new Error(responseData?.message || "Failed to complete booking");
       }
     } catch (err) {
       console.error('Error finishing booking:', err);
