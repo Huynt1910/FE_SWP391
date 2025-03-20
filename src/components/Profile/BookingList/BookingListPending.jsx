@@ -317,12 +317,24 @@ const BookingListPending = () => {
     setProcessingFinishId(bookingId);
 
     try {
+      console.log('Attempting to finish booking:', bookingId);
+      
+      // Get auth token
+      const token = getToken();
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      // Use the correct action name and pathParams
       const response = await APIClient.invoke({
-        action: ACTIONS.FINISH_BOOKING,
-        data: { bookingId: bookingId.toString() },
+        action: "finishBooking",
+        pathParams: { bookingId: bookingId.toString() },
         options: {
           preventRedirect: true,
-          secure: true
+          secure: true,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         }
       });
 
@@ -339,12 +351,19 @@ const BookingListPending = () => {
         setShowPaymentButton(true);
         
         showToast("Booking completed successfully! Please proceed to payment.", "success");
+        // Refresh booking list
+        refreshPendingBookings();
       } else {
         throw new Error(response?.message || "Failed to complete booking");
       }
     } catch (err) {
       console.error('Error finishing booking:', err);
       showToast(err.message || "Failed to complete booking. Please try again later.", "error");
+      
+      // If unauthorized, redirect to login
+      if (err.message?.toLowerCase().includes('auth') || err.message?.toLowerCase().includes('unauthorized')) {
+        router.push('/login');
+      }
     } finally {
       setIsProcessingFinish(false);
       setProcessingFinishId(null);
@@ -355,30 +374,124 @@ const BookingListPending = () => {
   const handlePayment = async () => {
     if (selectedBookingForPayment) {
       try {
+        console.log('Attempting payment for booking ID:', selectedBookingForPayment.bookingId);
+        
+        // Get auth token
+        const token = getToken();
+        if (!token) {
+          throw new Error("Authentication required");
+        }
+
+        // First try with APIClient
         const response = await APIClient.invoke({
           action: ACTIONS.PAYMENT,
           pathParams: { bookingId: selectedBookingForPayment.bookingId.toString() },
           options: {
             preventRedirect: true,
-            secure: false
+            secure: true,
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           }
         });
 
         console.log('Payment response:', response);
-
-        if (response) {
-          // Redirect to the VNPay URL in the same window
-          window.location.href = response;
+        
+        // If we get a 400 error, try direct fetch as fallback
+        if (response?.success === false && response?.status === 400) {
+          console.log('API call failed with 400, trying direct fetch...');
           
-          // Close the completion modal
+          // Construct the direct API URL
+          const directUrl = `${API_URL}/payment/${selectedBookingForPayment.bookingId}`;
+          console.log('Direct payment URL:', directUrl);
+          
+          // Fetch directly from the API with auth token
+          const directResponse = await fetch(directUrl, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (directResponse.ok) {
+            const paymentUrl = await directResponse.text();
+            console.log('Direct payment URL response:', paymentUrl);
+            
+            if (paymentUrl && paymentUrl.includes('vnpayment.vn')) {
+              // Success, redirect to payment page
+              window.location.href = paymentUrl;
+              setShowCompletionModal(false);
+              setShowPaymentButton(false);
+              return;
+            } else {
+              throw new Error("Invalid payment URL in direct response");
+            }
+          } else {
+            const errorText = await directResponse.text();
+            throw new Error(`Direct API call failed: ${directResponse.status} - ${errorText}`);
+          }
+        }
+        
+        // Continue with normal flow for successful APIClient response
+        if (typeof response === 'string' && response.includes('vnpayment.vn')) {
+          window.location.href = response;
           setShowCompletionModal(false);
           setShowPaymentButton(false);
+        } else if (response && response.result && typeof response.result === 'string' && response.result.includes('vnpayment.vn')) {
+          window.location.href = response.result;
+          setShowCompletionModal(false);
+          setShowPaymentButton(false);
+        } else if (response && typeof response === 'object') {
+          // Look for possible URL properties
+          console.log('Response properties:', Object.keys(response));
+          
+          for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
+            if (response[prop] && typeof response[prop] === 'string' && response[prop].includes('vnpayment.vn')) {
+              window.location.href = response[prop];
+              setShowCompletionModal(false);
+              setShowPaymentButton(false);
+              return;
+            }
+          }
+          
+          // If we got here with a success response but no URL, try opening a direct URL
+          if (response?.success !== false) {
+            const fallbackUrl = `${API_URL}/payment/${selectedBookingForPayment.bookingId}`;
+            console.log('No payment URL found, trying fallback redirect to:', fallbackUrl);
+            
+            // Add auth token to the fallback request
+            const fallbackResponse = await fetch(fallbackUrl, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (fallbackResponse.ok) {
+              const fallbackPaymentUrl = await fallbackResponse.text();
+              if (fallbackPaymentUrl && fallbackPaymentUrl.includes('vnpayment.vn')) {
+                window.location.href = fallbackPaymentUrl;
+                setShowCompletionModal(false);
+                setShowPaymentButton(false);
+                return;
+              }
+            }
+          }
+          
+          throw new Error(`Payment failed: ${response?.message || 'Unknown error'}`);
         } else {
-          throw new Error("No payment URL received");
+          throw new Error("Invalid payment response format");
         }
       } catch (err) {
         console.error('Error getting payment URL:', err);
         showToast(err.message || "Failed to get payment URL. Please try again later.", "error");
+        
+        // If unauthorized, redirect to login
+        if (err.message?.toLowerCase().includes('auth') || err.message?.toLowerCase().includes('unauthorized')) {
+          router.push('/login');
+          return;
+        }
+        
+        // Show more information about the error
+        console.log('Error details:', err);
       }
     }
   };

@@ -100,12 +100,6 @@ export const END_POINTS = {
     parameterized: true,
     secure: true,
   },
-  refreshToken: {
-    path: "/authentication/refresh-token",
-    method: "POST",
-    parameterized: true,
-    secure: true,
-  },
   submitFeedback: {
     path: "/feedback",
     method: "POST",
@@ -116,6 +110,12 @@ export const END_POINTS = {
     method: "GET",
     parameterized: true,
     secure: false,
+  },
+  finishBooking: {
+    path: "/booking/:bookingId/finish",
+    method: "POST",
+    parameterized: true,
+    secure: true,
   },
 };
 
