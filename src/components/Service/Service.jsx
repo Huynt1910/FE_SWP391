@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Slider from "rc-slider";
 import Dropdown from "react-dropdown";
-import { FaSearch, FaSpinner, FaCalendarAlt, FaAngleDown, FaAngleUp, FaLock } from "react-icons/fa";
+import { FaSearch, FaSpinner, FaClock, FaAngleDown, FaAngleUp, FaLock, FaShoppingCart } from "react-icons/fa";
 import useListAllServices from "@/auth/hook/useListAllServices";
 import { PagingList } from "@components/shared/PagingList/PagingList";
 import { usePagination } from "@components/utils/Pagination/Pagination";
@@ -28,42 +28,27 @@ export const Service = () => {
   const [sortedServices, setSortedServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
-  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
-  // Check authentication on component mount
+  // Fetch services on component mount
   useEffect(() => {
-    const checkAuth = () => {
-      const authenticated = isAuthenticated();
-      if (!authenticated) {
-        // Don't call redirectToLogin here as it will cause error
-        // We'll handle this in the render phase
-        return false;
-      }
-      return true;
-    };
-    
-    const authenticated = checkAuth();
-    setIsAuthChecked(authenticated);
-    
-    if (authenticated) {
-      console.log("Service: Fetching services...");
-      getAllServices().then(result => {
-        console.log("Service: Services fetched, count:", result?.length || 0);
-      });
-    }
+    console.log("Service: Fetching services...");
+    getAllServices().then(result => {
+      console.log("Service: Services fetched, count:", result?.length || 0);
+    });
   }, []);
 
   // Update sorted services when data changes
   useEffect(() => {
     if (services && services.length > 0) {
       console.log("Services data:", services);
-      // Make sure we have price data
+      // Make sure we have price data and handle sorting
       const sorted = [...services].sort((a, b) => {
-        const priceA = a.price || 0;
-        const priceB = b.price || 0;
-        return priceB - priceA; // High to low
+        const priceA = parseFloat(a.price) || 0;
+        const priceB = parseFloat(b.price) || 0;
+        return priceB - priceA; // High to low by default
       });
       setSortedServices(sorted);
+      setFilteredServices(sorted); // Initialize filtered services
     }
   }, [services]);
 
@@ -92,9 +77,9 @@ export const Service = () => {
   // Categorize services by price range
   const categorizeServices = (services) => {
     return {
-      basic: services.filter(service => service.price < 500000),
-      medium: services.filter(service => service.price >= 500000 && service.price <= 2000000),
-      advance: services.filter(service => service.price > 2000000)
+      basic: services.filter(service => parseFloat(service.price) < 1000000),
+      medium: services.filter(service => parseFloat(service.price) >= 1000000 && parseFloat(service.price) <= 2000000),
+      advance: services.filter(service => parseFloat(service.price) > 2000000)
     };
   };
 
@@ -102,23 +87,25 @@ export const Service = () => {
   const categorizedServices = categorizeServices(filteredServices);
 
   // Handle sorting
-  const handleSort = (value) => {
-    if (value === "highToMin") {
-      const sorted = [...services].sort((a, b) => {
-        const priceA = a.price || 0;
-        const priceB = b.price || 0;
-        return priceB - priceA; // High to low
-      });
-      setSortedServices(sorted);
-    }
-    if (value === "minToHigh") {
-      const sorted = [...services].sort((a, b) => {
-        const priceA = a.price || 0;
-        const priceB = b.price || 0;
-        return priceA - priceB; // Low to high
-      });
-      setSortedServices(sorted);
-    }
+  const handleSort = (option) => {
+    const value = option.value;
+    const sorted = [...filteredServices].sort((a, b) => {
+      const priceA = parseFloat(a.price) || 0;
+      const priceB = parseFloat(b.price) || 0;
+      return value === "highToMin" ? priceB - priceA : priceA - priceB;
+    });
+    setFilteredServices(sorted);
+  };
+
+  // Format duration
+  const formatDuration = (duration) => {
+    if (!duration) return "";
+    // Expected format: "HH:mm:ss"
+    const [hours, minutes] = duration.split(":").map(Number);
+    let result = "";
+    if (hours > 0) result += `${hours}h `;
+    if (minutes > 0) result += `${minutes}m`;
+    return result.trim();
   };
 
   // Format price as VND
@@ -127,7 +114,7 @@ export const Service = () => {
       style: 'currency',
       currency: 'VND',
       maximumFractionDigits: 0
-    }).format(price);
+    }).format(parseFloat(price) || 0);
   };
 
   // Handle service selection
@@ -188,28 +175,78 @@ export const Service = () => {
     );
   };
 
-  // Show authentication required state
-  // if (!isAuthChecked) {
-  //   return (
-  //     <div className="service">
-  //       <div className="wrapper">
-  //         <div className="service-list__error">
-  //           <div className="error-icon">
-  //             <FaLock size={24} color="white" />
-  //           </div>
-  //           <h3>Login Required</h3>
-  //           <p>You need to be logged in to view our services.</p>
-  //           <button 
-  //             className="login-button"
-  //             onClick={() => router.push('/login')}
-  //           >
-  //             Log In
-  //           </button>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  // Render service card
+  const renderServiceCard = (service) => (
+    <div key={service.id} className="service-card">
+      <div className="service-card__image">
+        <img 
+          src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
+          alt={service.name || "Service"} 
+          onError={(e) => {
+            e.target.src = "/assets/img/services/placeholder.jpg";
+          }}
+        />
+      </div>
+      <div className="service-card__info">
+        <h3 className="service-card__name">{service.name || "Unnamed Service"}</h3>
+        {service.category && (
+          <p className="service-card__category">{service.category}</p>
+        )}
+        <div className="service-card__description-container">
+          <p className="service-card__description" style={{
+            maxHeight: expandedDescriptions[service.id] ? 'none' : '4.5em',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: expandedDescriptions[service.id] ? 'unset' : '3',
+            WebkitBoxOrient: 'vertical',
+          }}>
+            {service.description || "No description available."}
+          </p>
+          {service.description && service.description.length > 100 && (
+            <button 
+              className="service-card__btn"
+              onClick={(e) => toggleDescription(service.id, e)}
+            >
+              {expandedDescriptions[service.id] 
+                ? <>View less <FaAngleUp className="icon" /></> 
+                : <>View more <FaAngleDown className="icon" /></>}
+            </button>
+          )}
+        </div>
+        <div className="service-card__bottom">
+          <div className="service-card__details">
+            <span className="service-card__price">{formatPrice(service.price)}</span>
+            {service.duration && (
+              <span className="service-card__duration">
+                <FaClock className="icon" />
+                {formatDuration(service.duration)}
+              </span>
+            )}
+          </div>
+          <div className="service-card__actions">
+            <button 
+              className="service-card__btn"
+              onClick={(e) => handleBookService(service, e)}
+            >
+              Book Now
+            </button>
+            <button 
+              className="service-card__cart-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                addToCart(service);
+                showToast(`Added ${service.name} to cart`, "success");
+              }}
+            >
+              <FaShoppingCart />
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className="service-card__overlay" onClick={() => handleSelectService(service.id)}></div>
+    </div>
+  );
 
   // Update loading state to include placeholder cards
   if (loading) {
@@ -315,194 +352,22 @@ export const Service = () => {
                   <Dropdown
                     options={options}
                     className="react-dropdown"
-                    onChange={(option) => handleSort(option.value)}
+                    onChange={handleSort}
                     value={options[0]}
+                    placeholder="Sort by price"
                   />
+                </div>
+                <div className="shop-main__results">
+                  {filteredServices.length} services found
                 </div>
               </div>
               <div className="shop-main__items">
-                {/* Basic Services Section */}
-                {categorizedServices.basic.length > 0 && (
-                  <div className="service-category">
-                    <h2 className="service-category__title">Basic Services</h2>
-
-                    <div className="services-grid">
-                      {categorizedServices.basic.map((service) => (
-                        <div key={service.id} className="service-card">
-                          <div className="service-card__image">
-                            <img 
-                              src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
-                              alt={service.name || "Service"} 
-                            />
-                          </div>
-                          <div className="service-card__info">
-                            <h3 className="service-card__name">{service.name || "Unnamed Service"}</h3>
-                            {service.category && service.category !== "General" && (
-                              <p className="service-card__category">{service.category}</p>
-                            )}
-                            <div className="service-card__description-container">
-                              <p className="service-card__description" style={{
-                                maxHeight: expandedDescriptions[service.id] ? 'none' : '4.5em',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                display: '-webkit-box',
-                                WebkitLineClamp: expandedDescriptions[service.id] ? 'unset' : '3',
-                                WebkitBoxOrient: 'vertical',
-                              }}>
-                                {service.description || "No description available."}
-                              </p>
-                              {service.description && service.description.length > 100 && (
-                                <button 
-                                  className="service-card__book-btn"
-                                  onClick={(e) => toggleDescription(service.id, e)}
-                                >
-                                  {expandedDescriptions[service.id] 
-                                    ? <>View less <FaAngleUp className="icon" /></> 
-                                    : <>View more <FaAngleDown className="icon" /></>}
-                                </button>
-                              )}
-                            </div>
-                            <div className="service-card__bottom">
-                              <span className="service-card__price">{formatPrice(service.price || 0)}</span>
-                              <button 
-                                className="service-card__book-btn"
-                                onClick={(e) => handleBookService(service, e)}
-                              >
-                                <FaCalendarAlt className="icon" />
-                                <span>Book Now</span>
-                              </button>
-                            </div>
-                          </div>
-                          <div className="service-card__overlay" onClick={() => handleSelectService(service.id)}></div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Medium Services Section */}
-                {categorizedServices.medium.length > 0 && (
-                  <div className="service-category">
-                    <h2 className="service-category__title">Medium Services</h2>
-                    <div className="services-grid">
-                      {categorizedServices.medium.map((service) => (
-                        <div key={service.id} className="service-card">
-                          <div className="service-card__image">
-                            <img 
-                              src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
-                              alt={service.name || "Service"} 
-                            />
-                          </div>
-                          <div className="service-card__info">
-                            <h3 className="service-card__name">{service.name || "Unnamed Service"}</h3>
-                            {service.category && service.category !== "General" && (
-                              <p className="service-card__category">{service.category}</p>
-                            )}
-                            <div className="service-card__description-container">
-                              <p className="service-card__description" style={{
-                                maxHeight: expandedDescriptions[service.id] ? 'none' : '4.5em',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                display: '-webkit-box',
-                                WebkitLineClamp: expandedDescriptions[service.id] ? 'unset' : '3',
-                                WebkitBoxOrient: 'vertical',
-                              }}>
-                                {service.description || "No description available."}
-                              </p>
-                              {service.description && service.description.length > 100 && (
-                                <button 
-                                  className="service-card__book-btn"
-                                  onClick={(e) => toggleDescription(service.id, e)}
-                                >
-                                  {expandedDescriptions[service.id] 
-                                    ? <>View less <FaAngleUp className="icon" /></> 
-                                    : <>View more <FaAngleDown className="icon" /></>}
-                                </button>
-                              )}
-                            </div>
-                            <div className="service-card__bottom">
-                              <span className="service-card__price">{formatPrice(service.price || 0)}</span>
-                              <button 
-                                className="service-card__book-btn"
-                                onClick={(e) => handleBookService(service, e)}
-                              >
-                                <FaCalendarAlt className="icon" />
-                                <span>Book Now</span>
-                              </button>
-                            </div>
-                          </div>
-                          <div className="service-card__overlay" onClick={() => handleSelectService(service.id)}></div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Advanced Services Section */}
-                {categorizedServices.advance.length > 0 && (
-                  <div className="service-category">
-                    <h2 className="service-category__title">Advanced Services</h2>                    
-                    <div className="services-grid">
-                      {categorizedServices.advance.map((service) => (
-                        <div key={service.id} className="service-card">
-                          <div className="service-card__image">
-                            <img 
-                              src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
-                              alt={service.name || "Service"} 
-                            />
-                          </div>
-                          <div className="service-card__info">
-                            <h3 className="service-card__name">{service.name || "Unnamed Service"}</h3>
-                            {service.category && service.category !== "General" && (
-                              <p className="service-card__category">{service.category}</p>
-                            )}
-                            <div className="service-card__description-container">
-                              <p className="service-card__description" style={{
-                                maxHeight: expandedDescriptions[service.id] ? 'none' : '4.5em',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                display: '-webkit-box',
-                                WebkitLineClamp: expandedDescriptions[service.id] ? 'unset' : '3',
-                                WebkitBoxOrient: 'vertical',
-                              }}>
-                                {service.description || "No description available."}
-                              </p>
-                              {service.description && service.description.length > 100 && (
-                                <button 
-                                  className="service-card__book-btn"
-                                  onClick={(e) => toggleDescription(service.id, e)}
-                                >
-                                  {expandedDescriptions[service.id] 
-                                    ? <>View less <FaAngleUp className="icon" /></> 
-                                    : <>View more <FaAngleDown className="icon" /></>}
-                                </button>
-                              )}
-                            </div>
-                            <div className="service-card__bottom">
-                              <span className="service-card__price">{formatPrice(service.price || 0)}</span>
-                              <button 
-                                className="service-card__book-btn"
-                                onClick={(e) => handleBookService(service, e)}
-                              >
-                                <FaCalendarAlt className="icon" />
-                                <span>Book Now</span>
-                              </button>
-                            </div>
-                          </div>
-                          <div className="service-card__overlay" onClick={() => handleSelectService(service.id)}></div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Show empty state if no services found */}
-                {filteredServices.length === 0 && (
+                {filteredServices.length === 0 ? (
                   <div className="service-list__empty">
                     <h3>No Services Found</h3>
                     <p>We couldn't find any services matching your search criteria.</p>
                     <button 
-                      className="back-button"
+                      className="clear-filters-btn"
                       onClick={() => {
                         setSearchTerm("");
                         setCategoryFilter("");
@@ -511,6 +376,38 @@ export const Service = () => {
                       Clear Filters
                     </button>
                   </div>
+                ) : (
+                  <>
+                    {/* Basic Services Section */}
+                    {categorizedServices.basic.length > 0 && (
+                      <div className="service-category">
+                        <h2 className="service-category__title">Basic Services</h2>
+                        <div className="services-grid">
+                          {categorizedServices.basic.map(renderServiceCard)}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Medium Services Section */}
+                    {categorizedServices.medium.length > 0 && (
+                      <div className="service-category">
+                        <h2 className="service-category__title">Medium Services</h2>
+                        <div className="services-grid">
+                          {categorizedServices.medium.map(renderServiceCard)}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Advanced Services Section */}
+                    {categorizedServices.advance.length > 0 && (
+                      <div className="service-category">
+                        <h2 className="service-category__title">Advanced Services</h2>
+                        <div className="services-grid">
+                          {categorizedServices.advance.map(renderServiceCard)}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
               {paginate?.maxPage > 1 && (

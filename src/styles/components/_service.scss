@@ -134,6 +134,26 @@
         height: 16px;
       }
     }
+
+    &__duration {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: #666;
+      padding: 4px 0;
+
+      .icon {
+        font-size: 14px;
+        color: #666;
+      }
+    }
+
+    &__details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
   }
   
   // State components

@@ -13,48 +13,43 @@ export const useListAllServices = () => {
       setLoading(true);
       setError(null);
       
-      console.log("Fetching all services...");
+      console.log("Fetching active services...");
       
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_ALL_SERVICES,
+        action: ACTIONS.GET_ACTIVE_SERVICES,
         options: { 
           preventRedirect: true,
-          requiresAuth: false // Specify that this endpoint doesn't require authentication
+          requiresAuth: false,
+          headers: {
+            'Content-Type': 'application/json'
+          }
         }
       });
       
-      console.log("API Response for getAllServices:", response);
+      console.log("API Response for getActiveServices:", response);
       
-      // Process the response data - checking for expected structure with more flexible handling
       if (response && response.success === true && Array.isArray(response.result)) {
         console.log("Response has result array with length:", response.result.length);
-        // Map each service in the result array
-        const mappedServices = response.result.map(service => mapServiceFields(service));
-        console.log("Mapped services:", mappedServices);
-        setData(mappedServices);
-        return mappedServices;
-      } else if (response && Array.isArray(response)) {
-        // Handle case where response is directly an array
-        console.log("Response is directly an array with length:", response.length);
-        const mappedServices = response.map(service => mapServiceFields(service));
-        console.log("Mapped services:", mappedServices);
-        setData(mappedServices);
-        return mappedServices;
-      } else if (response && response.data && Array.isArray(response.data)) {
-        // Handle case where response has a data property that is an array
-        console.log("Response has data array with length:", response.data.length);
-        const mappedServices = response.data.map(service => mapServiceFields(service));
+        const mappedServices = response.result.map(service => ({
+          id: service.serviceId,
+          name: service.serviceName,
+          description: service.description,
+          price: service.price,
+          imgUrl: service.imgUrl,
+          duration: service.duration,
+          isActive: service.isActive,
+          category: service.category || "General"
+        }));
         console.log("Mapped services:", mappedServices);
         setData(mappedServices);
         return mappedServices;
       } else {
-        // Log the full response structure for debugging
         console.error("Unexpected API response format:", JSON.stringify(response, null, 2));
         setError("Invalid response format from API");
         return [];
       }
     } catch (error) {
-      console.error("Error fetching all services:", error);
+      console.error("Error fetching active services:", error);
       setError(error.message || "Failed to fetch services");
       return [];
     } finally {

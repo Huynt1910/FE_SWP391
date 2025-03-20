@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { FaStar, FaCalendarAlt, FaCircle, FaUserMd, FaFilter, FaTimes, FaLock } from "react-icons/fa";
+import { FaStar, FaCalendarAlt, FaCircle, FaUserMd, FaFilter, FaTimes } from "react-icons/fa";
 import useListAllTherapist from "@/auth/hook/useListAllTherapist";
-import { isAuthenticated } from "@/utils/auth";
 
 const TherapistList = () => {
   const router = useRouter();
@@ -11,24 +10,13 @@ const TherapistList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterExperience, setFilterExperience] = useState(0);
   const [filterAvailability, setFilterAvailability] = useState("all"); // "all", "available", "unavailable"
-  const [isAuthChecked, setIsAuthChecked] = useState(false); // Default to false to check authentication
 
-  // Check authentication on component mount
   useEffect(() => {
-    const isUserAuthenticated = isAuthenticated();
-    console.log("Therapist List: User authentication status:", isUserAuthenticated);
-    setIsAuthChecked(isUserAuthenticated);
+    console.log("TherapistList: Fetching therapists...");
+    getAllTherapists().then(result => {
+      console.log("TherapistList: Therapists fetched, count:", result?.length || 0);
+    });
   }, []);
-
-  // Fetch all therapists on component mount and when auth status changes
-  useEffect(() => {
-    if (isAuthChecked) {
-      console.log("TherapistList: Fetching therapists...");
-      getAllTherapists().then(result => {
-        console.log("TherapistList: Therapists fetched, count:", result?.length || 0);
-      });
-    }
-  }, [isAuthChecked]);
 
   // Log data changes
   useEffect(() => {
@@ -116,34 +104,6 @@ const TherapistList = () => {
     setFilterExperience(0);
     setFilterAvailability("all");
   };
-
-  // Handler for login button
-  const handleLogin = () => {
-    router.push("/login?redirect=/therapists");
-  };
-
-  // Render authentication required view
-  if (!isAuthChecked) {
-    return (
-      <div className="service">
-        <div className="wrapper">
-          <div className="service-list__error">
-            <div className="error-icon">
-              <FaLock size={24} color="white" />
-            </div>
-            <h3>Login Requireds</h3>
-            <p>You need to be logged in to view our services.</p>
-            <button 
-              className="login-button"
-              onClick={() => router.push('/login')}
-            >
-              Log In
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Render loading state
   if (loading) {
