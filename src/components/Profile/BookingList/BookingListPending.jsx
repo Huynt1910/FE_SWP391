@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaCalendarAlt, FaClock, FaUser, FaSpinner, FaExclamationCircle, FaEllipsisV, FaCheckCircle, FaStar } from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaUser, FaSpinner, FaExclamationCircle, FaEllipsisV, FaCheckCircle, FaStar, FaMoneyBillWave } from "react-icons/fa";
 import useBookingListPendingHook from "@/auth/hook/useBookingListPendingHook";
 import { isAuthenticated, getToken } from "@/utils/auth";
 import { APIClient } from "@/lib/api-client";
@@ -23,6 +23,13 @@ const BookingListPending = () => {
   const [feedbackScore, setFeedbackScore] = useState(5);
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const [submittedFeedbackBookings, setSubmittedFeedbackBookings] = useState([]);
+  const [completedBookings, setCompletedBookings] = useState([]);
+  const [isProcessingFinish, setIsProcessingFinish] = useState(false);
+  const [processingFinishId, setProcessingFinishId] = useState(null);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [selectedBookingForCompletion, setSelectedBookingForCompletion] = useState(null);
+  const [showPaymentButton, setShowPaymentButton] = useState(false);
+  const [selectedBookingForPayment, setSelectedBookingForPayment] = useState(null);
 
   // Check authentication on component mount
   useEffect(() => {
@@ -38,6 +45,15 @@ const BookingListPending = () => {
       console.error('Error loading submitted feedbacks:', error);
       // If there's an error reading from localStorage, reset it
       localStorage.setItem('submittedFeedbackBookings', '[]');
+    }
+
+    // Load completed bookings from localStorage on mount
+    try {
+      const storedCompletedBookings = JSON.parse(localStorage.getItem('completedBookings') || '[]');
+      setCompletedBookings(storedCompletedBookings);
+    } catch (error) {
+      console.error('Error loading completed bookings:', error);
+      localStorage.setItem('completedBookings', '[]');
     }
   }, []);
 
@@ -271,6 +287,102 @@ const BookingListPending = () => {
     }
   };
 
+  // Handle showing completion modal
+  const handleShowCompletion = (booking) => {
+    // Create booking details without prices
+    const bookingDetails = {
+      bookingId: booking.bookingId,
+      therapistName: booking.therapistName,
+      bookingDate: booking.bookingDate,
+      bookingTime: booking.bookingTime,
+      services: booking.serviceName.map(service => ({
+        name: service.serviceName
+      }))
+    };
+    
+    console.log('Booking details for completion:', bookingDetails);
+    setSelectedBookingForCompletion(bookingDetails);
+    setShowCompletionModal(true);
+  };
+
+  // Handle finish booking
+  const handleFinishBooking = async (bookingId) => {
+    // Check if booking was already completed
+    if (completedBookings.includes(bookingId)) {
+      showToast("This booking has already been completed", "info");
+      return;
+    }
+
+    setIsProcessingFinish(true);
+    setProcessingFinishId(bookingId);
+
+    try {
+      const response = await APIClient.invoke({
+        action: ACTIONS.FINISH_BOOKING,
+        data: { bookingId: bookingId.toString() },
+        options: {
+          preventRedirect: true,
+          secure: true
+        }
+      });
+
+      console.log('Finish booking response:', response);
+
+      if (response && response.success) {
+        // Update localStorage and state with the completed booking
+        const updatedCompletedBookings = [...completedBookings, bookingId];
+        localStorage.setItem('completedBookings', JSON.stringify(updatedCompletedBookings));
+        setCompletedBookings(updatedCompletedBookings);
+        
+        // Show payment button and store booking for payment
+        setSelectedBookingForPayment(selectedBookingForCompletion);
+        setShowPaymentButton(true);
+        
+        showToast("Booking completed successfully! Please proceed to payment.", "success");
+      } else {
+        throw new Error(response?.message || "Failed to complete booking");
+      }
+    } catch (err) {
+      console.error('Error finishing booking:', err);
+      showToast(err.message || "Failed to complete booking. Please try again later.", "error");
+    } finally {
+      setIsProcessingFinish(false);
+      setProcessingFinishId(null);
+    }
+  };
+
+  // Handle payment
+  const handlePayment = async () => {
+    if (selectedBookingForPayment) {
+      try {
+        const response = await APIClient.invoke({
+          action: ACTIONS.PAYMENT,
+          pathParams: { bookingId: selectedBookingForPayment.bookingId.toString() },
+          options: {
+            preventRedirect: true,
+            secure: false
+          }
+        });
+
+        console.log('Payment response:', response);
+
+        if (response) {
+          // Redirect to the VNPay URL in the same window
+          window.location.href = response;
+          
+          // Close the completion modal
+          setShowCompletionModal(false);
+          setShowPaymentButton(false);
+        } else {
+          throw new Error("No payment URL received");
+        }
+      } catch (err) {
+        console.error('Error getting payment URL:', err);
+        showToast(err.message || "Failed to get payment URL. Please try again later.", "error");
+      }
+    }
+  };
+
   // Render authentication required view
   if (!isAuthChecked) {
     return (
@@ -427,21 +539,14 @@ const BookingListPending = () => {
                     )}
                   </button>
                   
-                  <button 
-                    className="complete-button"
-                    onClick={() => handleCompleteBooking(booking)}
-                    disabled={isCompleting}
-                  >
-                    {isCompleting && completingBookingId === booking.bookingId ? (
-                      <>
-                        <FaSpinner className="spinner" /> Completing...
-                      </>
-                    ) : (
-                      <>
-                        <FaCheckCircle className="icon" /> Complete Booking
-                      </>
-                    )}
-                  </button>
+                  {!completedBookings.includes(booking.bookingId) && (
+                    <button
+                      onClick={() => handleShowCompletion(booking)}
+                      className="complete-button"
+                    >
+                      <FaCheckCircle className="icon" /> Complete
+                    </button>
+                  )}
 
                   {!submittedFeedbackBookings.includes(booking.bookingId) && (
                     <button 
@@ -516,6 +621,99 @@ const BookingListPending = () => {
         </div>
       )}
 
+      {showCompletionModal && selectedBookingForCompletion && (
+        <div className="completion-modal">
+          <div className="completion-modal__content">
+            <div className="finish-booking-status">
+              <div className="status-icon">
+                <FaCheckCircle />
+              </div>
+              <h1>Complete Booking #{selectedBookingForCompletion.bookingId}</h1>
+              <p className="status-message">
+                {showPaymentButton 
+                  ? "Booking completed successfully! Please proceed to payment."
+                  : "Please review the booking details before completion."}
+              </p>
+            </div>
+            
+            <div className="booking-details">
+              <h2>Booking Information</h2>
+              
+              {/* Services Section */}
+              <div className="details-item services no-bottom-margin">
+                <span className="label">Services:</span>
+                <div className="services-list">
+                  {selectedBookingForCompletion.services && selectedBookingForCompletion.services.map((service, index) => (
+                    <div key={index} className="service-item">
+                      <span>{service.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Booking Details Section */}
+              <div className="details-item">
+                <span className="label">Therapist:</span>
+                <span className="value">{selectedBookingForCompletion.therapistName}</span>
+              </div>
+              
+              <div className="details-item">
+                <span className="label">Date:</span>
+                <span className="value">{formatDate(selectedBookingForCompletion.bookingDate)}</span>
+              </div>
+              
+              <div className="details-item">
+                <span className="label">Time:</span>
+                <span className="value">{selectedBookingForCompletion.bookingTime}</span>
+              </div>
+            </div>
+            
+            <div className="actions">
+              {showPaymentButton ? (
+                <>
+                  <button 
+                    className="cancel-button"
+                    onClick={() => {
+                      setShowCompletionModal(false);
+                      setShowPaymentButton(false);
+                    }}
+                  >
+                    Close
+                  </button>
+                  <button 
+                    className="payment-button"
+                    onClick={handlePayment}
+                  >
+                    <FaMoneyBillWave className="icon" /> Proceed to Payment
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button 
+                    className="cancel-button"
+                    onClick={() => setShowCompletionModal(false)}
+                    disabled={isProcessingFinish}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="complete-button"
+                    onClick={() => handleFinishBooking(selectedBookingForCompletion.bookingId)}
+                    disabled={isProcessingFinish}
+                  >
+                    {isProcessingFinish ? (
+                      <><FaSpinner className="spinner" /> Processing...</>
+                    ) : (
+                      <><FaCheckCircle className="icon" /> Complete Booking</>
+                    )}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         /* Existing styles... */
         
@@ -545,30 +743,6 @@ const BookingListPending = () => {
         }
         
         .cancel-button:disabled {
-          background-color: #95a5a6;
-          cursor: not-allowed;
-        }
-        
-        .complete-button {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          background-color: #2ecc71;
-          color: white;
-          border: none;
-          padding: 8px 15px;
-          border-radius: 4px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        
-        .complete-button:hover {
-          background-color: #27ae60;
-        }
-        
-        .complete-button:disabled {
           background-color: #95a5a6;
           cursor: not-allowed;
         }
@@ -664,6 +838,47 @@ const BookingListPending = () => {
           margin-top: 20px;
         }
 
+        .submit-button {
+          background-color: #4CAF50;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 4px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .submit-button:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+
+        .complete-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          background-color: #2ecc71;
+          color: white;
+          border: none;
+          padding: 8px 15px;
+          border-radius: 4px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .complete-button:hover {
+          background-color: #27ae60;
+        }
+
+        .complete-button:disabled {
+          background-color: #95a5a6;
+          cursor: not-allowed;
+        }
+
         .feedback-button {
           display: inline-flex;
           align-items: center;
@@ -683,21 +898,210 @@ const BookingListPending = () => {
           background-color: #ffb300;
         }
 
-        .submit-button {
-          background-color: #4CAF50;
-          color: white;
+        .completion-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .completion-modal__content {
+          background-color: white;
+          border-radius: 10px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+          padding: 40px;
+          width: 90%;
+          max-width: 800px;
+        }
+
+        .finish-booking-status {
+          text-align: center;
+          margin-bottom: 40px;
+          padding: 20px;
+          background: #e8f5e9;
+          border-radius: 8px;
+        }
+
+        .status-icon {
+          font-size: 64px;
+          color: #4CAF50;
+          margin-bottom: 20px;
+        }
+
+        .status-message {
+          font-size: 18px;
+          color: #2E7D32;
+          margin-top: 10px;
+        }
+
+        h1 {
+          font-size: 32px;
+          margin-bottom: 16px;
+          color: #1B5E20;
+        }
+
+        .booking-details {
+          background-color: #f9f9f9;
+          border-radius: 8px;
+          padding: 25px;
+          margin: 30px 0;
+        }
+
+        .booking-details h2 {
+          font-size: 20px;
+          margin-bottom: 20px;
+          color: #333;
+          text-align: center;
+        }
+
+        .details-item {
+          display: flex;
+          margin-bottom: 15px;
+          padding-bottom: 15px;
+          border-bottom: 1px solid #eee;
+        }
+
+        .details-item.no-bottom-margin {
+          margin-bottom: 0;
+          padding-bottom: 5px;
+        }
+
+        .details-item.no-top-padding {
+          padding-top: 5px;
+        }
+
+        .label {
+          font-weight: 600;
+          color: #666;
+          width: 150px;
+          display: flex;
+          align-items: center;
+        }
+
+        .value {
+          flex: 1;
+          color: #333;
+        }
+
+        .icon {
+          margin-right: 8px;
+        }
+
+        .services-list {
+          flex: 1;
+          width: 100%;
+        }
+
+        .service-item {
+          display: flex;
+          padding: 8px 0;
+          margin-bottom: 0;
+          border-bottom: 1px dashed #e0e0e0;
+        }
+
+        .service-item:last-of-type {
+          margin-bottom: 5px;
+          border-bottom: none;
+        }
+
+        .actions {
+          margin-top: 30px;
+          display: flex;
+          justify-content: flex-end;
+          gap: 15px;
+        }
+
+        .cancel-button {
+          padding: 12px 24px;
           border: none;
-          padding: 10px 20px;
-          border-radius: 4px;
+          border-radius: 6px;
+          font-size: 16px;
+          font-weight: 500;
           cursor: pointer;
+          background-color: #e74c3c;
+          color: white;
+          transition: all 0.3s ease;
+        }
+
+        .cancel-button:hover {
+          background-color: #c0392b;
+        }
+
+        .complete-button {
           display: inline-flex;
           align-items: center;
           gap: 8px;
+          padding: 12px 24px;
+          border: none;
+          border-radius: 6px;
+          font-size: 16px;
+          font-weight: 500;
+          cursor: pointer;
+          background-color: #4CAF50;
+          color: white;
+          transition: all 0.3s ease;
         }
 
-        .submit-button:disabled {
-          background-color: #ccc;
+        .complete-button:hover {
+          background-color: #388E3C;
+        }
+
+        .complete-button:disabled {
+          background-color: #95a5a6;
           cursor: not-allowed;
+        }
+
+        .spinner {
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+          .completion-modal__content {
+            padding: 30px 20px;
+          }
+
+          .details-item {
+            flex-direction: column;
+          }
+
+          .label {
+            width: 100%;
+            margin-bottom: 5px;
+          }
+        }
+
+        .payment-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 24px;
+          border: none;
+          border-radius: 6px;
+          font-size: 16px;
+          font-weight: 500;
+          cursor: pointer;
+          background-color: #4CAF50;
+          color: white;
+          transition: all 0.3s ease;
+        }
+
+        .payment-button:hover {
+          background-color: #388E3C;
+        }
+
+        .payment-button .icon {
+          font-size: 18px;
         }
       `}</style>
     </div>

@@ -9,7 +9,6 @@ const TherapistList = () => {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [filterExperience, setFilterExperience] = useState(0);
-  const [filterAvailability, setFilterAvailability] = useState("all"); // "all", "available", "unavailable"
 
   useEffect(() => {
     console.log("TherapistList: Fetching therapists...");
@@ -41,7 +40,7 @@ const TherapistList = () => {
       .replace(/[đĐ]/g, d => d === 'đ' ? 'd' : 'D'); // Replace Vietnamese d/D
   };
 
-  // Filter therapists based on search term, experience, and availability
+  // Filter therapists based on search term and experience
   const filteredTherapists = therapists ? therapists.filter(therapist => {
     // Filter by search term (prioritize fullName)
     const fullName = therapist.fullName || therapist.name || "";
@@ -71,15 +70,7 @@ const TherapistList = () => {
     const experience = therapist.yearsOfExperience || therapist.yearExperience || therapist.experience || 0;
     const matchesExperience = filterExperience === 0 || experience >= filterExperience;
     
-    // Filter by availability
-    const status = therapist.status;
-    const isActive = status === true || status === "ACTIVE";
-    const matchesAvailability = 
-      filterAvailability === "all" || 
-      (filterAvailability === "available" && isActive) || 
-      (filterAvailability === "unavailable" && !isActive);
-    
-    return matchesSearch && matchesExperience && matchesAvailability;
+    return matchesSearch && matchesExperience;
   }) : [];
 
   // Handle therapist selection
@@ -102,7 +93,6 @@ const TherapistList = () => {
   const clearFilters = () => {
     setSearchTerm("");
     setFilterExperience(0);
-    setFilterAvailability("all");
   };
 
   // Render loading state
@@ -162,19 +152,6 @@ const TherapistList = () => {
               <option value={10}>10+ years</option>
             </select>
           </div>
-          
-          {/* Availability filter */}
-          <div className="experience-filter">
-            <label>Availability:</label>
-            <select 
-              value={filterAvailability} 
-              onChange={(e) => setFilterAvailability(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="available">Available</option>
-              <option value="unavailable">Unavailable</option>
-            </select>
-          </div>
         </div>
         
         <div className="therapist-list__no-results">
@@ -221,19 +198,7 @@ const TherapistList = () => {
             </select>
           </div>
           
-          <div className="experience-filter">
-            <label>Availability:</label>
-            <select 
-              value={filterAvailability} 
-              onChange={(e) => setFilterAvailability(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="available">Available</option>
-              <option value="unavailable">Unavailable</option>
-            </select>
-          </div>
-          
-          {(searchTerm || filterExperience > 0 || filterAvailability !== "all") && (
+          {(searchTerm || filterExperience > 0) && (
             <button 
               className="clear-filters-button"
               onClick={clearFilters}
