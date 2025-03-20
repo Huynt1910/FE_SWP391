@@ -48,7 +48,7 @@ export const END_POINTS = {
   getActiveTherapists: {
     path: "/therapists/activeTherapists",
     method: "GET",
-    secure: true,
+    secure: false
   },
   getTherapistsByService: {
     path: "/booking/therapists",
@@ -76,6 +76,7 @@ export const END_POINTS = {
   getVouchers: { path: "/vouchers", method: "GET", secure: false },
   getAllTherapists: { path: "/therapists", method: "GET", secure: false },
   getAllServices: { path: "/services", method: "GET", secure: false },
+  getActiveServices: { path: "/services/active", method: "GET", secure: false },
   getServiceById: {
     path: "/services/:id",
     method: "GET",
@@ -110,6 +111,12 @@ export const END_POINTS = {
     method: "POST",
     secure: true,
   },
+  payment: {
+    path: "/payment/:bookingId",
+    method: "GET",
+    parameterized: true,
+    secure: false,
+  },
 };
 
 export const ACTIONS = {
@@ -134,8 +141,14 @@ export const ACTIONS = {
   GET_VOUCHERS: "getVouchers",
   GET_ALL_THERAPISTS: "getAllTherapists",
   GET_ALL_SERVICES: "getAllServices",
+  GET_ACTIVE_SERVICES: "getActiveServices",
   GET_SERVICE_BY_ID: "getServiceById",
   REFRESH_TOKEN: "refreshToken",
+  GET_CUSTOMER_PENDING_BOOKINGS: "getCustomerPendingBookings",
+  DELETE_BOOKING: "deleteBooking",
+  FINISH_BOOKING: "finishBooking",
+  SUBMIT_FEEDBACK: "submitFeedback",
+  PAYMENT: "payment",
 };
 
 export const API_URL =

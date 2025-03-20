@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { FaStar, FaCalendarAlt, FaCircle, FaUserMd, FaFilter, FaTimes, FaLock } from "react-icons/fa";
+import { FaStar, FaCalendarAlt, FaCircle, FaUserMd, FaFilter, FaTimes } from "react-icons/fa";
 import useListAllTherapist from "@/auth/hook/useListAllTherapist";
-import { isAuthenticated } from "@/utils/auth";
 
 const TherapistList = () => {
   const router = useRouter();
@@ -10,25 +9,13 @@ const TherapistList = () => {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [filterExperience, setFilterExperience] = useState(0);
-  const [filterAvailability, setFilterAvailability] = useState("all"); // "all", "available", "unavailable"
-  const [isAuthChecked, setIsAuthChecked] = useState(false); // Default to false to check authentication
 
-  // Check authentication on component mount
   useEffect(() => {
-    const isUserAuthenticated = isAuthenticated();
-    console.log("Therapist List: User authentication status:", isUserAuthenticated);
-    setIsAuthChecked(isUserAuthenticated);
+    console.log("TherapistList: Fetching therapists...");
+    getAllTherapists().then(result => {
+      console.log("TherapistList: Therapists fetched, count:", result?.length || 0);
+    });
   }, []);
-
-  // Fetch all therapists on component mount and when auth status changes
-  useEffect(() => {
-    if (isAuthChecked) {
-      console.log("TherapistList: Fetching therapists...");
-      getAllTherapists().then(result => {
-        console.log("TherapistList: Therapists fetched, count:", result?.length || 0);
-      });
-    }
-  }, [isAuthChecked]);
 
   // Log data changes
   useEffect(() => {
@@ -53,7 +40,7 @@ const TherapistList = () => {
       .replace(/[đĐ]/g, d => d === 'đ' ? 'd' : 'D'); // Replace Vietnamese d/D
   };
 
-  // Filter therapists based on search term, experience, and availability
+  // Filter therapists based on search term and experience
   const filteredTherapists = therapists ? therapists.filter(therapist => {
     // Filter by search term (prioritize fullName)
     const fullName = therapist.fullName || therapist.name || "";
@@ -83,15 +70,7 @@ const TherapistList = () => {
     const experience = therapist.yearsOfExperience || therapist.yearExperience || therapist.experience || 0;
     const matchesExperience = filterExperience === 0 || experience >= filterExperience;
     
-    // Filter by availability
-    const status = therapist.status;
-    const isActive = status === true || status === "ACTIVE";
-    const matchesAvailability = 
-      filterAvailability === "all" || 
-      (filterAvailability === "available" && isActive) || 
-      (filterAvailability === "unavailable" && !isActive);
-    
-    return matchesSearch && matchesExperience && matchesAvailability;
+    return matchesSearch && matchesExperience;
   }) : [];
 
   // Handle therapist selection
@@ -114,36 +93,7 @@ const TherapistList = () => {
   const clearFilters = () => {
     setSearchTerm("");
     setFilterExperience(0);
-    setFilterAvailability("all");
   };
-
-  // Handler for login button
-  const handleLogin = () => {
-    router.push("/login?redirect=/therapists");
-  };
-
-  // Render authentication required view
-  if (!isAuthChecked) {
-    return (
-      <div className="service">
-        <div className="wrapper">
-          <div className="therapist-list__error">
-            <div className="error-icon">
-              <FaLock size={24} />
-            </div>
-            <h3>Login Required</h3>
-            <p>You need to be logged in to view our therapists.</p>
-            <button 
-              className="login-button"
-              onClick={() => router.push('/login')}
-            >
-              Log In
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Render loading state
   if (loading) {
@@ -202,19 +152,6 @@ const TherapistList = () => {
               <option value={10}>10+ years</option>
             </select>
           </div>
-          
-          {/* Availability filter */}
-          <div className="experience-filter">
-            <label>Availability:</label>
-            <select 
-              value={filterAvailability} 
-              onChange={(e) => setFilterAvailability(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="available">Available</option>
-              <option value="unavailable">Unavailable</option>
-            </select>
-          </div>
         </div>
         
         <div className="therapist-list__no-results">
@@ -261,17 +198,14 @@ const TherapistList = () => {
             </select>
           </div>
           
-          <div className="therapist-filters__select">
-            <label>Availability:</label>
-            <select 
-              value={filterAvailability} 
-              onChange={(e) => setFilterAvailability(e.target.value)}
+          {(searchTerm || filterExperience > 0) && (
+            <button 
+              className="clear-filters-button"
+              onClick={clearFilters}
             >
-              <option value="all">All</option>
-              <option value="available">Available</option>
-              <option value="unavailable">Unavailable</option>
-            </select>
-          </div>
+              <FaTimes size={12} /> Clear
+            </button>
+          )}
         </div>
       </div>
 
