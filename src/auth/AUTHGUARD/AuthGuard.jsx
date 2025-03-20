@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { getCookie, deleteCookie } from "cookies-next";
 
@@ -20,6 +20,8 @@ export const AuthGuard = ({ children, requiredRole }) => {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const token = getCookie("token");
+  const userRole = getCookie("userRole");
 
   useEffect(() => {
     const isAdminPath = router.pathname.startsWith("/admin");
