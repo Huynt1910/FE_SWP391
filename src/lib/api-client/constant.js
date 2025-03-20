@@ -87,11 +87,28 @@ export const END_POINTS = {
     method: "POST",
     secure: true,
   },
-  feedback: {
-    getByTherapistId: {
-      path: "/feedback/therapist",
-      method: RequestMethod.GET,
-    },
+  getCustomerPendingBookings: {
+    path: "/booking/customer/:userId/pending",
+    method: "GET",
+    parameterized: true,
+    secure: false,
+  },
+  deleteBooking: {
+    path: "/booking/delete/:bookingId",
+    method: "DELETE",
+    parameterized: true,
+    secure: true,
+  },
+  refreshToken: {
+    path: "/authentication/refresh-token",
+    method: "POST",
+    parameterized: true,
+    secure: true,
+  },
+  submitFeedback: {
+    path: "/feedback",
+    method: "POST",
+    secure: true,
   },
 };
 
