@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FaArrowLeft, FaArrowRight, FaCheck, FaClipboardList } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaCheck, FaClipboardList, FaClock } from "react-icons/fa";
 import { showToast } from "@/utils/toast"; // Adjust path as needed
+import useListAllServices from "@/auth/hook/useListAllServices";
+import { useRouter } from "next/router";
 
 
 // Enhanced survey questions with more details
@@ -14,17 +16,20 @@ const surveyQuestions = [
       { 
         id: "basic", 
         value: "Basic", 
-        description: "Cleansing and occasional moisturizing" 
+        description: "Cleansing and occasional moisturizing",
+        serviceId: 1
       },
       { 
         id: "regular", 
         value: "Regular", 
-        description: "Daily cleansing, toning, and moisturizing" 
+        description: "Daily cleansing, toning, and moisturizing",
+        serviceId: 1
       },
       { 
         id: "advanced", 
         value: "Advanced", 
-        description: "Complete routine with specialized products and treatments" 
+        description: "Complete routine with specialized products and treatments",
+        serviceId: 1
       }
     ],
     validation: (value) => value !== "",
@@ -40,17 +45,20 @@ const surveyQuestions = [
       { 
         id: "mild", 
         value: "Mild", 
-        description: "Occasional breakouts, minor concerns" 
+        description: "Occasional breakouts, minor concerns",
+        serviceId: 2
       },
       { 
         id: "moderate", 
         value: "Moderate", 
-        description: "Regular breakouts, visible concerns" 
+        description: "Regular breakouts, visible concerns",
+        serviceId: 2
       },
       { 
         id: "severe", 
         value: "Severe", 
-        description: "Persistent breakouts, significant concerns" 
+        description: "Persistent breakouts, significant concerns",
+        serviceId: 2
       }
     ],
     validation: (value) => value !== "",
@@ -66,27 +74,32 @@ const surveyQuestions = [
       { 
         id: "dry", 
         value: "Dry", 
-        description: "Feels tight, may have flaky patches" 
+        description: "Feels tight, may have flaky patches",
+        serviceId: 3
       },
       { 
         id: "oily", 
         value: "Oily", 
-        description: "Shiny appearance, especially in T-zone" 
+        description: "Shiny appearance, especially in T-zone",
+        serviceId: 4
       },
       { 
         id: "combination", 
         value: "Combination", 
-        description: "Oily in some areas, dry in others" 
+        description: "Oily in some areas, dry in others",
+        serviceId: 5
       },
       { 
         id: "normal", 
         value: "Normal", 
-        description: "Well-balanced, neither too oily nor too dry" 
+        description: "Well-balanced, neither too oily nor too dry",
+        serviceId: 6
       },
       { 
         id: "sensitive", 
         value: "Sensitive", 
-        description: "Easily irritated, may redden or sting with products" 
+        description: "Easily irritated, may redden or sting with products",
+        serviceId: 7
       }
     ],
     validation: (value) => value !== "",
@@ -99,11 +112,11 @@ const surveyQuestions = [
     text: "What are your primary skin concerns? (Select all that apply)",
     type: "checkbox",
     options: [
-      { id: "acne", value: "Acne", description: "Breakouts and blemishes" },
-      { id: "aging", value: "Aging", description: "Fine lines and wrinkles" },
-      { id: "pigmentation", value: "Pigmentation", description: "Dark spots or uneven tone" },
-      { id: "dryness", value: "Dryness", description: "Flaky or tight feeling skin" },
-      { id: "sensitivity", value: "Sensitivity", description: "Easily irritated skin" }
+      { id: "acne", value: "Acne", description: "Breakouts and blemishes", serviceId: 2 },
+      { id: "aging", value: "Aging", description: "Fine lines and wrinkles", serviceId: 3 },
+      { id: "pigmentation", value: "Pigmentation", description: "Dark spots or uneven tone", serviceId: 4 },
+      { id: "dryness", value: "Dryness", description: "Flaky or tight feeling skin", serviceId: 5 },
+      { id: "sensitivity", value: "Sensitivity", description: "Easily irritated skin", serviceId: 6 }
     ],
     validation: (value) => Array.isArray(value) && value.length > 0,
     name: "skin_concerns",
@@ -120,6 +133,100 @@ function SurveyForm() {
   const [formData, setFormData] = useState({});
   const [isPending, setIsPending] = useState(false);
   const [surveyCompleted, setSurveyCompleted] = useState(false);
+  const [recommendedServices, setRecommendedServices] = useState([]);
+  
+  // Service data
+  const { loading: servicesLoading, error: servicesError, data: services, getAllServices } = useListAllServices();
+  const router = useRouter();
+
+  // Fetch services when form is completed
+  useEffect(() => {
+    if (surveyCompleted) {
+      getAllServices().then((fetchedServices) => {
+        const recommendations = getServiceRecommendations(formData, fetchedServices);
+        setRecommendedServices(recommendations);
+      });
+    }
+  }, [surveyCompleted]);
+
+  // Get service recommendations based on survey answers
+  const getServiceRecommendations = (answers, availableServices) => {
+    if (!availableServices || availableServices.length === 0) {
+      return [];
+    }
+
+    // Track recommended service IDs
+    const recommendedServiceIds = new Set();
+
+    // Map survey answers to service IDs
+    Object.entries(answers).forEach(([questionName, answer]) => {
+      // Find the question
+      const question = surveyQuestions.find(q => q.name === questionName);
+      
+      if (!question) return;
+      
+      if (question.type === "radio") {
+        // For radio questions, find the selected option
+        const selectedOption = question.options.find(opt => opt.value === answer);
+        if (selectedOption && selectedOption.serviceId) {
+          recommendedServiceIds.add(selectedOption.serviceId);
+        }
+      } 
+      else if (question.type === "checkbox" && Array.isArray(answer)) {
+        // For checkbox questions, add service IDs for all selected options
+        answer.forEach(selectedValue => {
+          const option = question.options.find(opt => opt.value === selectedValue);
+          if (option && option.serviceId) {
+            recommendedServiceIds.add(option.serviceId);
+          }
+        });
+      }
+    });
+
+    // Filter available services to only include recommended ones
+    const recommendations = availableServices.filter(service => 
+      recommendedServiceIds.has(service.id)
+    );
+
+    // If no specific recommendations, return top 3 services
+    if (recommendations.length === 0 && availableServices.length > 0) {
+      return availableServices.slice(0, 3);
+    }
+
+    return recommendations;
+  };
+
+  // Navigate to service details
+  const navigateToService = (serviceId) => {
+    router.push(`/service/${serviceId}`);
+  };
+
+  // Book a service directly
+  const bookService = (service) => {
+    // Store selected service in localStorage
+    localStorage.setItem('selectedService', JSON.stringify(service));
+    // Redirect to booking page
+    router.push('/booking?step=2');
+    showToast(`Booking ${service.name}...`, "success");
+  };
+
+  // Book the featured LED Light Therapy service
+  const bookFeaturedService = () => {
+    // Create a mock service object for LED Light Therapy
+    const ledTherapyService = {
+      id: 101,
+      name: "LED Light Therapy",
+      description: "The Dermalux LED machine uses clinically proven RED, BLUE and Near Infrared Light that penetrates into different layers of the skin to target multiple skin concerns.",
+      price: 122222,
+      duration: "1:00:00",
+      category: "General"
+    };
+    
+    // Store the service and redirect
+    localStorage.setItem('selectedService', JSON.stringify(ledTherapyService));
+    router.push('/booking?step=2');
+    showToast("Booking LED Light Therapy...", "success");
+  };
 
   // Handle radio input change
   const handleRadioChange = (questionName, value) => {
@@ -159,19 +266,30 @@ function SurveyForm() {
     // If we're on a question step, validate before proceeding
     if (currentStep <= surveyQuestions.length) {
       if (!currentQuestion.validation(formData[currentQuestion.name])) {
-        showToast.error(`Please answer the question before proceeding`);
+        showToast("Please answer the question before proceeding", "error");
         return;
       }
     }
     
     if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-      window.scrollTo(0, 0);
-      
-      // If moving to results step, mark survey as completed
+      // If moving to results step, mark survey as completed and fetch recommendations
       if (currentStep === surveyQuestions.length) {
         setSurveyCompleted(true);
+        console.log("Survey completed with answers:", formData);
+        
+        // Start loading service recommendations
+        getAllServices().then((fetchedServices) => {
+          console.log("Fetched services for recommendations:", fetchedServices?.length || 0);
+          const recommendations = getServiceRecommendations(formData, fetchedServices);
+          console.log("Generated recommendations:", recommendations);
+          setRecommendedServices(recommendations);
+        }).catch(err => {
+          console.error("Failed to fetch service recommendations:", err);
+        });
       }
+      
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
     }
   };
 
@@ -337,10 +455,7 @@ function SurveyForm() {
       <div className="survey-results">
         <div className="results-header">
           <h4>Your Skin Analysis Results</h4>
-          <div className="survey-id">Survey ID: SV{Math.floor(100000 + Math.random() * 900000)}</div>
         </div>
-        
-        {/* <Recommendation answers={formData} /> */}
         
         <div className="results-summary">
           <h5>Your Survey Responses</h5>
@@ -368,26 +483,115 @@ function SurveyForm() {
           })}
         </div>
         
-        <div className="next-steps">
-          <h5>Recommended Next Steps</h5>
-          <ul>
-            <li>Book a consultation with one of our skincare specialists</li>
-            <li>Explore our recommended products for your skin type</li>
-            <li>Learn more about treatments for your specific concerns</li>
-          </ul>
+        <div className="recommended-services">
+          <h5>Recommended Services Based On Your Answers</h5>
           
+          {servicesLoading ? (
+            <div className="loading-indicator">
+              <div className="spinner"></div>
+              <p>Loading recommendations...</p>
+            </div>
+          ) : servicesError ? (
+            <div className="error-message">
+              <p>Unable to load recommendations. Please try again later.</p>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => getAllServices()}
+              >
+                Retry
+              </button>
+            </div>
+          ) : recommendedServices.length === 0 ? (
+            <div className="no-recommendations">
+              <p>No specific recommendations found based on your answers.</p>
+              <p>Browse our services to find the perfect treatment for you.</p>
+              <button 
+                className="btn btn-primary"
+                onClick={() => router.push('/service')}
+              >
+                Browse All Services
+              </button>
+            </div>
+          ) : (
+            <div className="service-recommendations">
+              {recommendedServices.slice(0, 2).map((service, index) => (
+                <div className="service-item" key={service.id || index}>
+                  <div className="service-image">
+                  <img 
+          src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
+          alt={service.name || "Service"} 
+          onError={(e) => {
+            e.target.src = "/assets/img/services/placeholder.jpg";
+          }}
+        />
+                  </div>
+                  <div className="service-content">
+                    <div className="service-name">{service.name}</div>
+                    <div className="service-category">{service.category}</div>
+                    <div className="service-description">{service.description}</div>
+                    <div className="service-meta">
+                      <div className="service-price">{service.price?.toLocaleString('vi-VN')} ₫</div>
+                      <div className="service-duration">
+                        <FaClock className="icon-clock" /> {service.duration?.replace(/:\d+$/, '').replace(':', 'h ')}m
+                      </div>
+                    </div>
+                    <button 
+                      className="book-now-btn"
+                      onClick={() => bookService(service)}
+                    >
+                      Book Now
+                    </button>
+                  </div>
+                </div>
+              ))}
+              
+              {recommendedServices.length > 2 && (
+                <div className="additional-services">
+                  <h6>Additional Recommended Services</h6>
+                  
+                  {recommendedServices.slice(2).map((service, index) => (
+                    <div className="service-item" key={service.id || `additional-${index}`}>
+                       <div className="service-image">
+                  <img 
+          src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
+          alt={service.name || "Service"} 
+          onError={(e) => {
+            e.target.src = "/assets/img/services/placeholder.jpg";
+          }}
+        />
+                  </div>
+                      <div className="service-content">
+                        <div className="service-name">{service.name}</div>
+                        <div className="service-category">{service.category}</div>
+                        <div className="service-description">{service.description}</div>
+                        <div className="service-meta">
+                          <div className="service-price">{service.price?.toLocaleString('vi-VN')} ₫</div>
+                          <div className="service-duration">
+                            <FaClock className="icon-clock" /> {service.duration?.replace(/:\d+$/, '').replace(':', 'h ')}m
+                          </div>
+                        </div>
+                        <button 
+                          className="book-now-btn"
+                          onClick={() => bookService(service)}
+                        >
+                          Book Now
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        <div className="next-steps">
           <div className="action-buttons">
             <button 
               className="btn btn-primary"
               onClick={() => window.location.href = '/booking'}
             >
               Book a Consultation
-            </button>
-            <button 
-              className="btn btn-secondary"
-              onClick={() => window.location.href = '/shop'}
-            >
-              Shop Recommended Products
             </button>
           </div>
         </div>
@@ -396,70 +600,63 @@ function SurveyForm() {
   };
 
   return (
-    <>
-      <div className="survey-service">
-        <div className="wrapper">
-          <div
-            className="survey-form js-img"
-            style={{
-              backgroundImage: `url('/assets/img/survey-form__bg.png')`,
-            }}
-          >
-            <form onSubmit={(e) => e.preventDefault()}>
-              <h3>Skin Assessment Survey</h3>
+    <div className="survey-service">
+      <div className="wrapper">
+        <div className="survey-form">
+          <form onSubmit={(e) => e.preventDefault()}>
+            <h3>Skin Assessment Survey</h3>
+            
+            {/* Step indicators */}
+            {renderStepIndicators()}
+            
+            {/* Current step content */}
+            <div className="survey-content">
+              {currentStep <= surveyQuestions.length ? (
+                renderCurrentQuestion()
+              ) : (
+                renderResults()
+              )}
+            </div>
+            
+            {/* Navigation buttons */}
+            <div className="survey-navigation">
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={prevStep}
+                >
+                  <FaArrowLeft /> Back
+                </button>
+              )}
               
-              {/* Step indicators */}
-              {renderStepIndicators()}
-              
-              {/* Current step content */}
-              <div className="survey-content">
-                {currentStep <= surveyQuestions.length ? (
-                  renderCurrentQuestion()
-                ) : (
-                  renderResults()
-                )}
-              </div>
-              
-              {/* Navigation buttons */}
-              <div className="survey-navigation">
-                {currentStep > 1 && (
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={prevStep}
-                  >
-                    <FaArrowLeft /> Back
-                  </button>
-                )}
-                
-                {currentStep < totalSteps ? (
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={nextStep}
-                  >
-                    Next <FaArrowRight />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="btn btn-success"
-                    onClick={restartSurvey}
-                    disabled={isPending}
-                  >
-                    Take Survey Again
-                  </button>
-                )}
-              </div>
+              {currentStep < totalSteps ? (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={nextStep}
+                >
+                  Next <FaArrowRight />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-success"
+                  onClick={restartSurvey}
+                  disabled={isPending}
+                >
+                  Take Survey Again
+                </button>
+              )}
+            </div>
 
-              <div className="survey-form__bottom">
-                <a onClick={() => window.location.href = "/"}>Cancel and return to Home</a>
-              </div>
-            </form>
-          </div>
+            <div className="survey-form__bottom">
+              <a onClick={() => window.location.href = "/"}>Cancel and return to Home</a>
+            </div>
+          </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

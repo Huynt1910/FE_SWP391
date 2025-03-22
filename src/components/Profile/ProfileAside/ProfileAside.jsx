@@ -5,7 +5,7 @@ export const ProfileAside = () => {
   const recentlyViewed = [...productData].slice(0, 3);
   return (
     <>
-      <div className="profile-aside">
+      {/* <div className="profile-aside">
         <div className="profile-aside__subscribe">
           <h3>Stay in touch</h3>
           <div className="box-field">
@@ -61,7 +61,7 @@ export const ProfileAside = () => {
             get now!
           </Link>
         </div>
-      </div>
+      </div> */}
     </>
   );
 };

@@ -18,9 +18,9 @@ export default function Home() {
       {/* <BrandLogo /> */}
       {/* <Discount /> */}
       <Advantage />
-      <TopCategories />
+      {/* <TopCategories /> */}
       <Info />
-      <NewArrivals />
+      {/* <NewArrivals /> */}
       <LatestNews />
       <Subscribe />
     </Layout>

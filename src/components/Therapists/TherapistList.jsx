@@ -225,7 +225,7 @@ const TherapistList = () => {
             const specialization = therapist.specialization || therapist.specialty || "Skin Care Specialist";
             const role = therapist.role || therapist.position || "";
             const experience = therapist.yearsOfExperience || therapist.yearExperience || therapist.experience || 0;
-            const rating = therapist.rating || 4.5;
+            // const rating = therapist.rating || 4.5;
             const bio = therapist.bio || therapist.description || "Specialized in providing exceptional skin care treatments tailored to individual needs.";
             const status = therapist.status;
             const isActive = status === true || status === "ACTIVE";
@@ -265,9 +265,9 @@ const TherapistList = () => {
                       </p>
                     )}
                     
-                    <p className="experience">{experience} years experience</p>
+                    {/* <p className="experience">{experience} years experience</p> */}
                     
-                    <div className="rating">
+                    {/* <div className="rating">
                       {Array(5).fill().map((_, i) => (
                         <FaStar 
                           key={i} 
@@ -275,7 +275,7 @@ const TherapistList = () => {
                         />
                       ))}
                       <span className="rating-value">{rating}</span>
-                    </div>
+                    </div> */}
                   </div>
                   
                   <div className="therapist-bio">

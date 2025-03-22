@@ -26,7 +26,7 @@ export const Profile = () => {
                     onClick={() => setActiveTab("bookings")}
                     className={activeTab === "bookings" ? "active" : ""}
                   >
-                    My Bookings Pending
+                    My Booking 
                   </li>
                 </ul>
 

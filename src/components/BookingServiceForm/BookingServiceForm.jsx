@@ -197,28 +197,24 @@ export const BookingServiceForm = () => {
       if (selectedTherapist) {
         try {
           setLoading(true);
+        
           
-          // Skip using the problematic API call for now
-          console.log(`Skip API call for therapist ${selectedTherapist.id}, using direct dates`);
-          
-          // Generate dates for the next 14 days as a workaround
+          // Generate dates for the next 7 days as a workaround
           const dates = [];
           const today = new Date();
           
-          for (let i = 1; i <= 14; i++) {
+          for (let i = 1; i <= 7; i++) {
             const date = new Date(today);
             date.setDate(today.getDate() + i);
             
-            // Skip weekends (0 = Sunday, 6 = Saturday)
             const dayOfWeek = date.getDay();
-            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
               dates.push({
                 date: date.toISOString().split('T')[0],
                 available: true,
                 shifts: [1],
                 therapistName: selectedTherapist.fullName || selectedTherapist.name || "Therapist"
               });
-            }
+            
           }
           
           console.log(`Generated ${dates.length} available dates for therapist ${selectedTherapist.id}`);
