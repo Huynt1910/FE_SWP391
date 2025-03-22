@@ -1,47 +1,45 @@
 import React from 'react';
-import { FaArrowLeft, FaArrowRight, FaUser, FaCircle, FaExclamationTriangle, FaRandom } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaUser, FaCircle, FaExclamationTriangle, FaUserMd, FaCalendarAlt, FaClock } from 'react-icons/fa';
 import Link from 'next/link';
 import { isAuthenticated } from '@/utils/auth';
 
 const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, onNext, onPrev, loading, error }) => {
+  // Format role for display
+  const formatRole = (role) => {
+    if (!role) return "";
+    
+    // Convert SNAKE_CASE to Title Case
+    return role
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   // Function to render stars based on rating
   const renderStars = (rating) => {
     return (
       <div className="stars">
-        <span className="star">★</span>
-        <span className="star">★</span>
-        <span className="star">★</span>
-        <span className="star">★</span>
-        <span className="star">★</span>
-        <span className="rating-value">{rating || 4.5}</span>
+        {Array(5).fill().map((_, i) => (
+          <span key={i} className={`star ${i < Math.floor(rating) ? 'filled' : ''}`}>★</span>
+        ))}
+        <span className="rating-value">{rating}</span>
       </div>
     );
-  };
-
-  // Function to select a random therapist automatically
-  const autoSelectBestTherapist = () => {
-    if (therapists && therapists.length > 0) {
-      // Select a random therapist instead of the highest-rated one
-      const randomIndex = Math.floor(Math.random() * therapists.length);
-      const randomTherapist = therapists[randomIndex];
-      
-      onSelectTherapist(randomTherapist);
-    }
   };
 
   // Render loading state
   if (loading) {
     return (
-      <div className="book-appointment">
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Finding therapists for your selected services...</p>
+      <div className="booking-service-form">
+        <div className="service-selection__loading">
+          <div className="loading-icon"></div>
+          <p>Finding available therapists for your selected services...</p>
         </div>
         
         <div className="booking-actions">
           <div className="booking-actions__left">
             <button className="booking-actions__prev" onClick={onPrev}>
-              <FaArrowLeft className="icon" /> BACK
+              <FaArrowLeft className="icon" /> Back
             </button>
           </div>
         </div>
@@ -52,106 +50,90 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
   // Render error state
   if (error) {
     return (
-      <div className="book-appointment">
-        <div className="error-container">
+      <div className="booking-service-form">
+        <div className="service-selection__error">
+          <div className="error-icon">
+            <FaExclamationTriangle className="error-x" />
+          </div>
           <h3>Error Loading Therapists</h3>
           <p>{error}</p>
-          <button className="btn-primary" onClick={() => window.location.reload()}>
+          <button className="booking-actions__prev" onClick={() => window.location.reload()}>
             Try Again
           </button>
-        </div>
-        
-        <div className="booking-actions">
-          <div className="booking-actions__left">
-            <button className="booking-actions__prev" onClick={onPrev}>
-              <FaArrowLeft className="icon" /> BACK
-            </button>
-          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="book-appointment">
-      {/* Therapist selection */}
-      <div className="choose-therapist">
-        <h2 className="choose-therapist__title">Choose Your Therapist</h2>
+    <div className="booking-service-form">
+      <div className="service-selection">
+        <h2 className="service-selection__title">Choose Your Therapist</h2>
+        <p className="service-selection__subtitle">Select from our team of experienced therapists for your treatment</p>
         
-        {/* Auto-select button
-        {therapists && therapists.length > 0 && !selectedTherapist && (
-          // <div className="auto-select-container">
-          //   <button 
-          //     className="auto-select-button" 
-          //     onClick={autoSelectBestTherapist}
-          //   >
-          //     <FaRandom className="icon" /> Select random therapist
-          //   </button>
-          //   <p className="auto-select-note">Don't know who to choose? Let us select a random therapist for you.</p>
-          // </div>
-        )} */}
-        
-        <div className="choose-therapist__list">
+        <div className="service-selection__list">
           {therapists && therapists.length > 0 ? (
-            therapists.map((therapist) => (
-              <div 
-                key={therapist.id} 
-                className={`choose-therapist__card ${selectedTherapist?.id === therapist.id ? 'selected' : ''}`}
-                onClick={() => onSelectTherapist(therapist)}
-              >
-                <div className="choose-therapist__card-image-container">
-                  <img 
-                    src={therapist.imgUrl || therapist.image || '/assets/img/therapists/default.jpg'} 
-                    alt={therapist.fullName || therapist.name || 'Therapist'} 
-                    className="choose-therapist__card-image"
-                    onError={(e) => {
-                      console.error(`Failed to load image for therapist:`, therapist.fullName, therapist.imgUrl);
-                      e.target.onerror = null;
-                      e.target.src = '/assets/img/therapists/default.jpg';
-                    }}
-                  />
+            therapists.map((therapist) => {
+              // Extract therapist properties with fallbacks
+              const id = therapist.id || therapist._id;
+              const name = therapist.fullName || therapist.name || "Unnamed Therapist";
+              const image = therapist.imgUrl || therapist.image || therapist.avatar || "/assets/img/therapists/default.jpg";
+              const specialization = therapist.specialization || therapist.specialty || "Skin Care Specialist";
+              const experience = therapist.yearsOfExperience || therapist.yearExperience || 5;
+              // const rating = therapist.rating || 4.5;
+              // const bio = therapist.bio || therapist.description || "Specialized in providing exceptional skin care treatments.";
+
+              return (
+                <div 
+                  key={id}
+                  className={`service-selection__card ${selectedTherapist?.id === id ? 'selected' : ''}`}
+                  onClick={() => onSelectTherapist(therapist)}
+                >
+                  <div className="service-selection__card-image">
+                    <img 
+                      src={image}
+                      alt={name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/assets/img/therapists/default.jpg";
+                      }}
+                    />
+                  </div>
+
+                  <div className="service-selection__card-content">
+                    <h3 className="service-selection__card-title">{name}</h3>
+                    <div className="service-selection__card-details">
+                      <p className="service-selection__card-specialization">
+                        <FaUserMd className="icon" /> {specialization}
+                      </p>
+                      <p className="service-selection__card-experience">
+                        <FaClock className="icon" /> {experience} years experience
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="choose-therapist__card-info">
-                  <h3 className="choose-therapist__card-name">
-                    {therapist.fullName || therapist.name || 'Unnamed Therapist'}
-                  </h3>
-                  <p className="choose-therapist__card-specialty">
-                    {therapist.specialization || 'Skin Care Specialist'}
-                  </p>
-                  <p className="choose-therapist__card-experience">
-                    {therapist.yearExperience || 5} years experience
-                  </p>
-                  {renderStars(therapist.rating || 4.5)}
-                </div>
-              </div>
-            ))
+              );
+            })
           ) : (
-            <div className="no-therapists-message">
-              <div className="no-therapists-icon">
-                <FaExclamationTriangle size={30} color="#ff9800" />
-              </div>
+            <div className="service-selection__empty">
+              <FaExclamationTriangle size={30} />
               <h3>No Therapists Available</h3>
               <p>We couldn't find any therapists for your selected services at this time.</p>
-              <p>Please try selecting different services or check back later.</p>
-              <button className="btn-try-different" onClick={onPrev}>
-                <FaArrowLeft className="icon" /> Select Different Services
+              <button className="booking-actions__prev" onClick={onPrev}>
+                <FaArrowLeft /> Select Different Services
               </button>
             </div>
           )}
         </div>
       </div>
       
-      {/* Actions */}
       <div className="booking-actions">
         <div className="booking-actions__left">
-          <button 
-            className="booking-actions__prev" 
-            onClick={onPrev}
-          >
-            <FaArrowLeft className="icon" /> BACK
+          <button className="booking-actions__prev" onClick={onPrev}>
+            <FaArrowLeft className="icon" /> Back
           </button>
           <Link href="/" className="booking-actions__cancel">
-            Cancel and return to Home
+            Cancel
           </Link>
         </div>
         <button 
@@ -159,7 +141,7 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
           onClick={onNext}
           disabled={!selectedTherapist}
         >
-          NEXT <FaArrowRight className="icon" />
+          Next <FaArrowRight className="icon" />
         </button>
       </div>
     </div>

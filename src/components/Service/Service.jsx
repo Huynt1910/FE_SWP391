@@ -21,7 +21,7 @@ const options = [
 export const Service = () => {
   const router = useRouter();
   const { loading, error, data: services, getAllServices } = useListAllServices();
-  const { addToCart } = useCart();
+  // const { addToCart } = useCart();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -231,7 +231,7 @@ export const Service = () => {
             >
               Book Now
             </button>
-            <button 
+            {/* <button 
               className="service-card__cart-btn"
               onClick={(e) => {
                 e.stopPropagation();
@@ -240,7 +240,7 @@ export const Service = () => {
               }}
             >
               <FaShoppingCart />
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

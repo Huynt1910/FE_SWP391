@@ -17,11 +17,11 @@ export const LatestNews = () => {
           />
           <Blogs blogs={blogs} />
         </div>
-        <div className="latest-news__btn">
+        {/* <div className="latest-news__btn">
           <Link href="/blog" className="btn">
             Read blog
           </Link>
-        </div>
+        </div> */}
       </section>
       {/* <!-- LATEST NEWS EOF --> */}
     </>

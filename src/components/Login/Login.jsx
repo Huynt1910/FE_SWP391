@@ -1,4 +1,4 @@
-import { useSignIn } from "@/auth/hook/useSinginHook";
+import { useSignIn } from "@auth/hook/useSinginHook";
 import { SocialLogin } from "@components/shared/SocialLogin/SocialLogin";
 import { showToast } from "@utils/toast";
 import { useRouter } from "next/router";

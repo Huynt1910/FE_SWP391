@@ -209,69 +209,96 @@ const TherapistList = () => {
         </div>
       </div>
 
-      <div className="therapist-grid">
-        {filteredTherapists?.map((therapist) => {
-          const id = therapist.id || therapist._id || "";
-          const name = therapist.fullName || therapist.name || "Unnamed Therapist";
-          const image = therapist.imgUrl || therapist.image || therapist.avatar || therapist.photo || "/assets/img/therapists/default.jpg";
-          const specialization = therapist.specialization || therapist.specialty || "Skin Care Specialist";
-          const role = therapist.role || "Therapist";
-          const experience = therapist.yearsOfExperience || therapist.yearExperience || therapist.experience || 0;
-          const rating = therapist.rating || 4.5;
-          const bio = therapist.bio || therapist.description || "Specialized in providing exceptional skin care treatments tailored to individual needs.";
-          const status = therapist.status;
-          const isActive = status === true || status === "ACTIVE";
-
-          return (
-            <div 
-              key={id} 
-              className={`therapist-card ${!isActive ? "inactive" : ""}`}
-            >
-              <div className="therapist-card__image">
-                <img 
-                  src={image} 
-                  alt={name}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "/assets/img/therapists/default.jpg";
-                  }}
-                />
-              </div>
-              
-              <div className="therapist-card__content">
-                <h3 className="therapist-card__name">{name}</h3>
-                <p className="therapist-card__specialty">{specialization}</p>
-                
-                {role && (
-                  <p className="therapist-card__role">
-                    <FaUserMd /> {formatRole(role)}
-                  </p>
-                )}
-                
-                <p className="therapist-card__experience">{experience} years experience</p>
-                
-                <div className="therapist-card__rating">
-                  {[...Array(5)].map((_, i) => (
-                    <FaStar 
-                      key={i} 
-                      className={`star ${i < Math.floor(rating) ? "filled" : ""}`}
+      {filteredTherapists.length > 0 ? (
+        <div className="therapist-grid">
+          {filteredTherapists.map((therapist) => {
+            // Extract therapist properties with fallbacks
+            const id = therapist.id || therapist._id || "";
+            const name = therapist.fullName || therapist.name || "Unnamed Therapist";
+            
+            // Improved image path handling - include imgUrl in the options
+            let image = therapist.imgUrl || therapist.image || therapist.avatar || therapist.photo || "/assets/img/therapists/default.jpg";
+            
+            // Log the image URL for debugging
+            console.log(`Therapist ${name} image URL:`, image);
+            
+            const specialization = therapist.specialization || therapist.specialty || "Skin Care Specialist";
+            const role = therapist.role || therapist.position || "";
+            const experience = therapist.yearsOfExperience || therapist.yearExperience || therapist.experience || 0;
+            // const rating = therapist.rating || 4.5;
+            const bio = therapist.bio || therapist.description || "Specialized in providing exceptional skin care treatments tailored to individual needs.";
+            const status = therapist.status;
+            const isActive = status === true || status === "ACTIVE";
+            
+            return (
+              <div 
+                key={id} 
+                className={`therapist-card ${!isActive ? "inactive" : ""}`}
+              >
+                <div className="therapist-image">
+                  <img 
+                    src={image} 
+                    alt={name}
+                    onError={(e) => {
+                      console.error(`Failed to load image for ${name}:`, image);
+                      e.target.onerror = null;
+                      e.target.src = "/assets/img/therapists/default.jpg";
+                    }}
+                  />
+                  <div className="therapist-status">
+                    <FaCircle 
+                      className={isActive ? "status-active" : "status-inactive"} 
                     />
-                  ))}
-                  <span className="rating-value">{rating}</span>
+                    <span>{isActive ? "Available" : "Unavailable"}</span>
+                  </div>
                 </div>
                 
-                <button 
-                  className="therapist-card__button"
-                  onClick={() => handleSelectTherapist(id)}
-                  disabled={!isActive}
-                >
-                  <FaCalendarAlt /> {isActive ? "Book Appointment" : "Currently Unavailable"}
-                </button>
+                <div className="therapist-details">
+                  <h3>{name}</h3>
+                  
+                  <div className="therapist-info">
+                    <p className="specialization">{specialization}</p>
+                    
+                    {role && (
+                      <p className="role">
+                        <FaUserMd className="role-icon" /> {formatRole(role)}
+                      </p>
+                    )}
+                    
+                    {/* <p className="experience">{experience} years experience</p> */}
+                    
+                    {/* <div className="rating">
+                      {Array(5).fill().map((_, i) => (
+                        <FaStar 
+                          key={i} 
+                          className={i < Math.floor(rating) ? "star filled" : "star"} 
+                        />
+                      ))}
+                      <span className="rating-value">{rating}</span>
+                    </div> */}
+                  </div>
+                  
+                  <div className="therapist-bio">
+                    <p>{bio}</p>
+                  </div>
+                  
+                  <button 
+                    className={`book-button ${!isActive ? "disabled" : ""}`}
+                    onClick={() => handleSelectTherapist(id)}
+                    disabled={!isActive}
+                  >
+                    <FaCalendarAlt /> {isActive ? "Book Appointment" : "Currently Unavailable"}
+                  </button>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="no-results">
+          <p>No therapists found matching your criteria.</p>
+        </div>
+      )}
     </div>
   );
 };
