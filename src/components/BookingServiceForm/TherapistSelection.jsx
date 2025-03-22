@@ -1,7 +1,6 @@
 import React from 'react';
 import { FaArrowLeft, FaArrowRight, FaUser, FaCircle, FaExclamationTriangle, FaUserMd, FaCalendarAlt, FaClock } from 'react-icons/fa';
 import Link from 'next/link';
-import { isAuthenticated } from '@/utils/auth';
 
 const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, onNext, onPrev, loading, error }) => {
   // Format role for display
