@@ -272,6 +272,11 @@ export const END_POINTS = {
     method: "GET",
     secure: true,
   },
+  getActiveVouchers: {
+    path: "/vouchers/active",
+    method: "GET",
+    secure: true,
+  },
   createVoucher: {
     path: "/vouchers",
     method: "POST",
@@ -394,6 +399,7 @@ export const ACTIONS = {
   CHECKOUT_BOOKING: "checkOutBooking",
   // Separate voucher actions
   GET_ALL_VOUCHERS: "getAllVouchers",
+  GET_ACTIVE_VOUCHERS: "getActiveVouchers",
   CREATE_VOUCHER: "createVoucher",
   UPDATE_VOUCHER: "updateVoucher",
   DEACTIVATE_VOUCHER: "deactivateVoucher",

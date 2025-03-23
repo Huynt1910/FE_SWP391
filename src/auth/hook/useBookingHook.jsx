@@ -3,7 +3,7 @@ import { APIClient } from "@/lib/api-client";
 import { ACTIONS } from "@/lib/api-client/constant";
 import { isAuthenticated } from "@/utils/auth";
 import { getCookie } from "cookies-next";
-import { getCookie } from "cookies-next";
+
 
 export const useBookingHook = () => {
   // State management

@@ -155,7 +155,7 @@ const BookingListPending = () => {
         console.log('Standard API call failed, trying direct fetch...');
         await delay(500); // Add a small delay before retrying
         
-        const deleteUrl = `${API_URL}/booking/${bookingId}`;
+        const deleteUrl = `${API_URL}/booking/delete/${bookingId}`;
         console.log('Direct cancel URL:', deleteUrl);
         
         const directResponse = await fetch(deleteUrl, {
@@ -386,7 +386,7 @@ const BookingListPending = () => {
       // Make API call to finish booking
       const response = await APIClient.invoke({
         action: ACTIONS.FINISH_BOOKING,
-        pathParams: { bookingId: bookingId.toString() },
+        pathParams: { id: bookingId.toString() },
         headers: { Authorization: `Bearer ${token}` },
         options: { preventRedirect: true }
       });
@@ -432,6 +432,7 @@ const BookingListPending = () => {
         try {
           responseData = await directResponse.json();
         } catch (e) {
+          console.log('Response is not JSON:', e);
           // If not JSON, create simple response
           responseData = { success: directResponse.ok };
         }

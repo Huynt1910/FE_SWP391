@@ -60,7 +60,7 @@ export const setAuthData = (token, role, daysToExpire = 1) => {
   console.log("Storing role:", role); // Debug log
 
   setCookie("token", token, options);
-  setCookie("role", role, options);
+  setCookie("userRole", role, options);
 };
 
 // Clear authentication data
