@@ -39,7 +39,7 @@ export const Login = () => {
       console.log("Login response:", response); // Debug log
 
       if (response?.result?.token) {
-        // Lưu token và role
+        // Store auth data using the utility function
         setAuthData(
           response.result.token,
           response.result.role,
@@ -48,7 +48,7 @@ export const Login = () => {
 
         toast.success("Login successful!");
 
-        // Chuyển hướng dựa trên role
+        // Redirect based on role
         switch (response.result.role.toUpperCase()) {
           case ROLES.ADMIN:
             router.push("/admin/dashboard");

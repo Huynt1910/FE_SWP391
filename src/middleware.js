@@ -1,24 +1,31 @@
+// middleware.js
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
-export function middleware(request) {
-  const token = request.cookies.get("token")?.value;
-  const userRole = request.cookies.get("userRole")?.value;
+export async function middleware(request) {
+  const cookieStore = await cookies();
+  const authToken = cookieStore.get("token");
 
-  const { pathname } = request.nextUrl;
-
-  // Nếu đã login mà vào lại /login → redirect về trang chủ
-  if (token && pathname === "/login") {
+  // If the user is authenticated and tries to access /login, redirect to /
+  if (authToken && request.nextUrl.pathname === "/login") {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Nếu chưa login mà vào route không phải /login → redirect về login
-  if (!token && pathname !== "/login") {
+  // If the user is not authenticated and tries to access a protected route, redirect to /login
+  if (!authToken && request.nextUrl.pathname !== "/login") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Nếu truy cập admin mà không có token hoặc không có userRole → redirect
-  if (pathname.startsWith("/admin") && (!token || !userRole)) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  // Get tokens from cookies
+  const token = request.cookies.get("token");
+  const userRole = request.cookies.get("userRole");
+
+  // Check if trying to access admin paths
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    // If no token or role, redirect to login
+    if (!token || !userRole) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
   }
 
   return NextResponse.next();

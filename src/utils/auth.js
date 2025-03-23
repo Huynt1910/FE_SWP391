@@ -4,7 +4,6 @@ import { API_URL } from "@/lib/api-client/constant";
 import Router from "next/router";
 import { APIClient } from "@/lib/api-client";
 import { ACTIONS } from "@/lib/api-client/constant";
-import { set } from "date-fns";
 
 // Check if user is authenticated
 export const isAuthenticated = () => {
@@ -46,19 +45,18 @@ export const getMyInfo = async () => {
 };
 
 // Set authentication data
-export const setAuthData = (token, role, daysToExpire = 1) => {
+export const setAuthData = (token, userRole, daysToExpire = 1) => {
   const options = {
-    maxAge: daysToExpire * 24 * 60 * 60, // Thời gian sống của cookie (giây)
-    path: "/", // Đảm bảo cookie có sẵn trên toàn bộ ứng dụng
-    secure: process.env.NODE_ENV === "production", // Chỉ gửi cookie qua HTTPS trong môi trường production
-    sameSite: "lax", // Ngăn chặn cookie bị gửi trong các yêu cầu cross-site
+    maxAge: daysToExpire * 24 * 60 * 60, // Convert days to seconds
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
   };
 
-  console.log("Storing token:", token); // Debug log
-  console.log("Storing role:", role); // Debug log
+  console.log("Setting auth data:", { token, userRole, options }); // Debug log
 
   setCookie("token", token, options);
-  setCookie("role", role, options);
+  setCookie("userRole", userRole, options);
 };
 
 // Clear authentication data
