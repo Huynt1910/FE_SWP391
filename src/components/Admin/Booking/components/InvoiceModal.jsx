@@ -1,24 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import { format } from "date-fns";
-import { useRouter } from "next/router";
+import { toast } from "react-toastify";
 
-const InvoiceModal = ({ data, onClose }) => {
-  const router = useRouter();
+const InvoiceModal = ({ data, onCheckout }) => {
+  const [isProcessing, setIsProcessing] = useState(false);
 
   if (!data) return null;
 
   const formattedDate = data.bookingDate
     ? format(new Date(data.bookingDate), "dd/MM/yyyy")
-    : "N/A"; // Fallback if bookingDate is invalid
+    : "N/A"; // Fallback nếu bookingDate không hợp lệ
 
-  const handleCashPayment = async () => {
-    await checkoutBooking(data.bookingId);
-    onClose();
-  };
-
-  const handleVnpayPayment = async () => {
-    const paymentUrl = await getVNPayUrl(data.bookingId);
-    if (paymentUrl) window.location.href = paymentUrl;
+  const handleCheckout = async () => {
+    setIsProcessing(true); // Hiển thị trạng thái loading
+    try {
+      await onCheckout(data.bookingId); // Gọi hàm onCheckout với bookingId
+      toast.success("Thanh toán thành công!");
+    } catch (error) {
+      console.error("Error during checkout:", error);
+      toast.error("Lỗi khi thực hiện thanh toán!");
+    } finally {
+      setIsProcessing(false); // Tắt trạng thái loading
+    }
   };
 
   return (
@@ -26,9 +29,6 @@ const InvoiceModal = ({ data, onClose }) => {
       <div className="admin-page__modal-content">
         <div className="admin-page__modal-header">
           <h2>Hóa đơn dịch vụ</h2>
-          <button className="close-btn" onClick={onClose}>
-            ×
-          </button>
         </div>
 
         <div className="admin-page__modal-body">
@@ -95,14 +95,12 @@ const InvoiceModal = ({ data, onClose }) => {
         </div>
 
         <div className="admin-page__modal-footer">
-          <button className="btn btn-primary" onClick={handleCashPayment}>
-            Thanh toán tiền mặt
-          </button>
-          <button className="btn btn-primary" onClick={handleVnpayPayment}>
-            Thanh toán VNPay
-          </button>
-          <button className="btn btn-secondary" onClick={onClose}>
-            Đóng
+          <button
+            className="btn btn-primary"
+            onClick={handleCheckout}
+            disabled={isProcessing} // Vô hiệu hóa nút khi đang xử lý
+          >
+            {isProcessing ? "Đang xử lý..." : "Thanh toán tiền mặt"}
           </button>
         </div>
       </div>

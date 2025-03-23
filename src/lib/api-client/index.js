@@ -206,19 +206,58 @@ export class APIClient {
         ? {}
         : { "Content-Type": "application/json" };
 
+      // Add authorization header if the endpoint requires authentication
+      let authHeaders = {};
+      if (endpoint.secure) {
+        const token = getToken();
+        if (token) {
+          authHeaders = { Authorization: `Bearer ${token}` };
+          console.log(
+            `Added auth token for secure endpoint: ${action} (token length: ${token.length})`
+          );
+        } else {
+          console.warn(
+            `Attempting to access secure endpoint ${action} without authentication token`
+          );
+        }
+      } else {
+        console.log(`Endpoint ${action} doesn't require authentication`);
+      }
+
+      // Log the final request configuration
+      console.log("Request config:", {
+        method: endpoint.method,
+        url: this._buildUrl(endpoint, pathParams),
+        hasAuthHeader: !!authHeaders.Authorization,
+        isSecure: endpoint.secure,
+      });
+
       const response = await axios({
         method: endpoint.method,
         url: this._buildUrl(endpoint, pathParams),
         data,
         headers: {
-          ...headers,
           ...contentTypeHeader,
+          ...authHeaders,
+          ...headers, // User-provided headers should have highest priority
         },
       });
 
       return response.data;
     } catch (error) {
-      console.error("API Error:", error);
+      // Enhanced error logging
+      if (error.response) {
+        console.error(`API Error (${error.response.status}):`, {
+          action,
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+          url: error.config?.url,
+          hasAuthHeader: !!error.config?.headers?.Authorization,
+        });
+      } else {
+        console.error("API Error:", error.message);
+      }
       throw error;
     }
   }

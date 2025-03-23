@@ -67,80 +67,35 @@ export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
     },
   });
 
-  const completeBooking = (bookingId) => {
-    const { data, isLoading, error } = useQuery(
-      ["completeBooking", bookingId],
-      async () => {
-        const response = await APIClient.invoke({
-          action: ACTIONS.COMPLETE_BOOKING,
-          pathParams: { id: bookingId },
-          headers: authHeaders,
-        });
-        return response.result;
-      },
-      {
-        enabled: !!bookingId, // Only fetch if bookingId is provided
-        onSuccess: (response) => {
-          toast.success("Hoàn thành dịch vụ thành công!");
-          setInvoiceData(response); // Set invoice data
-          setShowInvoiceModal?.(true); // Show the invoice modal
-        },
-        onError: (error) => {
-          toast.error(error.message || "Có lỗi khi hoàn thành dịch vụ!");
-        },
-      }
-    );
-
-    return { data, isLoading, error };
+  const completeBooking = async (bookingId) => {
+    try {
+      const response = await APIClient.invoke({
+        action: ACTIONS.FINISH_BOOKING,
+        pathParams: { id: bookingId },
+        headers: authHeaders,
+      });
+      return response.result;
+    } catch (error) {
+      toast.error("Có lỗi khi hoàn thành dịch vụ!");
+    }
   };
 
-  const checkoutBooking = async (bookingId, method) => {
+  const checkoutBooking = async (bookingId) => {
     try {
-      if (method === "cash") {
-        // Tiền mặt: gọi API checkout luôn
-        await APIClient.invoke.put("/booking/checkout", null, {
-          params: { bookingId },
-          headers: authHeaders,
-        });
-        toast.success("Thanh toán tiền mặt thành công!");
-        queryClient.invalidateQueries(["bookings"]);
-      } else if (method === "banking") {
-        // Chuyển khoản: lấy QR VNPay trước
-        const res = await APIClient.invoke.get(`/payment/${bookingId}`, {
-          headers: authHeaders,
-        });
+      const response = await APIClient.invoke({
+        action: ACTIONS.CHECKOUT_BOOKING,
+        pathParams: { id: bookingId },
+        headers: authHeaders,
+      });
 
-        const vnpayUrl = res?.data?.url;
-        if (!vnpayUrl) {
-          toast.error("Không lấy được link thanh toán!");
-          return;
-        }
-
-        // Mở tab thanh toán
-        window.open(vnpayUrl, "_blank");
-        toast.info("Vui lòng hoàn tất thanh toán qua VNPay.");
-
-        // Yêu cầu người dùng nhập mã giao dịch sau khi thanh toán
-        const transactionId = prompt(
-          "Nhập mã giao dịch (transactionId) sau khi thanh toán:"
-        );
-
-        if (!transactionId) {
-          toast.warning("Bạn chưa nhập mã giao dịch!");
-          return;
-        }
-
-        // Gọi checkout kèm transactionId
-        await APIClient.invoke.put("/booking/checkout", null, {
-          params: { bookingId, transactionId },
-          headers: authHeaders,
-        });
-
-        toast.success("Thanh toán chuyển khoản thành công!");
-        queryClient.invalidateQueries(["bookings"]);
+      if (response.success) {
+        return response;
+      } else {
+        throw new Error(response.message || "Có lỗi khi thanh toán!");
       }
     } catch (error) {
-      toast.error(error.message || "Thanh toán thất bại!");
+      console.error("Error during checkout:", error);
+      throw error;
     }
   };
 

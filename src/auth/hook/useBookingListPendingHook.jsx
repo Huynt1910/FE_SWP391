@@ -37,22 +37,22 @@ const useBookingListPendingHook = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log("Fetching pending bookings for user:", id);
-      
+
       const response = await APIClient.invoke({
         action: ACTIONS.GET_CUSTOMER_PENDING_BOOKINGS,
-        data: { userId: id },
-        options: { preventRedirect: true }
+        pathParams: { userId: id },
+        options: { preventRedirect: true },
       });
-      
+
       console.log("Pending bookings response:", response);
-      
+
       if (response && response.success && response.result) {
         setData(response.result);
       } else {
         setData([]);
-        
+
         if (response && !response.success) {
           setError(response.message || "Failed to fetch pending bookings");
         }
@@ -76,7 +76,7 @@ const useBookingListPendingHook = () => {
     loading,
     error,
     data,
-    refreshPendingBookings
+    refreshPendingBookings,
   };
 };
 

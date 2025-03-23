@@ -2,6 +2,7 @@ import { useState } from "react";
 import { APIClient } from "@/lib/api-client";
 import { ACTIONS } from "@/lib/api-client/constant";
 import { isAuthenticated } from "@/utils/auth";
+import { getCookie } from "cookies-next";
 
 export const useBookingHook = () => {
   // State management
@@ -29,16 +30,16 @@ export const useBookingHook = () => {
 
   // Handle input changes
   const handleInputChange = (field, value) => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error when field is changed
     if (formErrors[field]) {
-      setFormErrors(prev => ({
+      setFormErrors((prev) => ({
         ...prev,
-        [field]: ""
+        [field]: "",
       }));
     }
   };
@@ -46,23 +47,23 @@ export const useBookingHook = () => {
   // Validate form
   const validateForm = () => {
     const errors = {};
-    
+
     if (!formState.selectedTherapistId) {
       errors.therapist = "Please select a therapist";
     }
-    
+
     if (!formState.selectedDate) {
       errors.date = "Please select a date";
     }
-    
+
     if (!formState.selectedTime) {
       errors.time = "Please select a time";
     }
-    
+
     if (!formState.selectedServiceIds.length) {
       errors.services = "Please select at least one service";
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -72,7 +73,7 @@ export const useBookingHook = () => {
     const authenticated = isAuthenticated();
     console.log("Checking authentication status:", authenticated);
     setAuthRequired(!authenticated);
-    
+
     // // If not authenticated, reset all loading and data states
     // if (!authenticated) {
     //   setLoading(false);
@@ -81,7 +82,7 @@ export const useBookingHook = () => {
     //   setAvailableSlots([]);
     //   setBookingResult(null);
     // }
-    
+
     return authenticated;
   };
 
@@ -91,20 +92,23 @@ export const useBookingHook = () => {
       setLoading(true);
       setError(null);
       setAuthRequired(false);
-      
+
       console.log("Fetching active therapists...");
-      
+
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_THERAPISTS_BY_SERVICE,
+        action: ACTIONS.GET_ACTIVE_THERAPISTS,
         data: { serviceId: serviceIds },
-        options: { preventRedirect: true }
+        options: { preventRedirect: true },
       });
-      
+
       console.log("API Response for getActiveTherapists:", response);
-      
+
       // Process the response
       if (response && response.success === true && response.result) {
-        console.log("Response has result array with length:", response.result.length);
+        console.log(
+          "Response has result array with length:",
+          response.result.length
+        );
         setData(response.result);
         return response.result;
       } else {
@@ -114,19 +118,20 @@ export const useBookingHook = () => {
       }
     } catch (error) {
       console.error("Error fetching active therapists:", error);
-      
+
       // Check if the error is related to authentication
-      if (error.message && (
-        error.message.includes("Unauthenticated") || 
-        error.message.includes("Authentication required") ||
-        error.message.includes("401")
-      )) {
+      if (
+        error.message &&
+        (error.message.includes("Unauthenticated") ||
+          error.message.includes("Authentication required") ||
+          error.message.includes("401"))
+      ) {
         console.log("Authentication error detected");
         setError("Authentication required. Please log in.");
       } else {
         setError(error.message || "Failed to fetch active therapists");
       }
-      
+
       return [];
     } finally {
       setLoading(false);
@@ -138,21 +143,28 @@ export const useBookingHook = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log("Fetching available slots...");
-      
+
+      // Get the authentication token
+      const token = getCookie("token");
+
+      // Add token to headers even though the endpoint is marked as non-secure
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+
       const response = await APIClient.invoke({
         action: ACTIONS.GET_AVAILABLE_SLOTS,
         data: {
           therapistId: therapistId,
           serviceId: serviceIds,
-          date: date
+          date: date,
         },
-        options: { preventRedirect: true }
+        headers: authHeaders,
+        options: { preventRedirect: true },
       });
-      
+
       console.log("API Response for getAvailableSlots:", response);
-      
+
       // Process the response
       if (response && response.success === true && response.result) {
         console.log("Available slots:", response.result);
@@ -177,21 +189,27 @@ export const useBookingHook = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      console.log(`Fetching schedule for therapist ${therapistId} for ${month}/${year}...`);
-      
+
+      console.log(
+        `Fetching schedule for therapist ${therapistId} for ${month}/${year}...`
+      );
+
       const response = await APIClient.invoke({
         action: ACTIONS.GET_THERAPIST_SCHEDULE,
         urlParams: {
           month: month,
-          year: year
+          year: year,
         },
-        options: { preventRedirect: true }
+        options: { preventRedirect: true },
       });
-      
+
       console.log("API Response for getTherapistSchedule:", response);
-      
-      if (response && response.success === true && Array.isArray(response.result)) {
+
+      if (
+        response &&
+        response.success === true &&
+        Array.isArray(response.result)
+      ) {
         return response.result;
       } else if (Array.isArray(response)) {
         return response;
@@ -214,20 +232,24 @@ export const useBookingHook = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log(`Fetching schedule for therapist ID: ${therapistId}`);
-      
+
       const response = await APIClient.invoke({
         action: ACTIONS.GET_THERAPIST_SCHEDULE_BY_ID,
         urlParams: {
-          id: therapistId
+          id: therapistId,
         },
-        options: { preventRedirect: true }
+        options: { preventRedirect: true },
       });
-      
+
       console.log("API Response for getTherapistScheduleById:", response);
-      
-      if (response && response.success === true && Array.isArray(response.result)) {
+
+      if (
+        response &&
+        response.success === true &&
+        Array.isArray(response.result)
+      ) {
         return response.result;
       } else if (Array.isArray(response)) {
         return response;
@@ -250,24 +272,29 @@ export const useBookingHook = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log("Fetching available vouchers...");
-      
+
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_VOUCHERS,
-        options: { preventRedirect: true }
+        action: ACTIONS.GET_ACTIVE_VOUCHERS,
+        options: { preventRedirect: true },
       });
-      
+
       console.log("API Response for getAvailableVouchers:", response);
-      
-      if (response && response.success === true && Array.isArray(response.result)) {
+
+      if (
+        response &&
+        response.success === true &&
+        Array.isArray(response.result)
+      ) {
         // Filter for active vouchers only
-        const activeVouchers = response.result.filter(voucher => 
-          voucher.isActive && 
-          new Date(voucher.expiryDate) > new Date() && 
-          voucher.quantity > 0
+        const activeVouchers = response.result.filter(
+          (voucher) =>
+            voucher.isActive &&
+            new Date(voucher.expiryDate) > new Date() &&
+            voucher.quantity > 0
         );
-        
+
         console.log("Active vouchers:", activeVouchers);
         return activeVouchers;
       } else {
@@ -289,28 +316,30 @@ export const useBookingHook = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // CRITICAL: Ensure userId is valid and correctly formatted
       if (!bookingData.userId || bookingData.userId === 0) {
-        console.warn("CRITICAL: Invalid or missing userId in booking data, using default (1)");
+        console.warn(
+          "CRITICAL: Invalid or missing userId in booking data, using default (1)"
+        );
         bookingData = {
           ...bookingData,
-          userId: 1 // Explicitly set to 1 if missing or invalid
+          userId: 1, // Explicitly set to 1 if missing or invalid
         };
       }
-      
+
       // Convert userId to number just to be safe
       bookingData.userId = Number(bookingData.userId);
-      
+
       // Add email to booking data - the API might need this to store the booking
       try {
-        const user = JSON.parse(localStorage.getItem('user'));
+        const user = JSON.parse(localStorage.getItem("user"));
         if (user && user.email) {
           bookingData.email = user.email;
           console.log("Added user email to booking data:", user.email);
         } else {
           // Try to find email in other storage locations
-          const storedEmail = localStorage.getItem('userEmail');
+          const storedEmail = localStorage.getItem("userEmail");
           if (storedEmail) {
             bookingData.email = storedEmail;
             console.log("Added email from direct localStorage:", storedEmail);
@@ -319,18 +348,25 @@ export const useBookingHook = () => {
       } catch (err) {
         console.warn("Error adding email to booking data:", err);
       }
-      
-      console.log("Creating booking with FINAL data:", JSON.stringify(bookingData));
-      console.log("User ID type and value:", typeof bookingData.userId, bookingData.userId);
-      
+
+      console.log(
+        "Creating booking with FINAL data:",
+        JSON.stringify(bookingData)
+      );
+      console.log(
+        "User ID type and value:",
+        typeof bookingData.userId,
+        bookingData.userId
+      );
+
       const response = await APIClient.invoke({
         action: ACTIONS.CREATE_BOOKING,
         data: bookingData,
-        options: { preventRedirect: true }
+        options: { preventRedirect: true },
       });
-      
+
       console.log("API Response for createBooking:", response);
-      
+
       // Process the response
       if (response && response.success === true) {
         console.log("Booking created successfully:", response.result);
@@ -377,7 +413,7 @@ export const useBookingHook = () => {
     authRequired,
     formState,
     formErrors,
-    
+
     // Methods
     getActiveTherapists,
     getAvailableSlots,
@@ -387,8 +423,8 @@ export const useBookingHook = () => {
     submitBooking,
     handleInputChange,
     resetForm,
-    validateForm
+    validateForm,
   };
 };
 
-export default useBookingHook; 
+export default useBookingHook;
