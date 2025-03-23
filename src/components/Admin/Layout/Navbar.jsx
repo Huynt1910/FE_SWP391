@@ -40,7 +40,7 @@ const Navbar = ({ onToggleSidebar }) => {
             className="user-btn"
             onClick={() => setShowDropdown(!showDropdown)}
           >
-            <img src="/avatar.jpg" alt="User" />
+            {/* <img src="/avatar.jpg" alt="User" /> */}
             <span>Admin</span>
           </button>
 

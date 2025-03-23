@@ -6,7 +6,6 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { ROLES } from "@/lib/api-client/constant";
 import { setAuthData } from "@/utils/auth";
-// import { SocialLogin } from "../shared/SocialLogin/SocialLogin";
 
 export const Login = () => {
   const router = useRouter();

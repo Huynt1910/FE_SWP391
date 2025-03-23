@@ -12,6 +12,15 @@
       "@store/*": ["./src/store/*"]
     },
     "strict": true,
-    "noUnusedLocals": true
-  }
+    "noUnusedLocals": true,
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

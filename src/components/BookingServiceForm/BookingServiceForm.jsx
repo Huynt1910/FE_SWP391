@@ -9,6 +9,7 @@ import ConfirmBooking from "./ConfirmBooking";
 import ServiceSelection from "./ServiceSelection";
 import { showToast } from "@/utils/toast";
 import { isAuthenticated } from "@/utils/auth";
+import { getCookie } from "cookies-next";
 
 // // Payment methods
 // const paymentMethods = [
@@ -446,8 +447,9 @@ export const BookingServiceForm = () => {
         break;
       case 4: // Confirmation
         canProceed = true; // No specific validation needed for confirmation
-        handleSubmit(); // Submit booking on final step
-        break;
+        // Submit booking on final step without requiring an event object
+        handleSubmitBooking(); 
+        return; // Return early to prevent incrementing the step
       default:
         canProceed = true;
     }
@@ -581,44 +583,60 @@ export const BookingServiceForm = () => {
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     
+    if (isPending) {
+      console.log("Submission already in progress, please wait...");
+      return;
+    }
+    
+    // Prevent double submission
+    setIsPending(true);
+    
     try {
-      setIsPending(true);
+      console.log("Starting booking submission process");
       
-      // Get user ID with priority: cookies > localStorage > default
+      // First, check if user is authenticated
+      if (!isAuthenticated) {
+        console.log("User not authenticated, redirecting to login");
+        handleLogin();
+        setIsPending(false);
+        return;
+      }
+      
+      // Get userId for booking
       let userId = null;
-      
-      // Try to get from cookies first
-      const userIdCookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('userId='));
-      
-      if (userIdCookie) {
-        userId = parseInt(userIdCookie.split('=')[1], 10);
-        console.log("Found user ID in cookies:", userId, typeof userId);
-      } 
-      // Then try localStorage
-      else {
-        const directUserId = localStorage.getItem('userId');
-        if (directUserId) {
-          userId = parseInt(directUserId, 10);
-          console.log("Found user ID directly in localStorage:", userId, typeof userId);
-        } else {
-          const userString = localStorage.getItem('user');
-          if (userString) {
-            try {
-              const user = JSON.parse(userString);
-              if (user && user.id) {
-                userId = parseInt(user.id, 10);
-                console.log("Found user ID from user object in localStorage:", userId, typeof userId);
-              }
-            } catch (error) {
-              console.error("Error parsing user from localStorage:", error);
-            }
-          }
+      try {
+        const userInfo = JSON.parse(localStorage.getItem('user'));
+        if (userInfo && userInfo.id) {
+          userId = Number(userInfo.id);
+          console.log("Retrieved user ID from localStorage:", userId);
         }
+      } catch (err) {
+        console.error("Error retrieving user info:", err);
+      }
+      
+      // If userId is still null, try to get it from context or cookie
+      if (!userId) {
+        userId = Number(getCookie('userId') || 0);
+        console.log("Retrieved user ID from cookie:", userId);
+      }
+      
+      // Check userId validity
+      if (!userId || userId === 0) {
+        console.log("User ID not found, redirecting to login");
+        handleLogin();
+        setIsPending(false);
+        return;
       }
       
       console.log("Final userId before sending to API:", userId, typeof userId);
+      
+      // Process voucher data if selected
+      let voucherId = null;
+      if (selectedVoucher) {
+        console.log("Selected voucher before submission:", selectedVoucher);
+        voucherId = Number(selectedVoucher.voucherId);
+        console.log("Voucher ID to be used:", voucherId, typeof voucherId);
+      }
       
       // Build booking data based on API requirements
       const bookingData = {
@@ -627,7 +645,7 @@ export const BookingServiceForm = () => {
         bookingDate: selectedDate,
         serviceId: selectedServices.map(service => service.id),
         therapistId: Number(selectedTherapist.id),
-        voucherId: selectedVoucher ? Number(selectedVoucher.voucherId) : null,
+        voucherId: voucherId,
         email: "customer@example.com" // Add a default email to ensure the booking goes through
       };
       
@@ -643,6 +661,7 @@ export const BookingServiceForm = () => {
       
       // Log the exact data being sent
       console.log("Submitting booking with data:", JSON.stringify(bookingData));
+      console.log("Voucher ID type and value:", typeof bookingData.voucherId, bookingData.voucherId);
       
       // Submit booking to API
       const result = await submitBooking(bookingData);
@@ -705,6 +724,11 @@ export const BookingServiceForm = () => {
     } finally {
       setIsPending(false);
     }
+  };
+
+  // Version of handleSubmit that doesn't require an event parameter
+  const handleSubmitBooking = async () => {
+    await handleSubmit();
   };
 
   return (

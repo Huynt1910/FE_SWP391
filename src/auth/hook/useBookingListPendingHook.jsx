@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { APIClient } from "@/lib/api-client";
 import { ACTIONS } from "@/lib/api-client/constant";
 import { getMyInfo } from "@/utils/auth";
+import { getCookie } from "cookies-next";
 
 const useBookingListPendingHook = () => {
   const [loading, setLoading] = useState(true);
@@ -40,9 +41,14 @@ const useBookingListPendingHook = () => {
       
       console.log("Fetching pending bookings for user:", id);
       
+      // Get authentication token
+      const token = getCookie("token");
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+      
       const response = await APIClient.invoke({
         action: ACTIONS.GET_CUSTOMER_PENDING_BOOKINGS,
-        data: { userId: id },
+        pathParams: { userId: id },
+        headers: authHeaders,
         options: { preventRedirect: true }
       });
       

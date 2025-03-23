@@ -61,10 +61,23 @@ const ConfirmBooking = ({
 
   // Handle voucher selection
   const handleVoucherSelect = (voucher) => {
+    console.log("Voucher selection triggered:", voucher);
+    
     if (selectedVoucher && selectedVoucher.voucherCode === voucher.voucherCode) {
+      console.log("Deselecting voucher:", selectedVoucher);
       onVoucherSelect(null); // Deselect if already selected
     } else {
-      onVoucherSelect(voucher);
+      console.log("Selecting voucher:", voucher);
+      console.log("Voucher ID:", voucher.voucherId, typeof voucher.voucherId);
+      
+      // Make sure the voucherId is a number
+      const parsedVoucher = {
+        ...voucher,
+        voucherId: Number(voucher.voucherId)
+      };
+      
+      console.log("Formatted voucher:", parsedVoucher);
+      onVoucherSelect(parsedVoucher);
     }
   };
 

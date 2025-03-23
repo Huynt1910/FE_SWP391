@@ -8,6 +8,9 @@ import { useRouter } from 'next/router';
 import { showToast } from "@/utils/toast";
 import { getCookie } from "cookies-next";
 
+// Simple delay function to ensure server has time to process requests
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const BookingListPending = () => {
   const router = useRouter();
   const { loading, error, data: pendingBookings, refreshPendingBookings } = useBookingListPendingHook();
@@ -33,9 +36,27 @@ const BookingListPending = () => {
 
   // Check authentication on component mount
   useEffect(() => {
-    const isUserAuthenticated = isAuthenticated();
-    console.log("BookingListPending: User authentication status:", isUserAuthenticated);
-    setIsAuthChecked(isUserAuthenticated);
+    const checkAuth = async () => {
+      const isUserAuthenticated = isAuthenticated();
+      console.log("BookingListPending: User authentication status:", isUserAuthenticated);
+      
+      if (isUserAuthenticated) {
+        // Also verify token validity
+        const token = getCookie("token");
+        if (!token) {
+          console.error("Token not found despite authenticated status");
+          setIsAuthChecked(false);
+          return;
+        }
+        
+        setIsAuthChecked(true);
+        refreshPendingBookings(); // Force refresh data after confirming authentication
+      } else {
+        setIsAuthChecked(false);
+      }
+    };
+    
+    checkAuth();
 
     // Load submitted feedback bookings from localStorage
     try {
@@ -104,22 +125,57 @@ const BookingListPending = () => {
     try {
       console.log('Attempting to cancel booking ID:', bookingId);
       
+      // Get authentication token
+      const token = getCookie("token");
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+      
+      // Prepare auth headers
+      const authHeaders = { Authorization: `Bearer ${token}` };
+      
+      console.log('Invoking deleteBooking endpoint with token and bookingId:', bookingId);
+      
+      // First attempt with the regular endpoint
       const response = await APIClient.invoke({
         action: ACTIONS.DELETE_BOOKING,
-        data: { bookingId: bookingId.toString() }, // Pass as data not pathParams
-        options: { 
-          preventRedirect: true,
-          secure: true
-        }
+        pathParams: { bookingId: bookingId.toString() },
+        headers: authHeaders,
+        options: { preventRedirect: true }
       });
 
       console.log('Cancel booking response:', response);
 
       if (response && response.success === true) {
         alert('Booking cancelled successfully');
+        await delay(500); // Short delay before refreshing to ensure server sync
         refreshPendingBookings(); // Refresh the list
       } else {
-        alert(response?.message || 'Failed to cancel booking');
+        // If the standard approach failed, try direct API call as fallback
+        console.log('Standard API call failed, trying direct fetch...');
+        await delay(500); // Add a small delay before retrying
+        
+        const deleteUrl = `${API_URL}/booking/${bookingId}`;
+        console.log('Direct cancel URL:', deleteUrl);
+        
+        const directResponse = await fetch(deleteUrl, {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        console.log('Direct cancel response status:', directResponse.status);
+        
+        if (directResponse.ok) {
+          alert('Booking cancelled successfully');
+          await delay(500); // Short delay before refreshing
+          refreshPendingBookings();
+        } else {
+          alert(response?.message || 'Failed to cancel booking');
+        }
       }
     } catch (err) {
       console.error('Error cancelling booking:', err);
@@ -302,6 +358,7 @@ const BookingListPending = () => {
     
     console.log('Booking details for completion:', bookingDetails);
     setSelectedBookingForCompletion(bookingDetails);
+    setSelectedBookingForPayment(bookingDetails); // Also set the payment booking reference
     setShowCompletionModal(true);
   };
 
@@ -310,6 +367,7 @@ const BookingListPending = () => {
     // Check if booking was already completed
     if (completedBookings.includes(bookingId)) {
       showToast("This booking has already been completed", "info");
+      setShowPaymentButton(true); // Show payment button for already completed bookings
       return;
     }
 
@@ -320,53 +378,86 @@ const BookingListPending = () => {
       console.log('Attempting to finish booking:', bookingId);
       
       // Get auth token
-      const token = getToken();
+      const token = getCookie("token");
       if (!token) {
         throw new Error("Authentication required");
       }
 
-      // Make direct API call to match Postman structure
-      const finishUrl = `${API_URL}/booking/${bookingId}/finish`;
-      console.log('Finish booking URL:', finishUrl);
-      
-      const response = await fetch(finishUrl, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+      // Make API call to finish booking
+      const response = await APIClient.invoke({
+        action: ACTIONS.FINISH_BOOKING,
+        pathParams: { bookingId: bookingId.toString() },
+        headers: { Authorization: `Bearer ${token}` },
+        options: { preventRedirect: true }
       });
 
-      console.log('Finish booking response status:', response.status);
-      
-      const responseData = await response.json();
-      console.log('Finish booking response:', responseData);
+      console.log('Finish booking response:', response);
 
-      if (response.ok && responseData.success) {
+      if (response && response.success) {
         // Update localStorage and state with the completed booking
         const updatedCompletedBookings = [...completedBookings, bookingId];
         localStorage.setItem('completedBookings', JSON.stringify(updatedCompletedBookings));
         setCompletedBookings(updatedCompletedBookings);
         
-        // Show payment button and store booking for payment
-        setSelectedBookingForPayment(selectedBookingForCompletion);
+        // Enable payment button
         setShowPaymentButton(true);
         
-        showToast("Booking completed successfully! Please proceed to payment.", "success");
-        // Refresh booking list
+        showToast("Booking completed successfully! You can now proceed to payment.", "success");
+        
+        // Refresh booking list to show updated status
         refreshPendingBookings();
       } else {
-        throw new Error(responseData?.message || "Failed to complete booking");
+        // Try direct fetch as fallback if APIClient fails
+        console.log('API call failed, trying direct fetch...');
+        
+        // Add short delay before retry
+        await delay(500);
+        
+        // Make direct API call as fallback
+        const finishUrl = `${API_URL}/booking/${bookingId}/finish`;
+        console.log('Direct finish booking URL:', finishUrl);
+        
+        const directResponse = await fetch(finishUrl, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        console.log('Direct finish response status:', directResponse.status);
+        
+        let responseData;
+        try {
+          responseData = await directResponse.json();
+        } catch (e) {
+          // If not JSON, create simple response
+          responseData = { success: directResponse.ok };
+        }
+        
+        console.log('Direct finish response:', responseData);
+        
+        if (directResponse.ok && (responseData.success !== false)) {
+          // Update localStorage and state with the completed booking
+          const updatedCompletedBookings = [...completedBookings, bookingId];
+          localStorage.setItem('completedBookings', JSON.stringify(updatedCompletedBookings));
+          setCompletedBookings(updatedCompletedBookings);
+          
+          // Enable payment button
+          setShowPaymentButton(true);
+          
+          showToast("Booking completed successfully! You can now proceed to payment.", "success");
+          
+          // Refresh booking list
+          refreshPendingBookings();
+        } else {
+          throw new Error(responseData?.message || "Failed to complete booking");
+        }
       }
     } catch (err) {
       console.error('Error finishing booking:', err);
       showToast(err.message || "Failed to complete booking. Please try again later.", "error");
-      
-      // If unauthorized, redirect to login
-      if (err.message?.toLowerCase().includes('auth') || err.message?.toLowerCase().includes('unauthorized')) {
-        router.push('/login');
-      }
     } finally {
       setIsProcessingFinish(false);
       setProcessingFinishId(null);
@@ -375,127 +466,118 @@ const BookingListPending = () => {
 
   // Handle payment
   const handlePayment = async () => {
-    if (selectedBookingForPayment) {
-      try {
-        console.log('Attempting payment for booking ID:', selectedBookingForPayment.bookingId);
-        
-        // Get auth token
-        const token = getToken();
-        if (!token) {
-          throw new Error("Authentication required");
-        }
+    if (!selectedBookingForPayment || !selectedBookingForPayment.bookingId) {
+      showToast("Booking information is missing. Please try again.", "error");
+      return;
+    }
 
-        // First try with APIClient
-        const response = await APIClient.invoke({
-          action: ACTIONS.PAYMENT,
-          pathParams: { bookingId: selectedBookingForPayment.bookingId.toString() },
-          options: {
-            preventRedirect: true,
-            secure: true,
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
+    try {
+      const bookingId = selectedBookingForPayment.bookingId;
+      console.log('Attempting payment for booking ID:', bookingId);
+      
+      // Get authentication token
+      const token = getCookie("token");
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+      
+      // Prepare auth headers
+      const authHeaders = { Authorization: `Bearer ${token}` };
+      
+      console.log('Invoking payment endpoint with token and bookingId:', bookingId);
+      
+      // First attempt with API client
+      const response = await APIClient.invoke({
+        action: ACTIONS.PAYMENT,
+        pathParams: { bookingId: bookingId.toString() },
+        headers: authHeaders,
+        options: { preventRedirect: true }
+      });
+      
+      console.log('Payment response:', response);
+      
+      // Handle different response formats
+      let paymentUrl = null;
+      
+      if (typeof response === 'string' && response.includes('vnpayment.vn')) {
+        paymentUrl = response;
+      } else if (response?.result && typeof response.result === 'string' && response.result.includes('vnpayment.vn')) {
+        paymentUrl = response.result;
+      } else if (response && typeof response === 'object') {
+        // Look for URL in response properties
+        for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
+          if (response[prop] && typeof response[prop] === 'string' && response[prop].includes('vnpayment.vn')) {
+            paymentUrl = response[prop];
+            break;
           }
-        });
-
-        console.log('Payment response:', response);
+        }
+      }
+      
+      if (paymentUrl) {
+        console.log('Found payment URL:', paymentUrl);
+        window.location.href = paymentUrl;
+        setShowCompletionModal(false);
+        return;
+      }
+      
+      // If we couldn't find a payment URL in the response, try direct fetch as fallback
+      console.log('No payment URL found in API response, trying direct fetch...');
+      await delay(500); // Add a small delay before retrying
+      
+      const paymentApiUrl = `${API_URL}/payment/${bookingId}`;
+      console.log('Direct payment URL:', paymentApiUrl);
+      
+      const directResponse = await fetch(paymentApiUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      console.log('Direct payment response status:', directResponse.status);
+      
+      if (directResponse.ok) {
+        // Try to parse as JSON first
+        let directPaymentUrl;
+        const contentType = directResponse.headers.get('content-type');
         
-        // If we get a 400 error, try direct fetch as fallback
-        if (response?.success === false && response?.status === 400) {
-          console.log('API call failed with 400, trying direct fetch...');
+        if (contentType && contentType.includes('application/json')) {
+          const jsonResponse = await directResponse.json();
+          console.log('JSON payment response:', jsonResponse);
           
-          // Construct the direct API URL
-          const directUrl = `${API_URL}/payment/${selectedBookingForPayment.bookingId}`;
-          console.log('Direct payment URL:', directUrl);
-          
-          // Fetch directly from the API with auth token
-          const directResponse = await fetch(directUrl, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          
-          if (directResponse.ok) {
-            const paymentUrl = await directResponse.text();
-            console.log('Direct payment URL response:', paymentUrl);
-            
-            if (paymentUrl && paymentUrl.includes('vnpayment.vn')) {
-              // Success, redirect to payment page
-              window.location.href = paymentUrl;
-              setShowCompletionModal(false);
-              setShowPaymentButton(false);
-              return;
-            } else {
-              throw new Error("Invalid payment URL in direct response");
-            }
+          // Check for URL in JSON response
+          if (typeof jsonResponse === 'string' && jsonResponse.includes('vnpayment.vn')) {
+            directPaymentUrl = jsonResponse;
+          } else if (jsonResponse?.result && typeof jsonResponse.result === 'string') {
+            directPaymentUrl = jsonResponse.result;
           } else {
-            const errorText = await directResponse.text();
-            throw new Error(`Direct API call failed: ${directResponse.status} - ${errorText}`);
-          }
-        }
-        
-        // Continue with normal flow for successful APIClient response
-        if (typeof response === 'string' && response.includes('vnpayment.vn')) {
-          window.location.href = response;
-          setShowCompletionModal(false);
-          setShowPaymentButton(false);
-        } else if (response && response.result && typeof response.result === 'string' && response.result.includes('vnpayment.vn')) {
-          window.location.href = response.result;
-          setShowCompletionModal(false);
-          setShowPaymentButton(false);
-        } else if (response && typeof response === 'object') {
-          // Look for possible URL properties
-          console.log('Response properties:', Object.keys(response));
-          
-          for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
-            if (response[prop] && typeof response[prop] === 'string' && response[prop].includes('vnpayment.vn')) {
-              window.location.href = response[prop];
-              setShowCompletionModal(false);
-              setShowPaymentButton(false);
-              return;
-            }
-          }
-          
-          // If we got here with a success response but no URL, try opening a direct URL
-          if (response?.success !== false) {
-            const fallbackUrl = `${API_URL}/payment/${selectedBookingForPayment.bookingId}`;
-            console.log('No payment URL found, trying fallback redirect to:', fallbackUrl);
-            
-            // Add auth token to the fallback request
-            const fallbackResponse = await fetch(fallbackUrl, {
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            });
-            
-            if (fallbackResponse.ok) {
-              const fallbackPaymentUrl = await fallbackResponse.text();
-              if (fallbackPaymentUrl && fallbackPaymentUrl.includes('vnpayment.vn')) {
-                window.location.href = fallbackPaymentUrl;
-                setShowCompletionModal(false);
-                setShowPaymentButton(false);
-                return;
+            // Look for URL in properties
+            for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
+              if (jsonResponse[prop] && typeof jsonResponse[prop] === 'string' && jsonResponse[prop].includes('vnpayment.vn')) {
+                directPaymentUrl = jsonResponse[prop];
+                break;
               }
             }
           }
-          
-          throw new Error(`Payment failed: ${response?.message || 'Unknown error'}`);
         } else {
-          throw new Error("Invalid payment response format");
+          // Handle text response
+          directPaymentUrl = await directResponse.text();
         }
-      } catch (err) {
-        console.error('Error getting payment URL:', err);
-        showToast(err.message || "Failed to get payment URL. Please try again later.", "error");
         
-        // If unauthorized, redirect to login
-        if (err.message?.toLowerCase().includes('auth') || err.message?.toLowerCase().includes('unauthorized')) {
-          router.push('/login');
+        if (directPaymentUrl && directPaymentUrl.includes('vnpayment.vn')) {
+          console.log('Found payment URL from direct fetch:', directPaymentUrl);
+          window.location.href = directPaymentUrl;
+          setShowCompletionModal(false);
           return;
         }
-        
-        // Show more information about the error
-        console.log('Error details:', err);
       }
+      
+      throw new Error("Could not find valid payment URL in response");
+    } catch (err) {
+      console.error('Error getting payment URL:', err);
+      showToast(err.message || "Failed to get payment URL. Please try again later.", "error");
     }
   };
 
@@ -791,7 +873,7 @@ const BookingListPending = () => {
                     className="cancel-button"
                     onClick={() => {
                       setShowCompletionModal(false);
-                      setShowPaymentButton(false);
+                      // Don't reset payment button state so user can come back to it
                     }}
                   >
                     Close
