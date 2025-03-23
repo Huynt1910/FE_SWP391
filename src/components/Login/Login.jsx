@@ -90,6 +90,7 @@ export const Login = () => {
             <form onSubmit={handleSubmit}>
               <h3>Login</h3>
               {/* <SocialLogin /> */}
+              {/* <SocialLogin /> */}
 
               <div className="box-field">
                 <input

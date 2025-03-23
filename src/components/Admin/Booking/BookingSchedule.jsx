@@ -3,6 +3,7 @@ import { FaSpinner, FaCalendarPlus } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useCustomerActions } from "@/auth/hook/admin/useCustomerActions";
 import { useBookingsByDate } from "@/auth/hook/admin/useGetBookingByDateHook";
@@ -13,7 +14,6 @@ import { useVoucherActions } from "@/auth/hook/admin/useVoucherActions";
 
 import BookingTable from "./components/BookingTable";
 import BookingAddModal from "./components/BookingAddModal";
-// import BookingEditModal from "./components/BookingEditModal";
 import InvoiceModal from "./components/InvoiceModal";
 
 const Bookings = () => {
@@ -23,19 +23,24 @@ const Bookings = () => {
     [selectedDate]
   );
 
-  const [modalState, setModalState] = useState({ add: false, edit: false });
-  const [selectedBooking, setSelectedBooking] = useState(null);
-
+  const [modalState, setModalState] = useState({ add: false });
+  const [invoiceData, setInvoiceData] = useState(null);
   const [showInvoice, setShowInvoice] = useState(false);
-  const [invoiceData, setInvoiceData] = useState(response);
+
+  const queryClient = useQueryClient();
 
   const { data: bookings = [], isLoading: isLoadingBookings } =
     useBookingsByDate(formattedDate);
-  const { createBookingStaff, updateBooking, checkInBooking, completeBooking } =
-    useBookingActions({
-      setInvoiceData,
-      setShowInvoiceModal: setShowInvoice,
-    });
+
+  const {
+    createBookingStaff,
+    checkInBooking,
+    completeBooking,
+    checkoutBooking,
+  } = useBookingActions({
+    setInvoiceData,
+  });
+
   const { customers } = useCustomerActions();
   const { services, isLoading: isLoadingServices } = useServiceActions();
   const { therapists } = useTherapistActions();
@@ -48,15 +53,21 @@ const Bookings = () => {
   const handleCheckIn = async (bookingId) => {
     try {
       await checkInBooking(bookingId);
-    } catch (err) {
+      toast.success("Check-in thành công!");
+    } catch {
       toast.error("Lỗi khi check-in!");
     }
   };
 
   const handleComplete = async (bookingId) => {
     try {
-      await completeBooking(bookingId);
-    } catch (err) {
+      const invoice = await completeBooking(bookingId);
+      if (invoice) {
+        setInvoiceData(invoice); // Hiển thị modal hóa đơn
+        setShowInvoice(true);
+        queryClient.invalidateQueries(["bookings"]);
+      }
+    } catch {
       toast.error("Lỗi khi hoàn thành dịch vụ!");
     }
   };
@@ -65,24 +76,32 @@ const Bookings = () => {
     try {
       await createBookingStaff(data);
       closeModal("add");
-    } catch (err) {
+    } catch {
       toast.error("Lỗi khi thêm lịch hẹn!");
     }
   };
 
-  const openModal = (type, booking = null) => {
+  const handleCheckout = async (bookingId) => {
+    try {
+      await checkoutBooking(bookingId); // Gọi API checkout
+      toast.success("Thanh toán thành công!");
+    } catch (error) {
+      console.error("Error during checkout:", error);
+      toast.error("Lỗi khi thực hiện thanh toán!");
+    }
+  };
+
+  const openModal = (type) => {
     setModalState((prev) => ({ ...prev, [type]: true }));
-    if (type === "edit") setSelectedBooking(booking);
   };
 
   const closeModal = (type) => {
     setModalState((prev) => ({ ...prev, [type]: false }));
-    if (type === "edit") setSelectedBooking(null);
   };
 
   const handleCloseInvoice = () => {
-    setShowInvoice(false);
     setInvoiceData(null);
+    setShowInvoice(false);
   };
 
   if (isLoadingServices || isLoadingBookings) {
@@ -115,12 +134,11 @@ const Bookings = () => {
       </div>
 
       <BookingTable
-        customers={customers}
         bookings={bookings}
+        customers={customers}
         services={services}
         therapists={therapists}
         vouchers={vouchers}
-        onEdit={(booking) => openModal("edit", booking)}
         onCheckIn={handleCheckIn}
         onComplete={handleComplete}
       />
@@ -135,19 +153,12 @@ const Bookings = () => {
         />
       )}
 
-      {/* {modalState.edit && selectedBooking && (
-        <BookingEditModal
-          booking={selectedBooking}
-          services={services}
-          therapists={therapists}
-          vouchers={vouchers}
-          onClose={() => closeModal("edit")}
-          onConfirm={updateBooking}
-        />
-      )} */}
-
       {showInvoice && invoiceData && (
-        <InvoiceModal data={invoiceData} onClose={handleCloseInvoice} />
+        <InvoiceModal
+          data={invoiceData} // Dữ liệu hóa đơn từ API
+          onCheckout={handleCheckout} // Truyền hàm xử lý thanh toán
+          onClose={handleCloseInvoice}
+        />
       )}
     </div>
   );

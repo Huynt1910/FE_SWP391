@@ -78,11 +78,7 @@ export const END_POINTS = {
     method: "GET",
     secure: true,
   },
-  getTherapistsByService: {
-    path: "/booking/therapists",
-    method: "POST",
-    secure: false,
-  },
+
   createTherapist: { path: "/therapists", method: "POST", secure: true },
   updateTherapist: {
     path: "/therapists/updateTherapist/:id",
@@ -205,6 +201,7 @@ export const END_POINTS = {
   },
 
   // Booking
+
   getAllBookings: {
     path: "/booking/getallBooking",
     method: "GET",
@@ -220,7 +217,7 @@ export const END_POINTS = {
     path: "/booking/customer/:userId/pending",
     method: "GET",
     parameterized: true,
-    secure: true
+    secure: true,
   },
   deleteBooking: {
     path: "/booking/delete/:bookingId",
@@ -229,7 +226,7 @@ export const END_POINTS = {
     secure: true,
   },
   finishBooking: {
-    path: "/booking/:bookingId/finish",
+    path: "/booking/:id/finish",
     method: "POST",
     parameterized: true,
     secure: true,
@@ -250,6 +247,11 @@ export const END_POINTS = {
     secure: true,
   },
 
+  checkOutBooking: {
+    path: "/booking/checkout?bookingId=:id",
+    method: "PUT",
+    secure: true,
+  },
   getAllSlots: { path: "/slot/getAllSlot", method: "GET", secure: true },
   getSurveyQuestions: {
     path: "/survey/questions",
@@ -312,7 +314,7 @@ export const END_POINTS = {
     method: "GET",
     secure: true,
   },
-  getActiveVouchers: {
+  getVouchers: {
     path: "/vouchers/active",
     method: "GET",
     secure: true,
@@ -389,7 +391,7 @@ export const ACTIONS = {
   DEACTIVATE_USER: "deactivateUser",
   ACTIVATE_USER: "activateUser",
   RESET_USER_PASSWORD: "resetUserPassword",
-
+  CHECKOUT_BOOKING: "checkOutBooking",
   // Separate voucher actions
   GET_ALL_VOUCHERS: "getAllVouchers",
   CREATE_VOUCHER: "createVoucher",
@@ -398,9 +400,7 @@ export const ACTIONS = {
   ACTIVATE_VOUCHER: "activateVoucher",
 
   GET_THERAPIST_BY_DATE: "getTherapistByDate",
-  GET_ACTIVE_VOUCHERS: "getActiveVouchers",
   CHECK_IN_BOOKING: "checkInBooking",
-  COMPLETE_BOOKING: "completeBooking",
 };
 
 export const ROLES = {
