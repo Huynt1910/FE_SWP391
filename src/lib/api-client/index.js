@@ -205,12 +205,14 @@ export class APIClient {
       const contentTypeHeader = isFormData
         ? {}
         : { "Content-Type": "application/json" };
+      const token = getCookie("access_token");
 
       const response = await axios({
         method: endpoint.method,
         url: this._buildUrl(endpoint, pathParams),
         data,
         headers: {
+          Authorization: token ? `Bearer ${token}` : "",
           ...headers,
           ...contentTypeHeader,
         },
