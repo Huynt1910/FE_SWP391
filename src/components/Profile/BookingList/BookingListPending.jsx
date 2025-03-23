@@ -571,7 +571,7 @@ const BookingListPending = () => {
   return (
     <div className="booking-list-pending">
       <div className="booking-list-pending__header">
-        <h2>Your Pending Bookings</h2>
+        <h2>Your Bookings</h2>
         <p>These bookings are awaiting confirmation from our clinic</p>
       </div>
 

@@ -13,11 +13,11 @@ export const navItem = [
     path: "/service",
     auth: false,
   },
-  {
-    title: "Categories",
-    path: "/categories",
-    auth: false,
-  },
+  // {
+  //   title: "Categories",
+  //   path: "/categories",
+  //   auth: false,
+  // },
   {
     title: "Book Appointment",
     path: "/booking",
