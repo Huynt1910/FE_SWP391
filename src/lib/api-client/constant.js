@@ -223,7 +223,7 @@ export const END_POINTS = {
     secure: false,
   },
   deleteBooking: {
-    path: "/booking/:bookingId",
+    path: "/booking/delete/:bookingId",
     method: "DELETE",
     parameterized: true,
     secure: true,

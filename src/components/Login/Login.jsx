@@ -6,7 +6,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { ROLES } from "@/lib/api-client/constant";
 import { setAuthData } from "@/utils/auth";
-import { SocialLogin } from "../shared/SocialLogin/SocialLogin";
+// import { SocialLogin } from "../shared/SocialLogin/SocialLogin";
 
 export const Login = () => {
   const router = useRouter();
@@ -39,7 +39,7 @@ export const Login = () => {
       console.log("Login response:", response); // Debug log
 
       if (response?.result?.token) {
-        // Store auth data using the utility function
+        // Lưu token và role
         setAuthData(
           response.result.token,
           response.result.role,
@@ -48,7 +48,7 @@ export const Login = () => {
 
         toast.success("Login successful!");
 
-        // Redirect based on role
+        // Chuyển hướng dựa trên role
         switch (response.result.role.toUpperCase()) {
           case ROLES.ADMIN:
             router.push("/admin/dashboard");
@@ -90,7 +90,7 @@ export const Login = () => {
           >
             <form onSubmit={handleSubmit}>
               <h3>Login</h3>
-              <SocialLogin />
+              {/* <SocialLogin /> */}
 
               <div className="box-field">
                 <input
