@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { getCookie } from "cookies-next";
-import { API_URL } from "@/lib/api-client/constantAdmin";
+import { API_URL } from "@/lib/api-client/constant";
 
 export const useDashboardActions = () => {
   const token = getCookie("token");

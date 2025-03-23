@@ -2,9 +2,8 @@ import React from "react";
 import { format } from "date-fns";
 import { FaTrash, FaEdit } from "react-icons/fa";
 
-const ScheduleTable = ({ schedules, onDelete, onEdit }) => {
-  // Check for valid schedules data structure
-  if (!schedules?.result || schedules.result.length === 0) {
+const ScheduleTable = ({ schedules, onEdit, onDelete }) => {
+  if (!schedules || schedules.length === 0) {
     return (
       <div className="admin-page__table-empty">
         Không có lịch làm việc cho ngày này
@@ -24,7 +23,7 @@ const ScheduleTable = ({ schedules, onDelete, onEdit }) => {
           </tr>
         </thead>
         <tbody>
-          {schedules.result.map((schedule) => (
+          {schedules.map((schedule) => (
             <tr key={schedule.id}>
               <td>{schedule.therapistName}</td>
               <td>{format(new Date(schedule.workingDate), "dd/MM/yyyy")}</td>

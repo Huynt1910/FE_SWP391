@@ -20,6 +20,6 @@ export function useMyInfo() {
 
       throw new Error(response.message || "Lỗi khi lấy thông tin cá nhân");
     },
-    enabled: !!token, // Chỉ chạy khi có token
+    enabled: !!token,
   });
 }

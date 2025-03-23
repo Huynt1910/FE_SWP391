@@ -1,107 +1,81 @@
 import React, { useState } from "react";
 import { FaSpinner, FaUserPlus } from "react-icons/fa";
 import { useStaffActions } from "@/auth/hook/admin/useStaffActions";
-import StaffTabs from "./components/StaffTabs";
-import StaffTable from "./components/StaffTable";
-import StaffEditModal from "./components/StaffEditModal";
-import StaffAddModal from "./components/StaffAddModal";
-import ResetPasswordModal from "./components/ResetPasswordModal";
-import { toast } from "react-toastify";
+import StaffTable from "./Components/StaffTable";
+import StaffEditModal from "./Components/StaffEditModal";
+import StaffAddModal from "./Components/StaffAddModal";
+import ResetPasswordModal from "./Components/ResetPasswordModal";
 
 const Staffs = () => {
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [modalState, setModalState] = useState({
+    edit: false,
+    add: false,
+    resetPassword: false,
+  });
+
   const {
-    useGetAllStaffs,
-    useGetActiveStaffs,
-    useGetInactiveStaffs,
-    useDeleteStaff,
-    useRestoreStaff,
-    useResetPassword,
-    useUpdateStaff,
+    staffs,
+    isLoading,
+    createStaff,
+    updateStaff,
+    deactivateStaff,
+    activateStaff,
+    resetPassword,
   } = useStaffActions();
 
-  const [activeTab, setActiveTab] = useState("ALL");
-  const [selectedStaff, setSelectedStaff] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
-
-  const { mutateAsync: resetPassword, isLoading: isResetting } =
-    useResetPassword();
-  const { mutateAsync: updateStaff, isLoading: isUpdating } = useUpdateStaff();
-  const { mutateAsync: deleteStaff } = useDeleteStaff();
-  const { mutateAsync: restoreStaff } = useRestoreStaff();
-
-  const { data: allStaffs, isLoading: loadingAll } = useGetAllStaffs();
-  const { data: activeStaffs, isLoading: loadingActive } = useGetActiveStaffs();
-  const { data: inactiveStaffs, isLoading: loadingInactive } =
-    useGetInactiveStaffs();
-
-  const isLoading = loadingAll || loadingActive || loadingInactive;
-
-  const handleEdit = (staff) => {
+  const openModal = (type, staff = null) => {
     setSelectedStaff(staff);
-    setShowEditModal(true);
+    setModalState((prev) => ({ ...prev, [type]: true }));
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc muốn ngưng hoạt động nhân viên này?")) {
+  const closeModal = (type) => {
+    setSelectedStaff(null);
+    setModalState((prev) => ({ ...prev, [type]: false }));
+  };
+
+  const handleToggleStatus = async (staff) => {
+    const isActive = staff.status;
+    const message = isActive
+      ? "Bạn có chắc muốn ngưng hoạt động nhân viên này?"
+      : "Bạn có chắc muốn khôi phục hoạt động nhân viên này?";
+
+    if (window.confirm(message)) {
       try {
-        await deleteStaff(id);
+        await (isActive ? deactivateStaff(staff.id) : activateStaff(staff.id));
       } catch (error) {
-        console.error(error);
+        console.error("Error toggling staff status:", error);
       }
     }
   };
 
-  const handleRestore = async (id) => {
-    if (window.confirm("Bạn có chắc muốn khôi phục hoạt động nhân viên này?")) {
-      try {
-        await restoreStaff(id);
-      } catch (error) {
-        console.error(error);
-      }
+  const handleUpdateConfirm = async (data) => {
+    try {
+      await updateStaff({ id: selectedStaff.id, data });
+      closeModal("edit");
+    } catch (error) {
+      console.error("Error updating staff:", error);
     }
   };
 
-  const handleResetPasswordClick = (staff) => {
-    setSelectedStaff(staff);
-    setShowResetPasswordModal(true);
+  const handleAddConfirm = async (staffData) => {
+    try {
+      await createStaff(staffData);
+      closeModal("add");
+    } catch (error) {
+      console.error("Error creating staff:", error);
+    }
   };
 
   const handleResetPasswordConfirm = async (passwordData) => {
     try {
       await resetPassword({
         id: selectedStaff.id,
-        data: {
-          newPassword: passwordData.newPassword,
-          confirmPassword: passwordData.confirmPassword,
-        },
+        data: passwordData,
       });
-      setShowResetPasswordModal(false);
-      setSelectedStaff(null);
+      closeModal("resetPassword");
     } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleUpdateConfirm = async (id, data) => {
-    try {
-      await updateStaff({ id, data });
-      setShowEditModal(false);
-      setSelectedStaff(null);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const getCurrentStaffs = () => {
-    switch (activeTab) {
-      case "ACTIVE":
-        return activeStaffs || [];
-      case "INACTIVE":
-        return inactiveStaffs || [];
-      default:
-        return allStaffs || [];
+      console.error("Error resetting password:", error);
     }
   };
 
@@ -122,63 +96,39 @@ const Staffs = () => {
           <p>Quản lý thông tin các nhân viên của spa</p>
         </div>
         <div className="admin-page__header-actions">
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowAddModal(true)}
-          >
+          <button className="btn btn-primary" onClick={() => openModal("add")}>
             <FaUserPlus /> Thêm Nhân viên
           </button>
         </div>
       </div>
 
-      <StaffTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        counts={{
-          all: allStaffs?.length || 0,
-          active: activeStaffs?.length || 0,
-          inactive: inactiveStaffs?.length || 0,
-        }}
-      />
-
       <StaffTable
-        staffs={getCurrentStaffs()}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onRestore={handleRestore}
-        onResetPassword={handleResetPasswordClick}
+        staffs={staffs || []}
+        onEdit={(staff) => openModal("edit", staff)}
+        onToggleStatus={handleToggleStatus}
+        onResetPassword={(staff) => openModal("resetPassword", staff)}
       />
 
-      {showAddModal && (
+      {modalState.add && (
         <StaffAddModal
-          onClose={() => setShowAddModal(false)}
-          onAdd={() => {
-            setShowAddModal(false);
-          }}
+          onClose={() => closeModal("add")}
+          onConfirm={handleAddConfirm}
         />
       )}
 
-      {showEditModal && selectedStaff && (
+      {modalState.edit && selectedStaff && (
         <StaffEditModal
           staff={selectedStaff}
-          onClose={() => {
-            setShowEditModal(false);
-            setSelectedStaff(null);
-          }}
+          onClose={() => closeModal("edit")}
           onConfirm={handleUpdateConfirm}
-          isLoading={isUpdating}
         />
       )}
 
-      {showResetPasswordModal && selectedStaff && (
+      {modalState.resetPassword && selectedStaff && (
         <ResetPasswordModal
           staff={selectedStaff}
-          onClose={() => {
-            setShowResetPasswordModal(false);
-            setSelectedStaff(null);
-          }}
+          onClose={() => closeModal("resetPassword")}
           onConfirm={handleResetPasswordConfirm}
-          isLoading={isResetting}
         />
       )}
     </div>

@@ -1,124 +1,154 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { API_URL } from "@/lib/api-client/constant";
+import { APIClient } from "@/lib/api-client";
+import { ACTIONS } from "@/lib/api-client/constant";
 import { getCookie } from "cookies-next";
 import { toast } from "react-toastify";
 
-export const useBookingActions = (selectedDate) => {
+export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
   const token = getCookie("token");
   const queryClient = useQueryClient();
 
-  // Get all bookings
-  const getAllBookings = useQuery({
-    queryKey: ["bookings"],
-    queryFn: async () => {
-      const response = await axios.get(`${API_URL}/booking/getallBooking`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Bookings response:", response.data);
-      return response.data;
-    },
-  });
+  const authHeaders = {
+    Authorization: `Bearer ${token}`,
+  };
 
-  // Get all services
-  const getAllServices = useQuery({
-    queryKey: ["services"],
-    queryFn: async () => {
-      const response = await axios.get(`${API_URL}/services`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Services response:", response.data);
-      return response.data;
-    },
-  });
-
-  // Get available therapists for selected date
-  const getAvailableTherapists = useQuery({
-    queryKey: ["available-therapists", selectedDate],
-    queryFn: async () => {
-      const response = await axios.get(
-        `${API_URL}/schedule/therapist/${selectedDate}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      console.log("Therapists response:", response.data);
-      return response.data;
-    },
-    enabled: !!selectedDate,
-  });
-
-  // Get active vouchers
-  const getActiveVouchers = useQuery({
-    queryKey: ["active-vouchers"],
-    queryFn: async () => {
-      const response = await axios.get(`${API_URL}/vouchers/active`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Vouchers response:", response.data);
-      return response.data;
-    },
-  });
-
-  // Get all slots
-  const getAllSlots = useQuery({
-    queryKey: ["slots"],
-    queryFn: async () => {
-      const response = await axios.get(`${API_URL}/slots`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Slots response:", response.data);
-      return response.data;
-    },
-  });
-
-  // Create booking
-  const createBooking = useMutation({
+  const createBookingStaff = useMutation({
     mutationFn: async (bookingData) => {
-      const formattedData = {
-        userId: 2,
-        slotId: parseInt(bookingData.slotId),
-        bookingDate: bookingData.bookingDate,
-        serviceId: bookingData.serviceId.map((id) => parseInt(id)),
-        therapistId: parseInt(bookingData.therapistId),
-        voucherId:
-          bookingData.voucherId === ""
-            ? "null"
-            : parseInt(bookingData.voucherId),
-      };
-
-      console.log("Sending booking data:", formattedData);
-
-      const response = await axios.post(
-        `${API_URL}/staffs/booking`,
-        formattedData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      return response.data;
+      const response = await APIClient.invoke({
+        action: ACTIONS.CREATE_BOOKING_STAFF,
+        data: bookingData,
+        headers: authHeaders,
+      });
+      return response;
     },
     onSuccess: () => {
+      toast.success("Thêm lịch hẹn thành công!");
       queryClient.invalidateQueries(["bookings"]);
-      toast.success("Tạo lịch hẹn thành công!");
     },
     onError: (error) => {
-      console.error("Booking error:", error);
-      toast.error(
-        error.response?.data?.message || "Có lỗi xảy ra khi tạo lịch hẹn!"
-      );
+      toast.error(error.message || "Có lỗi khi thêm lịch hẹn!");
     },
   });
 
+  const updateBooking = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.UPDATE_BOOKING,
+        pathParams: { id },
+        data,
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Cập nhật thành công!");
+      queryClient.invalidateQueries(["bookings"]);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi khi cập nhật!");
+    },
+  });
+
+  const checkInBooking = useMutation({
+    mutationFn: async (bookingId) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.CHECK_IN_BOOKING,
+        pathParams: { id: bookingId },
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Check-in thành công!");
+      queryClient.invalidateQueries(["bookings"]);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi khi check-in!");
+    },
+  });
+
+  const completeBooking = (bookingId) => {
+    const { data, isLoading, error } = useQuery(
+      ["completeBooking", bookingId],
+      async () => {
+        const response = await APIClient.invoke({
+          action: ACTIONS.COMPLETE_BOOKING,
+          pathParams: { id: bookingId },
+          headers: authHeaders,
+        });
+        return response.result;
+      },
+      {
+        enabled: !!bookingId, // Only fetch if bookingId is provided
+        onSuccess: (response) => {
+          toast.success("Hoàn thành dịch vụ thành công!");
+          setInvoiceData(response); // Set invoice data
+          setShowInvoiceModal?.(true); // Show the invoice modal
+        },
+        onError: (error) => {
+          toast.error(error.message || "Có lỗi khi hoàn thành dịch vụ!");
+        },
+      }
+    );
+
+    return { data, isLoading, error };
+  };
+
+  const checkoutBooking = async (bookingId, method) => {
+    try {
+      if (method === "cash") {
+        // Tiền mặt: gọi API checkout luôn
+        await APIClient.invoke.put("/booking/checkout", null, {
+          params: { bookingId },
+          headers: authHeaders,
+        });
+        toast.success("Thanh toán tiền mặt thành công!");
+        queryClient.invalidateQueries(["bookings"]);
+      } else if (method === "banking") {
+        // Chuyển khoản: lấy QR VNPay trước
+        const res = await APIClient.invoke.get(`/payment/${bookingId}`, {
+          headers: authHeaders,
+        });
+
+        const vnpayUrl = res?.data?.url;
+        if (!vnpayUrl) {
+          toast.error("Không lấy được link thanh toán!");
+          return;
+        }
+
+        // Mở tab thanh toán
+        window.open(vnpayUrl, "_blank");
+        toast.info("Vui lòng hoàn tất thanh toán qua VNPay.");
+
+        // Yêu cầu người dùng nhập mã giao dịch sau khi thanh toán
+        const transactionId = prompt(
+          "Nhập mã giao dịch (transactionId) sau khi thanh toán:"
+        );
+
+        if (!transactionId) {
+          toast.warning("Bạn chưa nhập mã giao dịch!");
+          return;
+        }
+
+        // Gọi checkout kèm transactionId
+        await APIClient.invoke.put("/booking/checkout", null, {
+          params: { bookingId, transactionId },
+          headers: authHeaders,
+        });
+
+        toast.success("Thanh toán chuyển khoản thành công!");
+        queryClient.invalidateQueries(["bookings"]);
+      }
+    } catch (error) {
+      toast.error(error.message || "Thanh toán thất bại!");
+    }
+  };
+
   return {
-    getAllBookings,
-    getAllServices,
-    getAvailableTherapists,
-    getActiveVouchers,
-    getAllSlots,
-    createBooking,
+    createBookingStaff: createBookingStaff.mutateAsync,
+    updateBooking: updateBooking.mutateAsync,
+    checkInBooking: checkInBooking.mutateAsync,
+    completeBooking,
+    checkoutBooking,
   };
 };

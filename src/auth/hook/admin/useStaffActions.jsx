@@ -1,174 +1,129 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { getCookie } from "cookies-next";
-import { API_URL } from "@/lib/api-client/constantAdmin";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { APIClient } from "@/lib/api-client";
+import { ACTIONS } from "@/lib/api-client/constant";
 import { toast } from "react-toastify";
+import { getCookie } from "cookies-next";
 
 export const useStaffActions = () => {
   const token = getCookie("token");
-  const queryClient = useQueryClient();
-
-  const useGetAllStaffs = () => {
-    return useQuery({
-      queryKey: ["allStaffs"],
-      queryFn: async () => {
-        const response = await axios.get(`${API_URL}/staffs`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        return response.data.result || [];
-      },
-    });
+  const authHeaders = {
+    Authorization: `Bearer ${token}`,
   };
 
-  const useGetActiveStaffs = () => {
-    return useQuery({
-      queryKey: ["activeStaffs"],
-      queryFn: async () => {
-        const response = await axios.get(`${API_URL}/staffs/activeStaffs`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        return response.data.result || [];
-      },
-    });
-  };
+  const {
+    data: staffs,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["staffs"],
+    queryFn: async () => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.GET_ALL_STAFFS,
+        headers: authHeaders,
+      });
+      return response.result || [];
+    },
+  });
 
-  const useGetInactiveStaffs = () => {
-    return useQuery({
-      queryKey: ["inactiveStaffs"],
-      queryFn: async () => {
-        const response = await axios.get(`${API_URL}/staffs/inactiveStaffs`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        return response.data.result || [];
-      },
-    });
-  };
+  const createStaff = useMutation({
+    mutationFn: async (staffData) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.CREATE_STAFF,
+        data: staffData,
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Thêm nhân viên thành công!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi xảy ra khi thêm nhân viên!");
+    },
+  });
 
-  const useAddStaff = () => {
-    return useMutation({
-      mutationFn: async (data) => {
-        const response = await axios.post(
-          `${API_URL}/staffs`,
-          {
-            username: data.username,
-            password: data.password,
-            fullName: data.fullName,
-            email: data.email,
-            phone: data.phone,
-            address: data.address,
-            gender: data.gender,
-            birthDate: data.birthDate,
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        return response.data;
-      },
-      onSuccess: (data) => {
-        toast.success(data.message);
-        queryClient.invalidateQueries(["allStaffs"]);
-        queryClient.invalidateQueries(["activeStaffs"]);
-        queryClient.invalidateQueries(["inactiveStaffs"]);
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-      },
-    });
-  };
+  const updateStaff = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.UPDATE_STAFF,
+        pathParams: { id },
+        data,
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Cập nhật thông tin thành công!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật!");
+    },
+  });
 
-  const useUpdateStaff = () => {
-    return useMutation({
-      mutationFn: async ({ id, data }) => {
-        const response = await axios.put(
-          `${API_URL}/staffs/updateStaff/${id}`,
-          data,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-      },
-      onSuccess: (data) => {
-        toast.success(data.message);
-        queryClient.invalidateQueries(["staffs"]);
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-      },
-    });
-  };
+  const deactivateStaff = useMutation({
+    mutationFn: async (id) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.DEACTIVATE_STAFF,
+        pathParams: { id },
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Đã ngưng hoạt động tài khoản thành công!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi xảy ra!");
+    },
+  });
 
-  const useDeleteStaff = () => {
-    return useMutation({
-      mutationFn: async (id) => {
-        const response = await axios.put(
-          `${API_URL}/staffs/delete/${id}`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-      },
-      onSuccess: (data) => {
-        toast.success(data.message);
-        queryClient.invalidateQueries(["allStaffs"]);
-        queryClient.invalidateQueries(["activeStaffs"]);
-        queryClient.invalidateQueries(["inactiveStaffs"]);
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-      },
-    });
-  };
+  const activateStaff = useMutation({
+    mutationFn: async (id) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.ACTIVATE_STAFF,
+        pathParams: { id },
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Đã kích hoạt tài khoản thành công!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi xảy ra!");
+    },
+  });
 
-  const useRestoreStaff = () => {
-    return useMutation({
-      mutationFn: async (id) => {
-        const response = await axios.put(
-          `${API_URL}/staffs/restore/${id}`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-      },
-      onSuccess: (data) => {
-        toast.success(data.message);
-        queryClient.invalidateQueries(["allStaffs"]);
-        queryClient.invalidateQueries(["activeStaffs"]);
-        queryClient.invalidateQueries(["inactiveStaffs"]);
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-      },
-    });
-  };
-
-  const useResetPassword = () => {
-    return useMutation({
-      mutationFn: async ({ id, data }) => {
-        const response = await axios.put(
-          `${API_URL}/staffs/reset-password/${id}`,
-          data,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-      },
-      onSuccess: (data) => {
-        toast.success(data.message);
-        queryClient.invalidateQueries(["staffs"]);
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-      },
-    });
-  };
+  const resetPassword = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.RESET_STAFF_PASSWORD,
+        pathParams: { id },
+        data,
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Đặt lại mật khẩu thành công!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi xảy ra khi đặt lại mật khẩu!");
+    },
+  });
 
   return {
-    useGetAllStaffs,
-    useGetActiveStaffs,
-    useGetInactiveStaffs,
-    useAddStaff,
-    useUpdateStaff,
-    useDeleteStaff,
-    useRestoreStaff,
-    useResetPassword,
+    staffs,
+    isLoading,
+    createStaff: createStaff.mutate,
+    updateStaff: updateStaff.mutate,
+    deactivateStaff: deactivateStaff.mutate,
+    activateStaff: activateStaff.mutate,
+    resetPassword: resetPassword.mutate,
   };
 };

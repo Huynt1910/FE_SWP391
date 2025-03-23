@@ -1,13 +1,7 @@
 import React from "react";
 import { FaEdit, FaTrash, FaUserPlus, FaKey } from "react-icons/fa";
 
-const StaffTable = ({
-  staffs,
-  onEdit,
-  onDelete,
-  onRestore,
-  onResetPassword,
-}) => {
+const StaffTable = ({ staffs, onEdit, onToggleStatus, onResetPassword }) => {
   return (
     <div className="admin-page__table">
       <table>
@@ -24,7 +18,7 @@ const StaffTable = ({
         </thead>
         <tbody>
           {staffs.map((staff) => (
-            <tr key={staff.id}>
+            <tr key={staff.id} className={!staff.status ? "inactive-row" : ""}>
               <td>{staff.fullName}</td>
               <td>{staff.email}</td>
               <td>{staff.phone}</td>
@@ -32,11 +26,13 @@ const StaffTable = ({
               <td>{staff.gender === "Male" ? "Nam" : "Nữ"}</td>
               <td>
                 <span
-                  className={`status-badge status-badge--${
-                    staff.status ? "active" : "inactive"
+                  className={`status-badge ${
+                    staff.status
+                      ? "status-badge--active"
+                      : "status-badge--inactive"
                   }`}
                 >
-                  {staff.status ? "Hoạt động" : "Ngưng hoạt động"}
+                  {staff.status ? "Hoạt động" : "Không hoạt động"}
                 </span>
               </td>
               <td>
@@ -59,7 +55,7 @@ const StaffTable = ({
                     <button
                       className="delete-btn"
                       title="Ngưng hoạt động"
-                      onClick={() => onDelete(staff.id)}
+                      onClick={() => onToggleStatus(staff)}
                     >
                       <FaTrash />
                     </button>
@@ -67,7 +63,7 @@ const StaffTable = ({
                     <button
                       className="restore-btn"
                       title="Khôi phục hoạt động"
-                      onClick={() => onRestore(staff.id)}
+                      onClick={() => onToggleStatus(staff)}
                     >
                       <FaUserPlus />
                     </button>

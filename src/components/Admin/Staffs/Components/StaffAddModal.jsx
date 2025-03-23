@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { FaSpinner } from "react-icons/fa";
-import { useStaffActions } from "@/auth/hook/admin/useStaffActions";
+import { FaSpinner, FaUpload } from "react-icons/fa";
+import { toast } from "react-toastify";
 
-const StaffAddModal = ({ onClose }) => {
-  const { useAddStaff } = useStaffActions();
-  const { mutate: addStaff, isLoading } = useAddStaff();
-
+const TherapistAddModal = ({ onClose, onConfirm }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -15,15 +13,59 @@ const StaffAddModal = ({ onClose }) => {
     address: "",
     gender: "Male",
     birthDate: "",
+    yearExperience: "",
   });
+  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    addStaff(formData, {
-      onSuccess: () => {
-        onClose();
-      },
-    });
+    setIsSubmitting(true);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("username", formData.username);
+      formDataToSend.append("password", formData.password);
+      formDataToSend.append("fullName", formData.fullName);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("address", formData.address);
+      formDataToSend.append("gender", formData.gender);
+      formDataToSend.append("birthDate", formData.birthDate);
+      formDataToSend.append("yearExperience", formData.yearExperience);
+
+      if (selectedFile) {
+        formDataToSend.append("image", selectedFile);
+      }
+
+      await onConfirm(formDataToSend);
+      onClose();
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error(error.response?.data?.message || "Lỗi thêm nhân viên");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -40,84 +82,85 @@ const StaffAddModal = ({ onClose }) => {
           className="admin-page__modal-content-body"
         >
           <div className="form-group">
-            <label>Tên đăng nhập</label>
+            <label htmlFor="username">Tên đăng nhập</label>
             <input
               type="text"
+              id="username"
+              name="username"
               value={formData.username}
-              onChange={(e) =>
-                setFormData({ ...formData, username: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Mật khẩu</label>
+            <label htmlFor="password">Mật khẩu</label>
             <input
               type="password"
+              id="password"
+              name="password"
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Họ và tên</label>
+            <label htmlFor="fullName">Họ và tên</label>
             <input
               type="text"
+              id="fullName"
+              name="fullName"
               value={formData.fullName}
-              onChange={(e) =>
-                setFormData({ ...formData, fullName: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Email</label>
+            <label htmlFor="email">Email</label>
             <input
               type="email"
+              id="email"
+              name="email"
               value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Số điện thoại</label>
+            <label htmlFor="phone">Số điện thoại</label>
             <input
               type="tel"
+              id="phone"
+              name="phone"
               value={formData.phone}
-              onChange={(e) =>
-                setFormData({ ...formData, phone: e.target.value })
-              }
+              onChange={handleChange}
+              pattern="[0-9]{10}"
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Địa chỉ</label>
+            <label htmlFor="address">Địa chỉ</label>
             <input
               type="text"
+              id="address"
+              name="address"
               value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Giới tính</label>
+            <label htmlFor="gender">Giới tính</label>
             <select
+              id="gender"
+              name="gender"
               value={formData.gender}
-              onChange={(e) =>
-                setFormData({ ...formData, gender: e.target.value })
-              }
+              onChange={handleChange}
               required
             >
               <option value="Male">Nam</option>
@@ -126,15 +169,50 @@ const StaffAddModal = ({ onClose }) => {
           </div>
 
           <div className="form-group">
-            <label>Ngày sinh</label>
+            <label htmlFor="birthDate">Ngày sinh</label>
             <input
               type="date"
+              id="birthDate"
+              name="birthDate"
               value={formData.birthDate}
-              onChange={(e) =>
-                setFormData({ ...formData, birthDate: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="yearExperience">Số năm kinh nghiệm</label>
+            <input
+              type="number"
+              id="yearExperience"
+              name="yearExperience"
+              value={formData.yearExperience}
+              onChange={handleChange}
+              min="0"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="image">Hình ảnh</label>
+            <div className="image-upload">
+              <input
+                type="file"
+                id="image"
+                name="image"
+                accept="image/*"
+                onChange={handleFileChange}
+                required
+              />
+              <label htmlFor="image" className="file-label">
+                <FaUpload /> Chọn ảnh
+              </label>
+              {imagePreview && (
+                <div className="image-preview">
+                  <img src={imagePreview} alt="Preview" />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="admin-page__modal-content-footer">
@@ -142,16 +220,22 @@ const StaffAddModal = ({ onClose }) => {
               type="button"
               className="btn btn-secondary"
               onClick={onClose}
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
               Hủy
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? <FaSpinner className="spinner" /> : "Thêm"}
+              {isSubmitting ? (
+                <>
+                  <FaSpinner className="spinner" /> Đang xử lý...
+                </>
+              ) : (
+                "Thêm"
+              )}
             </button>
           </div>
         </form>
@@ -160,4 +244,4 @@ const StaffAddModal = ({ onClose }) => {
   );
 };
 
-export default StaffAddModal;
+export default TherapistAddModal;

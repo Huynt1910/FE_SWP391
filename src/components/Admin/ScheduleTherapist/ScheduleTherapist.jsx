@@ -1,17 +1,19 @@
 import React, { useState } from "react";
+import { FaSpinner } from "react-icons/fa";
 import { useScheduleActions } from "@/auth/hook/admin/useScheduleActions";
-
 import { toast } from "react-toastify";
 import ScheduleHeader from "./components/HeaderSchedule";
 import ScheduleTable from "./components/ScheduleTable";
 import AddScheduleModal from "./components/AddScheduleModal";
 import EditScheduleModal from "./components/EditScheduleModal";
 
-const ScheduleTherapist = () => {
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedSchedule, setSelectedSchedule] = useState(null);
+const ScheduleManagement = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [modalState, setModalState] = useState({
+    add: false,
+    edit: false,
+  });
 
   const {
     useGetScheduleByDate,
@@ -20,76 +22,97 @@ const ScheduleTherapist = () => {
     useDeleteSchedule,
   } = useScheduleActions();
 
+  // Get schedules for selected date
   const { data: schedules, isLoading } = useGetScheduleByDate(selectedDate);
-  const { mutate: createSchedule, isLoading: isCreating } = useCreateSchedule();
-  const { mutate: updateSchedule, isLoading: isUpdating } = useUpdateSchedule();
-  const { mutate: deleteSchedule } = useDeleteSchedule();
+  const { mutateAsync: createSchedule, isLoading: isCreating } =
+    useCreateSchedule();
+  const { mutateAsync: updateSchedule, isLoading: isUpdating } =
+    useUpdateSchedule();
+  const { mutateAsync: deleteSchedule, isLoading: isDeleting } =
+    useDeleteSchedule();
 
-  const handleAdd = (data) => {
-    createSchedule(data, {
-      onSuccess: () => {
-        setShowAddModal(false);
-      },
-    });
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
   };
 
-  const handleEdit = (schedule) => {
+  const handleAddClick = () => {
+    setModalState({ ...modalState, add: true });
+  };
+
+  const handleEditClick = (schedule) => {
     setSelectedSchedule(schedule);
-    setShowEditModal(true);
+    setModalState({ ...modalState, edit: true });
   };
 
-  const handleUpdate = (id, data) => {
-    updateSchedule(
-      { id, data },
-      {
-        onSuccess: () => {
-          setShowEditModal(false);
-          setSelectedSchedule(null);
-        },
+  const handleCloseModal = (type) => {
+    setModalState({ ...modalState, [type]: false });
+    setSelectedSchedule(null);
+  };
+
+  const handleCreateSchedule = async (data) => {
+    try {
+      await createSchedule(data);
+      handleCloseModal("add");
+    } catch (error) {
+      toast.error("Lỗi khi tạo lịch làm việc");
+    }
+  };
+
+  const handleUpdateSchedule = async (id, data) => {
+    try {
+      // Pass the id and data separately to match the API structure
+      await updateSchedule({ id, data });
+      handleCloseModal("edit");
+    } catch (error) {
+      toast.error("Lỗi khi cập nhật lịch làm việc");
+    }
+  };
+
+  const handleDeleteSchedule = async (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa lịch làm việc này?")) {
+      try {
+        await deleteSchedule(id);
+      } catch (error) {
+        toast.error("Lỗi khi xóa lịch làm việc");
       }
-    );
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("Bạn có chắc muốn xóa lịch làm việc này?")) {
-      deleteSchedule(id);
     }
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-container">
+        <FaSpinner className="loading-spinner" />
+      </div>
+    );
   }
 
   return (
     <div className="admin-page">
       <ScheduleHeader
         selectedDate={selectedDate}
-        onDateChange={setSelectedDate}
-        onAddClick={() => setShowAddModal(true)}
+        onDateChange={handleDateChange}
+        onAddClick={handleAddClick}
       />
 
       <ScheduleTable
         schedules={schedules}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
+        onEdit={handleEditClick}
+        onDelete={handleDeleteSchedule}
       />
 
-      {showAddModal && (
+      {modalState.add && (
         <AddScheduleModal
-          onClose={() => setShowAddModal(false)}
-          onConfirm={handleAdd}
+          onClose={() => handleCloseModal("add")}
+          onConfirm={handleCreateSchedule}
           isLoading={isCreating}
         />
       )}
 
-      {showEditModal && (
+      {modalState.edit && selectedSchedule && (
         <EditScheduleModal
           schedule={selectedSchedule}
-          onClose={() => {
-            setShowEditModal(false);
-            setSelectedSchedule(null);
-          }}
-          onConfirm={handleUpdate}
+          onClose={() => handleCloseModal("edit")}
+          onConfirm={handleUpdateSchedule}
           isLoading={isUpdating}
         />
       )}
@@ -97,4 +120,4 @@ const ScheduleTherapist = () => {
   );
 };
 
-export default ScheduleTherapist;
+export default ScheduleManagement;

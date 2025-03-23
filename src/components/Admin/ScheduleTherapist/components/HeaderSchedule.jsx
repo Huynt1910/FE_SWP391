@@ -4,12 +4,6 @@ import { FaUserClock, FaCalendarAlt } from "react-icons/fa";
 import "react-datepicker/dist/react-datepicker.css";
 
 const ScheduleHeader = ({ selectedDate, onDateChange, onAddClick }) => {
-  const handleDateChange = (date) => {
-    if (date) {
-      onDateChange(date);
-    }
-  };
-
   return (
     <div className="admin-page__header">
       <div className="admin-page__header-title">
@@ -22,8 +16,9 @@ const ScheduleHeader = ({ selectedDate, onDateChange, onAddClick }) => {
           <FaCalendarAlt className="calendar-icon" />
           <DatePicker
             selected={selectedDate}
-            onChange={handleDateChange}
+            onChange={onDateChange}
             dateFormat="dd/MM/yyyy"
+            minDate={new Date()}
             className="form-control"
             placeholderText="Chọn ngày"
           />

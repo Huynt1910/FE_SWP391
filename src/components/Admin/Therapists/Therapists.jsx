@@ -1,127 +1,102 @@
 import React, { useState } from "react";
 import { FaSpinner, FaUserPlus } from "react-icons/fa";
 import { useTherapistActions } from "@/auth/hook/admin/useTherapistActions";
-import TherapistTabs from "./components/TherapistTabs";
-import TherapistTable from "./components/TherapistTable";
-import TherapistEditModal from "./components/TherapistEditModal";
-import TherapistAddModal from "./components/TherapistAddModal";
-import ResetPasswordModal from "./components/ResetPasswordModal";
-import { useQueryClient } from "@tanstack/react-query"; // Thêm dòng này
-
 import { toast } from "react-toastify";
+import TherapistTable from "./components/TherapistTable";
+import TherapistAddModal from "./components/TherapistAddModal";
+import TherapistEditModal from "./components/TherapistEditModal";
+import ResetPasswordModal from "./components/ResetPasswordModal";
 
 const Therapists = () => {
-  const queryClient = useQueryClient(); // Thêm dòng này
+  const [selectedTherapist, setSelectedTherapist] = useState(null);
+  const [modalState, setModalState] = useState({
+    edit: false,
+    add: false,
+    resetPassword: false,
+  });
 
   const {
-    useGetAllTherapists,
-    useGetActiveTherapists,
-    useGetInactiveTherapists,
-    useDeleteTherapist,
-    useRestoreTherapist,
-    useResetPassword,
-    useUpdateTherapist,
+    therapists,
+    isLoading,
+    createTherapist,
+    // updateTherapist,
+    deleteTherapist,
+    restoreTherapist,
   } = useTherapistActions();
 
-  const [activeTab, setActiveTab] = useState("ALL");
-  const [selectedTherapist, setSelectedTherapist] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
-
-  const { mutateAsync: resetPassword, isLoading: isResetting } =
-    useResetPassword();
-  const { mutateAsync: updateTherapist, isLoading: isUpdating } =
-    useUpdateTherapist();
-  const { mutateAsync: deleteTherapist } = useDeleteTherapist();
-  const { mutateAsync: restoreTherapist } = useRestoreTherapist();
-
-  // Fetch data based on tabs
-  const { data: allTherapists, isLoading: loadingAll } = useGetAllTherapists();
-  const { data: activeTherapists, isLoading: loadingActive } =
-    useGetActiveTherapists();
-  const { data: inactiveTherapists, isLoading: loadingInactive } =
-    useGetInactiveTherapists();
-
-  const isLoading = loadingAll || loadingActive || loadingInactive;
-
-  const handleEdit = (therapist) => {
+  const openModal = (type, therapist = null) => {
     setSelectedTherapist(therapist);
-    setShowEditModal(true);
+    setModalState((prev) => ({ ...prev, [type]: true }));
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc muốn ngưng hoạt động therapist này?")) {
+  const closeModal = (type) => {
+    setSelectedTherapist(null);
+    setModalState((prev) => ({ ...prev, [type]: false }));
+  };
+
+  const handleToggleStatus = async (therapist) => {
+    const isActive = therapist.status;
+    const message = isActive
+      ? "Bạn có chắc muốn ngưng hoạt động nhân viên này?"
+      : "Bạn có chắc muốn kích hoạt nhân viên này?";
+
+    if (window.confirm(message)) {
       try {
-        await deleteTherapist(id);
-        toast.success("Đã ngưng hoạt động therapist thành công!");
+        await (isActive
+          ? deleteTherapist(therapist.id)
+          : restoreTherapist(therapist.id));
+        toast.success(
+          `${isActive ? "Ngưng hoạt động" : "Kích hoạt"} nhân viên thành công!`
+        );
       } catch (error) {
-        toast.error("Có lỗi xảy ra!");
+        toast.error(
+          `Lỗi ${isActive ? "ngưng hoạt động" : "kích hoạt"} nhân viên!`
+        );
+        console.error("Error toggling therapist status:", error);
       }
     }
   };
 
-  const handleRestore = async (id) => {
-    if (window.confirm("Bạn có chắc muốn khôi phục hoạt động therapist này?")) {
-      try {
-        await restoreTherapist(id);
-        toast.success("Đã khôi phục hoạt động therapist thành công!");
-      } catch (error) {
-        toast.error("Có lỗi xảy ra!");
-      }
+  const handleUpdateConfirm = async (data) => {
+    try {
+      await updateTherapist({
+        id: selectedTherapist.id,
+        data,
+      });
+      toast.success("Cập nhật nhân viên thành công!");
+      closeModal("edit");
+    } catch (error) {
+      toast.error("Lỗi cập nhật nhân viên!");
+      console.error("Error updating therapist:", error);
     }
   };
 
-  const handleResetPasswordClick = (therapist) => {
-    setSelectedTherapist(therapist);
-    setShowResetPasswordModal(true);
+  const handleAddConfirm = async (therapistData) => {
+    try {
+      await createTherapist(therapistData);
+      toast.success("Thêm nhân viên thành công!");
+      closeModal("add");
+    } catch (error) {
+      toast.error("Lỗi thêm nhân viên!");
+      console.error("Error creating therapist:", error);
+    }
   };
-
-  // Fix the handleResetPasswordConfirm function
   const handleResetPasswordConfirm = async (passwordData) => {
     try {
-      console.log("Selected Therapist:", selectedTherapist); // For debugging
       await resetPassword({
-        id: selectedTherapist.id, // Use the id from API response
-        data: {
-          newPassword: passwordData.newPassword,
-          confirmPassword: passwordData.confirmPassword,
-        },
+        id: selectedTherapist.id,
+        data: passwordData,
       });
-      setShowResetPasswordModal(false);
-      setSelectedTherapist(null);
+      closeModal("resetPassword");
     } catch (error) {
-      console.error("Reset password error:", error); // For debugging
-      toast.error("Có lỗi xảy ra khi đặt lại mật khẩu!");
-    }
-  };
-
-  const handleUpdateConfirm = async (id, data) => {
-    try {
-      await updateTherapist({ id, data });
-      setShowEditModal(false);
-      setSelectedTherapist(null);
-    } catch (error) {
-      toast.error("Có lỗi xảy ra khi cập nhật thông tin!");
-    }
-  };
-
-  const getCurrentTherapists = () => {
-    switch (activeTab) {
-      case "ACTIVE":
-        return activeTherapists || [];
-      case "INACTIVE":
-        return inactiveTherapists || [];
-      default:
-        return allTherapists || [];
+      console.error("Error resetting password:", error);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="admin-page__loading">
-        <FaSpinner className="spinner" />
-        <p>Đang tải dữ liệu...</p>
+      <div className="loading-container">
+        <FaSpinner className="loading-spinner" />
       </div>
     );
   }
@@ -130,71 +105,42 @@ const Therapists = () => {
     <div className="admin-page">
       <div className="admin-page__header">
         <div className="admin-page__header-title">
-          <h1>Quản lý Therapist</h1>
-          <p>Quản lý thông tin các therapist của spa</p>
+          <h1>Quản lý Nhân viên</h1>
+          <p>Quản lý và cập nhật thông tin nhân viên</p>
         </div>
         <div className="admin-page__header-actions">
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowAddModal(true)}
-          >
-            <FaUserPlus /> Thêm Therapist
+          <button className="btn-primary" onClick={() => openModal("add")}>
+            <FaUserPlus className="btn-icon" />
+            <span>Thêm Nhân viên</span>
           </button>
         </div>
       </div>
 
-      <TherapistTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        counts={{
-          all: allTherapists?.length || 0,
-          active: activeTherapists?.length || 0,
-          inactive: inactiveTherapists?.length || 0,
-        }}
-      />
-
       <TherapistTable
-        therapists={getCurrentTherapists()}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onRestore={handleRestore}
-        onResetPassword={handleResetPasswordClick}
-        showInactive={activeTab === "INACTIVE"}
+        therapists={therapists}
+        onEdit={(therapist) => openModal("edit", therapist)}
+        onToggleStatus={handleToggleStatus}
       />
 
-      {showAddModal && (
+      {modalState.add && (
         <TherapistAddModal
-          onClose={() => setShowAddModal(false)}
-          onAdd={() => {
-            setShowAddModal(false);
-            // Refresh only necessary data
-            queryClient.invalidateQueries(["therapists"]);
-            queryClient.invalidateQueries(["activeTherapists"]);
-          }}
+          onClose={() => closeModal("add")}
+          onConfirm={handleAddConfirm}
         />
       )}
 
-      {showEditModal && selectedTherapist && (
+      {modalState.edit && selectedTherapist && (
         <TherapistEditModal
           therapist={selectedTherapist}
-          onClose={() => {
-            setShowEditModal(false);
-            setSelectedTherapist(null);
-          }}
+          onClose={() => closeModal("edit")}
           onConfirm={handleUpdateConfirm}
-          isLoading={isUpdating}
         />
       )}
-
-      {showResetPasswordModal && selectedTherapist && (
+      {modalState.resetPassword && selectedStaff && (
         <ResetPasswordModal
-          therapist={selectedTherapist}
-          onClose={() => {
-            setShowResetPasswordModal(false);
-            setSelectedTherapist(null);
-          }}
+          staff={selectedStaff}
+          onClose={() => closeModal("resetPassword")}
           onConfirm={handleResetPasswordConfirm}
-          isLoading={isResetting}
         />
       )}
     </div>

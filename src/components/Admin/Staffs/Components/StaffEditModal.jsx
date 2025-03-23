@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FaSpinner } from "react-icons/fa";
 
-const StaffEditModal = ({ staff, onClose, onConfirm, isLoading }) => {
+const StaffEditModal = ({ staff, onClose, onConfirm }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -24,9 +25,23 @@ const StaffEditModal = ({ staff, onClose, onConfirm, isLoading }) => {
     }
   }, [staff]);
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onConfirm(staff.id, formData);
+    setIsSubmitting(true);
+    try {
+      await onConfirm(formData);
+    } catch (error) {
+      console.error("Error updating staff:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -46,10 +61,9 @@ const StaffEditModal = ({ staff, onClose, onConfirm, isLoading }) => {
             <label>Họ và tên</label>
             <input
               type="text"
+              name="fullname"
               value={formData.fullName}
-              onChange={(e) =>
-                setFormData({ ...formData, fullName: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
@@ -58,10 +72,9 @@ const StaffEditModal = ({ staff, onClose, onConfirm, isLoading }) => {
             <label>Email</label>
             <input
               type="email"
+              name="email"
               value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
@@ -70,10 +83,9 @@ const StaffEditModal = ({ staff, onClose, onConfirm, isLoading }) => {
             <label>Số điện thoại</label>
             <input
               type="tel"
+              name="phone"
               value={formData.phone}
-              onChange={(e) =>
-                setFormData({ ...formData, phone: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
@@ -82,22 +94,16 @@ const StaffEditModal = ({ staff, onClose, onConfirm, isLoading }) => {
             <label>Địa chỉ</label>
             <input
               type="text"
+              name="address"
               value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
 
           <div className="form-group">
             <label>Giới tính</label>
-            <select
-              value={formData.gender}
-              onChange={(e) =>
-                setFormData({ ...formData, gender: e.target.value })
-              }
-            >
+            <select value={formData.gender} onChange={handleChange}>
               <option value="Male">Nam</option>
               <option value="Female">Nữ</option>
             </select>
@@ -107,10 +113,9 @@ const StaffEditModal = ({ staff, onClose, onConfirm, isLoading }) => {
             <label>Ngày sinh</label>
             <input
               type="date"
+              name="birthDate"
               value={formData.birthDate}
-              onChange={(e) =>
-                setFormData({ ...formData, birthDate: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
@@ -120,16 +125,16 @@ const StaffEditModal = ({ staff, onClose, onConfirm, isLoading }) => {
               type="button"
               className="btn btn-secondary"
               onClick={onClose}
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
               Hủy
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <>
                   <FaSpinner className="spinner" /> Đang xử lý...
                 </>

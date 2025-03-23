@@ -1,7 +1,12 @@
 import React from "react";
 import { FaTrash, FaUserPlus, FaKey } from "react-icons/fa";
 
-const CustomerTable = ({ customers, onDelete, onRestore, onResetPassword }) => {
+const CustomerTable = ({
+  customers,
+  onDeactivate,
+  onActivate,
+  onResetPassword,
+}) => {
   const getFullName = (customer) => {
     return `${customer.firstName} ${customer.lastName}`.trim();
   };
@@ -54,7 +59,7 @@ const CustomerTable = ({ customers, onDelete, onRestore, onResetPassword }) => {
                     <button
                       className="delete-btn"
                       title="Ngưng hoạt động"
-                      onClick={() => onDelete(customer.id)}
+                      onClick={() => onDeactivate(customer.id)}
                     >
                       <FaTrash />
                     </button>
@@ -62,7 +67,7 @@ const CustomerTable = ({ customers, onDelete, onRestore, onResetPassword }) => {
                     <button
                       className="restore-btn"
                       title="Khôi phục hoạt động"
-                      onClick={() => onRestore(customer.id)}
+                      onClick={() => onActivate(customer.id)}
                     >
                       <FaUserPlus />
                     </button>

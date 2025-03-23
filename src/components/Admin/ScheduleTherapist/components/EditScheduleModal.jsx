@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { FaSpinner } from "react-icons/fa";
-import DatePicker from "react-datepicker";
 import { format } from "date-fns";
 import { useTherapistActions } from "@/auth/hook/admin/useTherapistActions";
 
 const EditScheduleModal = ({ schedule, onClose, onConfirm, isLoading }) => {
   const [formData, setFormData] = useState({
     therapistId: "",
-    workingDate: new Date(),
     shiftId: "",
   });
 
-  const { useGetAllTherapists } = useTherapistActions();
-  const { data: therapists } = useGetAllTherapists();
+  const { activeTherapists, isLoading: loadingTherapists } =
+    useTherapistActions();
 
   const shifts = [
     { id: 1, name: "Ca sáng" },
@@ -23,7 +21,6 @@ const EditScheduleModal = ({ schedule, onClose, onConfirm, isLoading }) => {
     if (schedule) {
       setFormData({
         therapistId: schedule.therapistId,
-        workingDate: new Date(schedule.workingDate),
         shiftId: schedule.shiftId[0],
       });
     }
@@ -33,9 +30,10 @@ const EditScheduleModal = ({ schedule, onClose, onConfirm, isLoading }) => {
     e.preventDefault();
     const data = {
       therapistId: Number(formData.therapistId),
-      workingDate: format(formData.workingDate, "yyyy-MM-dd"),
+      workingDate: format(new Date(schedule.workingDate), "yyyy-MM-dd"),
       shiftId: [Number(formData.shiftId)],
     };
+    // Pass the schedule.id directly from the schedule object
     onConfirm(schedule.id, data);
   };
 
@@ -43,7 +41,7 @@ const EditScheduleModal = ({ schedule, onClose, onConfirm, isLoading }) => {
     <div className="admin-page__modal">
       <div className="admin-page__modal-content">
         <div className="admin-page__modal-content-header">
-          <h2>Chỉnh sửa lịch làm việc</h2>
+          <h2>Chỉnh sửa ca làm việc</h2>
           <button className="close-btn" onClick={onClose}>
             ×
           </button>
@@ -54,31 +52,40 @@ const EditScheduleModal = ({ schedule, onClose, onConfirm, isLoading }) => {
           className="admin-page__modal-content-body"
         >
           <div className="form-group">
-            <label>Chọn Therapist:</label>
-            <select
-              value={formData.therapistId}
-              onChange={(e) =>
-                setFormData({ ...formData, therapistId: e.target.value })
-              }
-              required
-            >
-              <option value="">-- Chọn Therapist --</option>
-              {therapists?.map((therapist) => (
-                <option key={therapist.id} value={therapist.id}>
-                  {therapist.fullName}
-                </option>
-              ))}
-            </select>
+            <label>Therapist:</label>
+            {loadingTherapists ? (
+              <div className="loading-text">
+                <FaSpinner className="spinner" /> Đang tải danh sách
+                therapist...
+              </div>
+            ) : (
+              <select
+                value={formData.therapistId}
+                onChange={(e) =>
+                  setFormData({ ...formData, therapistId: e.target.value })
+                }
+                required
+                className="form-control"
+              >
+                <option value="">-- Chọn Therapist --</option>
+                {activeTherapists?.map((therapist) => (
+                  <option key={therapist.id} value={therapist.id}>
+                    {therapist.fullName}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="form-group">
-            <label>Chọn ca làm:</label>
+            <label>Ca làm việc:</label>
             <select
               value={formData.shiftId}
               onChange={(e) =>
                 setFormData({ ...formData, shiftId: e.target.value })
               }
               required
+              className="form-control"
             >
               <option value="">-- Chọn ca làm --</option>
               {shifts.map((shift) => (
@@ -89,32 +96,19 @@ const EditScheduleModal = ({ schedule, onClose, onConfirm, isLoading }) => {
             </select>
           </div>
 
-          <div className="form-group">
-            <label>Ngày làm việc:</label>
-            <DatePicker
-              selected={formData.workingDate}
-              onChange={(date) =>
-                setFormData({ ...formData, workingDate: date })
-              }
-              dateFormat="dd/MM/yyyy"
-              minDate={new Date()}
-              className="form-control"
-            />
-          </div>
-
           <div className="admin-page__modal-content-footer">
             <button
               type="button"
               className="btn btn-secondary"
               onClick={onClose}
-              disabled={isLoading}
+              disabled={isLoading || loadingTherapists}
             >
               Hủy
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={isLoading}
+              disabled={isLoading || loadingTherapists}
             >
               {isLoading ? (
                 <>

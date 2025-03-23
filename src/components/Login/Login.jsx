@@ -1,12 +1,10 @@
 import { useSignIn } from "@/auth/hook/useSinginHook";
-import { SocialLogin } from "@components/shared/SocialLogin/SocialLogin";
-import { showToast } from "@utils/toast";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
-import { setCookie } from "cookies-next";
+import { useState } from "react";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { ROLES } from "@/lib/api-client/constantAdmin";
+import { ROLES } from "@/lib/api-client/constant";
+import { setAuthData } from "@/utils/auth";
+import { SocialLogin } from "../shared/SocialLogin/SocialLogin";
 
 export const Login = () => {
   const router = useRouter();
@@ -28,6 +26,7 @@ export const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submitting login form:", formData); // Debug log
 
     try {
       const response = await signIn({
@@ -35,28 +34,44 @@ export const Login = () => {
         password: formData.password,
       });
 
-      if (response.success) {
-        showToast("Login successful!", "success");
+      console.log("Login response:", response); // Debug log
+
+      if (response?.result?.token) {
+        // Store auth data using the utility function
+        setAuthData(
+          response.result.token,
+          response.result.role,
+          formData.rememberMe ? 30 : 1
+        );
+
+        toast.success("Login successful!");
 
         // Redirect based on role
-        switch (response.role) {
-          case "ADMIN":
-          case "STAFF":
-          case "THERAPIST":
-            router.push("/admin");
+        switch (response.result.role.toUpperCase()) {
+          case ROLES.ADMIN:
+            router.push("/admin/dashboard");
             break;
-          case "CUSTOMER":
+          case ROLES.STAFF:
+            router.push("/admin/bookings");
+            break;
+          case ROLES.THERAPIST:
+            router.push("/admin/schedules");
+            break;
+          case ROLES.CUSTOMER:
             router.push("/");
             break;
           default:
-            console.error("Unknown role:", response.role);
+            console.error("Unknown role:", response.result.role);
             router.push("/");
         }
+      } else {
+        throw new Error("Invalid response format");
       }
     } catch (error) {
-      showToast.error(
-        error.message ||
-          error.response?.data?.message ||
+      console.error("Login error:", error);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
           "Login failed. Please try again."
       );
     }

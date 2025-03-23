@@ -1,16 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { API_URL } from "@/lib/api-client/constantAdmin";
-import { getCookie } from "cookies-next";
-import { FaSpinner } from "react-icons/fa";
+import { FaSpinner, FaUpload } from "react-icons/fa";
 import { toast } from "react-toastify";
 
-const TherapistAddModal = ({ onClose, onAdd }) => {
-  const token = getCookie("token");
-  const [isLoading, setIsLoading] = useState(false);
-  const [file, setFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-
+const TherapistAddModal = ({ onClose, onConfirm }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -20,73 +13,66 @@ const TherapistAddModal = ({ onClose, onAdd }) => {
     address: "",
     gender: "Male",
     birthDate: "",
-    yearExperience: 0,
+    yearExperience: "",
   });
+  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const previewUrl = URL.createObjectURL(selectedFile);
-      setImagePreview(previewUrl);
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
-      const submitData = new FormData();
+      const formDataToSend = new FormData();
+      formDataToSend.append("username", formData.username);
+      formDataToSend.append("password", formData.password);
+      formDataToSend.append("fullName", formData.fullName);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("address", formData.address);
+      formDataToSend.append("gender", formData.gender);
+      formDataToSend.append("birthDate", formData.birthDate);
+      formDataToSend.append("yearExperience", formData.yearExperience);
 
-      // Append all form fields
-      Object.keys(formData).forEach((key) => {
-        submitData.append(key, formData[key]);
-      });
-
-      // Append file if exists
-      if (file) {
-        submitData.append("imgUrl", file);
+      if (selectedFile) {
+        formDataToSend.append("imgUrl", selectedFile);
       }
 
-      const response = await axios.post(`${API_URL}/therapists`, submitData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.data) {
-        toast.success("Thêm therapist thành công!");
-        // Cleanup
-        if (imagePreview) {
-          URL.revokeObjectURL(imagePreview);
-        }
-        onAdd && onAdd();
-        onClose();
-      }
+      await onConfirm(formDataToSend);
+      onClose();
     } catch (error) {
-      console.error("Error:", error);
-      toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
+      console.error("Error submitting form:", error);
+      toast.error(error.response?.data?.message || "Lỗi thêm nhân viên");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
-
-  // Cleanup on unmount
-  React.useEffect(() => {
-    return () => {
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview);
-      }
-    };
-  }, [imagePreview]);
 
   return (
     <div className="admin-page__modal">
       <div className="admin-page__modal-content">
         <div className="admin-page__modal-content-header">
-          <h2>Thêm Therapist mới</h2>
+          <h2>Thêm Nhân viên mới</h2>
           <button className="close-btn" onClick={onClose}>
             ×
           </button>
@@ -96,132 +82,134 @@ const TherapistAddModal = ({ onClose, onAdd }) => {
           className="admin-page__modal-content-body"
         >
           <div className="form-group">
-            <label>Họ và tên</label>
+            <label htmlFor="username">Tên đăng nhập</label>
             <input
               type="text"
-              value={formData.fullName}
-              onChange={(e) =>
-                setFormData({ ...formData, fullName: e.target.value })
-              }
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Tên đăng nhập</label>
-            <input
-              type="text"
+              id="username"
+              name="username"
               value={formData.username}
-              onChange={(e) =>
-                setFormData({ ...formData, username: e.target.value })
-              }
-              required
-              title="Tên đăng nhập phải từ 3-16 ký tự, chỉ bao gồm chữ cái, số, dấu gạch ngang và gạch dưới"
-            />
-          </div>
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
+
           <div className="form-group">
-            <label>Mật khẩu</label>
+            <label htmlFor="password">Mật khẩu</label>
             <input
               type="password"
+              id="password"
+              name="password"
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
+
           <div className="form-group">
-            <label>Số điện thoại</label>
-            <input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) =>
-                setFormData({ ...formData, phone: e.target.value })
-              }
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Địa chỉ</label>
+            <label htmlFor="fullName">Họ và tên</label>
             <input
               type="text"
-              value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
+              id="fullName"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
               required
             />
           </div>
+
           <div className="form-group">
-            <label>Giới tính</label>
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="phone">Số điện thoại</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              pattern="[0-9]{10}"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="address">Địa chỉ</label>
+            <input
+              type="text"
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="gender">Giới tính</label>
             <select
+              id="gender"
+              name="gender"
               value={formData.gender}
-              onChange={(e) =>
-                setFormData({ ...formData, gender: e.target.value })
-              }
+              onChange={handleChange}
+              required
             >
               <option value="Male">Nam</option>
               <option value="Female">Nữ</option>
             </select>
           </div>
+
           <div className="form-group">
-            <label>Ngày sinh</label>
+            <label htmlFor="birthDate">Ngày sinh</label>
             <input
               type="date"
+              id="birthDate"
+              name="birthDate"
               value={formData.birthDate}
-              onChange={(e) =>
-                setFormData({ ...formData, birthDate: e.target.value })
-              }
+              onChange={handleChange}
               required
             />
           </div>
+
           <div className="form-group">
-            <label>Số năm kinh nghiệm</label>
+            <label htmlFor="yearExperience">Số năm kinh nghiệm</label>
             <input
               type="number"
-              min="0"
+              id="yearExperience"
+              name="yearExperience"
               value={formData.yearExperience}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  yearExperience: parseInt(e.target.value),
-                })
-              }
+              onChange={handleChange}
+              min="0"
               required
             />
           </div>
+
           <div className="form-group">
-            <label>Hình ảnh</label>
-            <div className="image-upload-container">
+            <label htmlFor="image">Hình ảnh</label>
+            <div className="image-upload">
               <input
                 type="file"
+                id="image"
+                name="image"
                 accept="image/*"
                 onChange={handleFileChange}
-                className="form-control"
+                required
               />
+              <label htmlFor="image" className="file-label">
+                <FaUpload /> Chọn ảnh
+              </label>
               {imagePreview && (
                 <div className="image-preview">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    style={{
-                      maxWidth: "200px",
-                      maxHeight: "200px",
-                      objectFit: "cover",
-                      borderRadius: "4px",
-                      marginTop: "10px",
-                    }}
-                  />
+                  <img src={imagePreview} alt="Preview" />
                 </div>
               )}
             </div>
@@ -232,20 +220,21 @@ const TherapistAddModal = ({ onClose, onAdd }) => {
               type="button"
               className="btn btn-secondary"
               onClick={onClose}
+              disabled={isSubmitting}
             >
               Hủy
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? (
+              {isSubmitting ? (
                 <>
                   <FaSpinner className="spinner" /> Đang xử lý...
                 </>
               ) : (
-                "Thêm mới"
+                "Thêm"
               )}
             </button>
           </div>

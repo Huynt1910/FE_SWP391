@@ -1,120 +1,109 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { API_URL } from "@/lib/api-client/constantAdmin";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { APIClient } from "@/lib/api-client";
+import { ACTIONS } from "@/lib/api-client/constant";
 import { toast } from "react-toastify";
 import { getCookie } from "cookies-next";
 
 export const useVoucherActions = () => {
   const token = getCookie("token");
-  const queryClient = useQueryClient();
-
-  const useGetAllVouchers = () => {
-    return useQuery({
-      queryKey: ["vouchers"],
-      queryFn: async () => {
-        const response = await axios.get(`${API_URL}/vouchers`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        return response.data;
-      },
-    });
+  const authHeaders = {
+    Authorization: `Bearer ${token}`,
   };
 
-  const useCreateVoucher = () => {
-    return useMutation({
-      mutationFn: async (data) => {
-        const response = await axios.post(`${API_URL}/vouchers`, data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        return response.data;
-      },
-      onSuccess: () => {
-        toast.success("Tạo voucher thành công!");
-        queryClient.invalidateQueries(["vouchers"]);
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-      },
-    });
-  };
+  const {
+    data: vouchers,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["vouchers"],
+    queryFn: async () => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.GET_ALL_VOUCHERS,
+        headers: authHeaders,
+      });
+      return response.result || [];
+    },
+  });
 
-  const useActivateVoucher = () => {
-    return useMutation({
-      mutationFn: async (id) => {
-        const response = await axios.put(
-          `${API_URL}/vouchers/active/${id}`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        return response.data;
-      },
-      onSuccess: () => {
-        toast.success("Kích hoạt voucher thành công!");
-        queryClient.invalidateQueries(["vouchers"]);
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-      },
-    });
-  };
+  const createVoucher = useMutation({
+    mutationFn: async (voucherData) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.CREATE_VOUCHER,
+        data: voucherData,
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Tạo voucher thành công!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi xảy ra khi tạo voucher!");
+    },
+  });
 
-  const useDeactivateVoucher = () => {
-    return useMutation({
-      mutationFn: async (id) => {
-        const response = await axios.put(
-          `${API_URL}/vouchers/deactive/${id}`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        return response.data;
-      },
-      onSuccess: () => {
-        toast.success("Ngưng kích hoạt voucher thành công!");
-        queryClient.invalidateQueries(["vouchers"]);
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-      },
-    });
-  };
+  const updateVoucher = useMutation({
+    mutationFn: async ({ voucherId, data }) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.UPDATE_VOUCHER,
+        pathParams: { id: voucherId },
+        data,
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Cập nhật voucher thành công!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi xảy ra khi cập nhật!");
+    },
+  });
 
-  const useUpdateVoucher = () => {
-    return useMutation({
-      mutationFn: async ({ id, data }) => {
-        const response = await axios.put(
-          `${API_URL}/vouchers/update/${id}`,
-          data,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        return response.data;
-      },
-      onSuccess: () => {
-        toast.success("Cập nhật voucher thành công!");
-        queryClient.invalidateQueries(["vouchers"]);
-      },
-      onError: (error) => {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-      },
-    });
-  };
+  const deactivateVoucher = useMutation({
+    mutationFn: async (voucherId) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.DEACTIVATE_VOUCHER,
+        pathParams: { id: voucherId },
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Đã ngưng hoạt động voucher thành công!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi xảy ra!");
+    },
+  });
+
+  const activateVoucher = useMutation({
+    mutationFn: async (voucherId) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.ACTIVATE_VOUCHER,
+        pathParams: { id: voucherId },
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Đã kích hoạt voucher thành công!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Có lỗi xảy ra!");
+    },
+  });
 
   return {
-    useGetAllVouchers,
-    useCreateVoucher,
-    useUpdateVoucher, // Make sure to export the function
-    useActivateVoucher,
-    useDeactivateVoucher,
+    vouchers,
+    isLoading,
+    createVoucher: createVoucher.mutate,
+    updateVoucher: updateVoucher.mutate,
+    deactivateVoucher: deactivateVoucher.mutate,
+    activateVoucher: activateVoucher.mutate,
   };
 };

@@ -1,23 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { APIClient } from "@/lib/api-client";
+import { ACTIONS } from "@/lib/api-client/constant";
 import { API_URL } from "@/lib/api-client/constant";
 import { getCookie } from "cookies-next";
 
-export const useSlotActions = (selectedDate) => {
+export const useSlotActions = () => {
   const token = getCookie("token");
 
-  const getAvailableSlots = useQuery({
-    queryKey: ["slots", selectedDate],
+  const authHeaders = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  const {
+    data: slots,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["slots"],
     queryFn: async () => {
-      const response = await axios.get(`${API_URL}/slot/${selectedDate}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await APIClient.invoke({
+        action: ACTIONS.GET_ALL_SLOTS,
+        headers: authHeaders,
       });
-      return response.data;
+      return response.result || [];
     },
-    enabled: !!selectedDate,
   });
 
-  return { getAvailableSlots };
+  return {
+    slots,
+  };
 };

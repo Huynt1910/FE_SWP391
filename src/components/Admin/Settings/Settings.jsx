@@ -1,55 +1,89 @@
 import React, { useState } from "react";
 import { FaSpinner, FaTicketAlt } from "react-icons/fa";
 import { useVoucherActions } from "@/auth/hook/admin/useVoucherActions";
-
 import { toast } from "react-toastify";
 import VoucherTable from "./components/VoucherSection/components/VoucherTable";
-import { Add } from "@mui/icons-material";
 import AddVoucherModal from "./components/VoucherSection/components/AddVoucherModal";
+import EditVoucherModal from "./components/VoucherSection/components/EditVoucherModal";
 
 const Settings = () => {
-  const [showAddModal, setShowAddModal] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState(null);
+  const [modalState, setModalState] = useState({
+    edit: false,
+    add: false,
+  });
 
   const {
-    useGetAllVouchers,
-    useCreateVoucher,
-    useUpdateVoucher,
-    useActivateVoucher,
-    useDeactivateVoucher,
+    vouchers,
+    isLoading,
+    createVoucher,
+    updateVoucher,
+    activateVoucher,
+    deactivateVoucher,
   } = useVoucherActions();
 
-  const { data: vouchers, isLoading } = useGetAllVouchers();
-  const { mutate: createVoucher, isLoading: isCreating } = useCreateVoucher();
-  const { mutate: updateVoucher, isLoading: isUpdating } = useUpdateVoucher();
-  const { mutate: activateVoucher } = useActivateVoucher();
-  const { mutate: deactivateVoucher } = useDeactivateVoucher();
+  const openModal = (type, voucher = null) => {
+    setSelectedVoucher(voucher);
+    setModalState((prev) => ({ ...prev, [type]: true }));
+  };
 
-  const handleDeactivate = async (id) => {
-    if (window.confirm("Bạn có chắc muốn ngưng kích hoạt voucher này?")) {
+  const closeModal = (type) => {
+    setSelectedVoucher(null);
+    setModalState((prev) => ({ ...prev, [type]: false }));
+  };
+
+  const handleToggleStatus = async (voucher) => {
+    const isActive = voucher.isActive;
+    const message = isActive
+      ? "Bạn có chắc muốn ngưng hoạt động voucher này?"
+      : "Bạn có chắc muốn kích hoạt voucher này?";
+
+    if (window.confirm(message)) {
       try {
-        await deactivateVoucher(id);
+        await (isActive
+          ? deactivateVoucher(voucher.voucherId)
+          : activateVoucher(voucher.voucherId));
+        toast.success(
+          `${isActive ? "Ngưng hoạt động" : "Kích hoạt"} voucher thành công!`
+        );
       } catch (error) {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
+        toast.error(
+          `Lỗi ${isActive ? "ngưng hoạt động" : "kích hoạt"} voucher!`
+        );
+        console.error("Error toggling voucher status:", error);
       }
     }
   };
 
-  const handleActivate = async (id) => {
-    if (window.confirm("Bạn có chắc muốn kích hoạt lại voucher này?")) {
-      try {
-        await activateVoucher(id);
-      } catch (error) {
-        toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
-      }
+  const handleUpdateConfirm = async (data) => {
+    try {
+      await updateVoucher({
+        id: selectedVoucher.voucherId,
+        data,
+      });
+      toast.success("Cập nhật voucher thành công!");
+      closeModal("edit");
+    } catch (error) {
+      toast.error("Lỗi cập nhật voucher!");
+      console.error("Error updating voucher:", error);
+    }
+  };
+
+  const handleAddConfirm = async (voucherData) => {
+    try {
+      await createVoucher(voucherData);
+      toast.success("Thêm voucher thành công!");
+      closeModal("add");
+    } catch (error) {
+      toast.error("Lỗi thêm voucher!");
+      console.error("Error creating voucher:", error);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="admin-page__loading">
-        <FaSpinner className="spinner" />
-        <p>Đang tải dữ liệu...</p>
+      <div className="flex justify-center items-center h-screen">
+        <FaSpinner className="animate-spin text-4xl text-primary" />
       </div>
     );
   }
@@ -63,33 +97,33 @@ const Settings = () => {
         </div>
         <div className="admin-page__header-actions">
           <button
-            className="btn btn-primary"
-            onClick={() => setShowAddModal(true)}
+            className="btn btn-primary flex items-center gap-2"
+            onClick={() => openModal("add")}
           >
-            <FaTicketAlt /> Thêm Voucher
+            <FaTicketAlt />
+            Thêm Voucher
           </button>
         </div>
       </div>
 
       <VoucherTable
-        vouchers={vouchers || []}
-        onEdit={(voucher) => {
-          setSelectedVoucher(voucher);
-          setShowAddModal(true);
-        }}
-        onActivate={handleActivate}
-        onDeactivate={handleDeactivate}
+        vouchers={vouchers}
+        onEdit={(voucher) => openModal("edit", voucher)}
+        onToggleStatus={handleToggleStatus}
       />
 
-      {showAddModal && (
+      {modalState.add && (
         <AddVoucherModal
+          onClose={() => closeModal("add")}
+          onConfirm={handleAddConfirm}
+        />
+      )}
+
+      {modalState.edit && selectedVoucher && (
+        <EditVoucherModal
           voucher={selectedVoucher}
-          onClose={() => {
-            setShowAddModal(false);
-            setSelectedVoucher(null);
-          }}
-          onConfirm={selectedVoucher ? updateVoucher : createVoucher}
-          isLoading={selectedVoucher ? isUpdating : isCreating}
+          onClose={() => closeModal("edit")}
+          onConfirm={handleUpdateConfirm}
         />
       )}
     </div>

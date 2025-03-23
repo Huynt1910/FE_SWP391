@@ -1,21 +1,21 @@
 import React from "react";
-import { FaEdit, FaTrash, FaUserPlus, FaKey } from "react-icons/fa";
-import moment from "moment";
+import { FaEdit, FaTrash, FaCheck, FaKey } from "react-icons/fa";
 
-const TherapistTable = ({
-  therapists,
-  onEdit,
-  onDelete,
-  onRestore,
-  onResetPassword,
-}) => {
+const TherapistTable = ({ therapists, onEdit, onToggleStatus }) => {
+  if (!therapists || therapists.length === 0) {
+    return <div className="empty-message">Không có nhân viên nào</div>;
+  }
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("vi-VN");
+  };
+
   return (
     <div className="admin-page__table">
       <table>
         <thead>
           <tr>
             <th>Hình ảnh</th>
-            <th>Tên đăng nhập</th>
             <th>Họ và tên</th>
             <th>Email</th>
             <th>Số điện thoại</th>
@@ -29,33 +29,36 @@ const TherapistTable = ({
         </thead>
         <tbody>
           {therapists.map((therapist) => (
-            <tr key={therapist.id}>
+            <tr
+              key={therapist.id}
+              className={!therapist.status ? "inactive-row" : ""}
+            >
               <td>
-                <div className="therapist-image">
-                  <img
-                    src={therapist.imgUrl || "/default-avatar.png"}
-                    alt={therapist.fullName}
-                    onError={(e) => {
-                      e.target.src = "/default-avatar.png";
-                    }}
-                  />
-                </div>
+                <img
+                  src={therapist.imgUrl}
+                  alt={therapist.fullName}
+                  className="therapist-image"
+                  onError={(e) => {
+                    e.target.src = "/default-avatar.png";
+                  }}
+                />
               </td>
-              <td>{therapist.username}</td>
               <td>{therapist.fullName}</td>
               <td>{therapist.email}</td>
               <td>{therapist.phone}</td>
               <td>{therapist.address}</td>
               <td>{therapist.gender === "Male" ? "Nam" : "Nữ"}</td>
-              <td>{moment(therapist.birthDate).format("DD/MM/YYYY")}</td>
+              <td>{formatDate(therapist.birthDate)}</td>
               <td>{therapist.yearExperience} năm</td>
               <td>
                 <span
-                  className={`status-badge status-badge--${
-                    therapist.status ? "active" : "inactive"
+                  className={`status-badge ${
+                    therapist.status
+                      ? "status-badge--active"
+                      : "status-badge--inactive"
                   }`}
                 >
-                  {therapist.status ? "Hoạt động" : "Ngưng hoạt động"}
+                  {therapist.status ? "Hoạt động" : "Không hoạt động"}
                 </span>
               </td>
               <td>
@@ -78,7 +81,7 @@ const TherapistTable = ({
                     <button
                       className="delete-btn"
                       title="Ngưng hoạt động"
-                      onClick={() => onDelete(therapist.id)}
+                      onClick={() => onToggleStatus(therapist)}
                     >
                       <FaTrash />
                     </button>
@@ -86,9 +89,9 @@ const TherapistTable = ({
                     <button
                       className="restore-btn"
                       title="Khôi phục hoạt động"
-                      onClick={() => onRestore(therapist.id)}
+                      onClick={() => onToggleStatus(therapist)}
                     >
-                      <FaUserPlus />
+                      <FaCheck />
                     </button>
                   )}
                 </div>

@@ -11,8 +11,7 @@ const AddScheduleModal = ({ onClose, onConfirm, isLoading }) => {
     shiftId: "",
   });
 
-  const { useGetAllTherapists } = useTherapistActions();
-  const { data: therapists } = useGetAllTherapists();
+  const { therapists } = useTherapistActions();
 
   const shifts = [
     { id: 1, name: "Ca sáng" },

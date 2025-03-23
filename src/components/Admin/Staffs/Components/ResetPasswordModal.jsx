@@ -14,6 +14,13 @@ const ResetPasswordModal = ({ staff, onClose, onConfirm, isLoading }) => {
       confirmPassword: formData.confirmPassword,
     });
   };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   return (
     <div className="admin-page__modal">

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { getCookie } from "cookies-next";
+import { PAGE_ACCESS } from "@/lib/api-client/constant";
 import {
   FaChartLine,
   FaUsers,
@@ -14,6 +15,7 @@ import {
   FaCaretDown,
   FaCaretUp,
   FaStar,
+  FaUser,
 } from "react-icons/fa";
 
 const Sidebar = ({ isCollapsed }) => {
@@ -89,6 +91,12 @@ const Sidebar = ({ isCollapsed }) => {
       path: "/admin/therapist-schedule",
       icon: <FaCalendarAlt />,
       roles: ["THERAPIST"],
+    },
+    {
+      label: "Thông tin cá nhân",
+      path: "/admin/staff-profile",
+      icon: <FaUser />,
+      roles: ["STAFF"],
     },
   ];
 

@@ -1,8 +1,9 @@
 import React from "react";
-import { FaEdit, FaTrash, FaCheckCircle, FaBan } from "react-icons/fa";
+import { FaEdit, FaTrash, FaUserPlus } from "react-icons/fa";
 
-const VoucherTable = ({ vouchers, onEdit, onActivate, onDeactivate }) => {
-  if (!vouchers?.result || vouchers.result.length === 0) {
+const VoucherTable = ({ vouchers, onEdit, onToggleStatus }) => {
+  // Check if vouchers array is empty
+  if (!vouchers || vouchers.length === 0) {
     return <div className="empty-message">Không có voucher nào</div>;
   }
 
@@ -11,32 +12,31 @@ const VoucherTable = ({ vouchers, onEdit, onActivate, onDeactivate }) => {
       <table>
         <thead>
           <tr>
-            <th>Tên voucher</th>
-            <th>Mã voucher</th>
-            <th>Giảm giá (%)</th>
-            <th>Số lượng</th>
-            <th>Ngày hết hạn</th>
+            <th>Tên Voucher</th>
+            <th>Mã Voucher</th>
+            <th>Giá trị</th>
             <th>Trạng thái</th>
             <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          {vouchers.result.map((voucher) => (
-            <tr key={voucher.id}>
+          {vouchers.map((voucher) => (
+            <tr
+              key={voucher.id}
+              className={!voucher.isActive ? "inactive-row" : ""}
+            >
               <td>{voucher.voucherName}</td>
               <td>{voucher.voucherCode}</td>
               <td>{voucher.percentDiscount}%</td>
-              <td>{voucher.quantity}</td>
-              <td>
-                {new Date(voucher.expiryDate).toLocaleDateString("vi-VN")}
-              </td>
               <td>
                 <span
-                  className={`status-badge status-badge--${
-                    voucher.isActive ? "active" : "inactive"
+                  className={`status-badge ${
+                    voucher.isActive
+                      ? "status-badge--active"
+                      : "status-badge--inactive"
                   }`}
                 >
-                  {voucher.isActive ? "Đang hoạt động" : "Ngưng hoạt động"}
+                  {voucher.isActive ? "Hoạt động" : "Không hoạt động"}
                 </span>
               </td>
               <td>
@@ -51,18 +51,18 @@ const VoucherTable = ({ vouchers, onEdit, onActivate, onDeactivate }) => {
                   {voucher.isActive ? (
                     <button
                       className="delete-btn"
-                      title="Ngưng kích hoạt"
-                      onClick={() => onDeactivate(voucher.id)}
+                      title="Ngưng hoạt động"
+                      onClick={() => onToggleStatus(voucher)}
                     >
-                      <FaBan />
+                      <FaTrash />
                     </button>
                   ) : (
                     <button
                       className="restore-btn"
-                      title="Kích hoạt"
-                      onClick={() => onActivate(voucher.id)}
+                      title="Khôi phục hoạt động"
+                      onClick={() => onToggleStatus(voucher)}
                     >
-                      <FaCheckCircle />
+                      <FaUserPlus />
                     </button>
                   )}
                 </div>

@@ -1,135 +1,91 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { getCookie } from "cookies-next";
-import { API_URL } from "@/lib/api-client/constantAdmin";
+import { APIClient } from "@/lib/api-client";
+import { ACTIONS } from "@/lib/api-client/constant";
 import { toast } from "react-toastify";
+import { getCookie } from "cookies-next";
 
 export const useServiceActions = () => {
-  const token = getCookie("token");
   const queryClient = useQueryClient();
-
-  const useGetAllServices = () => {
-    return useQuery({
-      queryKey: ["services"],
-      queryFn: async () => {
-        try {
-          const response = await axios.get(`${API_URL}/services`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
-          console.log("API Response:", response.data); // Debug log
-          return response.data;
-        } catch (error) {
-          console.error("API Error:", error);
-          throw error;
-        }
-      },
-    });
+  const token = getCookie("token");
+  const authHeaders = {
+    Authorization: `Bearer ${token}`,
   };
 
-  const createService = useMutation({
-    mutationFn: async (data) => {
-      const formData = new FormData();
+  const { data: services, isLoading } = useQuery({
+    queryKey: ["services"],
+    queryFn: async () => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.GET_ALL_SERVICES,
+        headers: authHeaders,
+      });
+      return response.result || [];
+    },
+  });
 
-      // Add text fields
-      formData.append("name", data.name);
-      formData.append("description", data.description);
-      formData.append("price", data.price);
-      formData.append("duration", data.duration);
-
-      // Add image if exists
-      if (data.image) {
-        formData.append("image", data.image);
-      }
-
-      const response = await axios.post(`${API_URL}/services`, formData, {
+  const { mutateAsync: createService } = useMutation({
+    mutationFn: async (formData) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.CREATE_SERVICE,
+        data: formData,
         headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
+          ...authHeaders,
         },
       });
-      return response.data;
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["services"]);
     },
+    onError: (error) => {
+      // Log the full error response
+      console.error("Error creating service:", error.response?.data || error);
+      throw error;
+    },
   });
 
-  const updateService = useMutation({
-    mutationFn: async ({ id, data }) => {
-      const formData = new FormData();
-
-      // Add text fields
-      formData.append("name", data.name);
-      formData.append("description", data.description);
-      formData.append("price", data.price);
-      formData.append("duration", data.duration);
-
-      // Add image only if new image is selected
-      if (data.image && data.image instanceof File) {
-        formData.append("image", data.image);
-      }
-
-      const response = await axios.put(`${API_URL}/services/${id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+  const activateService = useMutation({
+    mutationFn: async (serviceId) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.ACTIVE_SERVICE,
+        pathParams: { id: serviceId },
+        headers: authHeaders,
       });
-      return response.data;
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["services"]);
+      toast.success("Đã kích hoạt dịch vụ thành công!");
+      queryClient.invalidateQueries(["services"]); // Replace refetch with queryClient
+    },
+    onError: (error) => {
+      toast.error("Có lỗi xảy ra khi kích hoạt dịch vụ!");
+      console.error(error);
     },
   });
 
-  const useDeactivateService = () => {
-    return useMutation({
-      mutationFn: async (serviceId) => {
-        const response = await axios.put(
-          `${API_URL}/services/deactive/${serviceId}`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-      },
-      onSuccess: () => {
-        toast.success("Đã ngưng hoạt động dịch vụ thành công!");
-        queryClient.invalidateQueries(["services"]);
-      },
-      onError: () => {
-        toast.error("Có lỗi xảy ra khi ngưng hoạt động dịch vụ!");
-      },
-    });
-  };
-
-  const useActivateService = () => {
-    return useMutation({
-      mutationFn: async (serviceId) => {
-        const response = await axios.put(
-          `${API_URL}/services/active/${serviceId}`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-      },
-      onSuccess: () => {
-        toast.success("Đã kích hoạt dịch vụ thành công!");
-        queryClient.invalidateQueries(["services"]);
-      },
-      onError: () => {
-        toast.error("Có lỗi xảy ra khi kích hoạt dịch vụ!");
-      },
-    });
-  };
+  const deactivateService = useMutation({
+    mutationFn: async (serviceId) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.DEACTIVE_SERVICE,
+        pathParams: { id: serviceId },
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Đã ngưng hoạt động dịch vụ thành công!");
+      queryClient.invalidateQueries(["services"]); // Replace refetch with queryClient
+    },
+    onError: (error) => {
+      toast.error("Có lỗi xảy ra khi ngưng hoạt động dịch vụ!");
+      console.error(error);
+    },
+  });
 
   return {
-    useGetAllServices,
+    services,
+    isLoading,
     createService,
-    updateService,
-    useDeactivateService,
-    useActivateService,
+    activateService: activateService.mutate,
+    deactivateService: deactivateService.mutate,
   };
 };
