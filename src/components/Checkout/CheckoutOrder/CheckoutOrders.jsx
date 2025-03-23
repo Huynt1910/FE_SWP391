@@ -1,10 +1,9 @@
 import productData from "@data/product/product";
-import { useContext } from "react";
 import { Card } from "./Card/Card";
-import { CartContext } from "@/pages/_app";
+import { useCart } from "@/context/CartContext";
 
 export const CheckoutOrders = () => {
-  const { cart } = useContext(CartContext);
+  const { cart } = useCart();
   const total = cart.reduce(
     (total, item) => total + Number(item.price) * Number(item.quantity),
     0

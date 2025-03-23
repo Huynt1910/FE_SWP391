@@ -107,7 +107,7 @@ const Sidebar = ({ isCollapsed }) => {
   return (
     <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
       <div className="sidebar__brand">
-        <img src="/logo.png" alt="Logo" />
+        {/* <img src="/logo.png" alt="Logo" /> */}
         <span>Admin Panel</span>
       </div>
 

@@ -12,7 +12,9 @@ export const isAuthenticated = () => {
 
 // Get the authentication token
 export const getToken = () => {
-  return getCookie("token");
+  const token = getCookie("token");
+  console.log("Retrieved token:", token ? `${token.substring(0, 5)}...${token.substring(token.length - 5)}` : "No token found");
+  return token;
 };
 
 // Get the user role
@@ -110,7 +112,10 @@ export const handleAuthError = (error) => {
       return true;
     }
 
-    redirectToLogin("Your session has expired. Please log in again.");
+    // Check if we're already on the login page to prevent redirect loops
+    if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+      redirectToLogin("Your session has expired. Please log in again.");
+    }
     return true;
   }
 

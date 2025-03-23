@@ -210,20 +210,20 @@ export const END_POINTS = {
     method: "GET",
     secure: true,
   },
-  getAvailableSlots: { path: "/booking/slots", method: "POST", secure: false },
+  getAvailableSlots: { path: "/booking/slots", method: "POST", secure: true },
   createBooking: {
     path: "/booking/createBooking",
     method: "POST",
-    secure: false,
+    secure: true,
   },
   getCustomerPendingBookings: {
     path: "/booking/customer/:userId/pending",
     method: "GET",
     parameterized: true,
-    secure: false,
+    secure: true
   },
   deleteBooking: {
-    path: "/booking/:bookingId",
+    path: "/booking/delete/:bookingId",
     method: "DELETE",
     parameterized: true,
     secure: true,
@@ -261,7 +261,7 @@ export const END_POINTS = {
     path: "/payment/:bookingId",
     method: "GET",
     parameterized: true,
-    secure: false,
+    secure: true,
   },
 
   // Separate voucher endpoints

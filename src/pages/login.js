@@ -3,7 +3,6 @@ import { Subscribe } from "@components/shared/Subscribe/Subscribe";
 import { PublicLayout } from "@/layout/PublicLayout";
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { deleteCookie } from "cookies-next";
 
 const breadcrumbsData = [
   {
@@ -21,11 +20,9 @@ const LoginPage = () => {
   const { returnUrl } = router.query;
   
   useEffect(() => {
-    console.log("Unified login page mounted");
-    // Clear any existing auth tokens to prevent redirect loops
-    deleteCookie("token");
-    deleteCookie("userRole");
-  }, []);
+    console.log("Login page mounted, checking for returnUrl:", returnUrl);
+    // We don't automatically clear tokens anymore as this could interfere with authentication
+  }, [returnUrl]);
 
   return (
     <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Log In">

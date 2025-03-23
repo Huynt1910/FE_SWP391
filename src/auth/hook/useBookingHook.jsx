@@ -2,6 +2,7 @@ import { useState } from "react";
 import { APIClient } from "@/lib/api-client";
 import { ACTIONS } from "@/lib/api-client/constant";
 import { isAuthenticated } from "@/utils/auth";
+import { getCookie } from "cookies-next";
 
 export const useBookingHook = () => {
   // State management
@@ -94,9 +95,14 @@ export const useBookingHook = () => {
       
       console.log("Fetching active therapists...");
       
+      // Get authentication token
+      const token = getCookie("token");
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+      
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_THERAPISTS_BY_SERVICE,
+        action: ACTIONS.GET_ACTIVE_THERAPISTS,
         data: { serviceId: serviceIds },
+        headers: authHeaders,
         options: { preventRedirect: true }
       });
       
@@ -141,6 +147,12 @@ export const useBookingHook = () => {
       
       console.log("Fetching available slots...");
       
+      // Get the authentication token
+      const token = getCookie("token");
+      
+      // Add token to headers even though the endpoint is marked as non-secure
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+      
       const response = await APIClient.invoke({
         action: ACTIONS.GET_AVAILABLE_SLOTS,
         data: {
@@ -148,6 +160,7 @@ export const useBookingHook = () => {
           serviceId: serviceIds,
           date: date
         },
+        headers: authHeaders,
         options: { preventRedirect: true }
       });
       
@@ -254,7 +267,7 @@ export const useBookingHook = () => {
       console.log("Fetching available vouchers...");
       
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_VOUCHERS,
+        action: ACTIONS.GET_ACTIVE_VOUCHERS,
         options: { preventRedirect: true }
       });
       
@@ -302,6 +315,18 @@ export const useBookingHook = () => {
       // Convert userId to number just to be safe
       bookingData.userId = Number(bookingData.userId);
       
+      // Process voucher ID correctly
+      if (bookingData.voucherId) {
+        console.log("Voucher ID before processing:", bookingData.voucherId, typeof bookingData.voucherId);
+        // Ensure voucherId is sent as a number
+        bookingData.voucherId = Number(bookingData.voucherId);
+        console.log("Voucher ID after processing:", bookingData.voucherId, typeof bookingData.voucherId);
+      } else {
+        // If voucher ID is null, undefined, or 0, ensure it's not included or set to null
+        console.log("No voucher selected, setting voucherId to null");
+        bookingData.voucherId = null;
+      }
+      
       // Add email to booking data - the API might need this to store the booking
       try {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -322,10 +347,16 @@ export const useBookingHook = () => {
       
       console.log("Creating booking with FINAL data:", JSON.stringify(bookingData));
       console.log("User ID type and value:", typeof bookingData.userId, bookingData.userId);
+      console.log("Voucher ID type and value:", typeof bookingData.voucherId, bookingData.voucherId);
+      
+      // Get authentication token
+      const token = getCookie("token");
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
       
       const response = await APIClient.invoke({
         action: ACTIONS.CREATE_BOOKING,
         data: bookingData,
+        headers: authHeaders,
         options: { preventRedirect: true }
       });
       

@@ -181,24 +181,34 @@ export class APIClient {
     let url = `${API_URL}${endpoint.path}`;
 
     // Replace path parameters for both :id and {id} formats
-    Object.keys(params).forEach((key) => {
-      url = url
-        .replace(`{${key}}`, params[key]) // Handle {id} format
-        .replace(`:${key}`, params[key]); // Handle :id format
-    });
+    if (params) {
+      Object.keys(params).forEach((key) => {
+        const placeholder = `:${key}`;
+        if (url.includes(placeholder)) {
+          url = url.replace(placeholder, encodeURIComponent(params[key]));
+          console.log(`Replaced ${placeholder} with ${params[key]}`);
+        }
+        
+        const bracketPlaceholder = `{${key}}`;
+        if (url.includes(bracketPlaceholder)) {
+          url = url.replace(bracketPlaceholder, encodeURIComponent(params[key]));
+          console.log(`Replaced ${bracketPlaceholder} with ${params[key]}`);
+        }
+      });
+    }
 
     console.log("Built URL:", url); // Debug log
     return url;
   }
 
-  static async invoke({ action, data = null, pathParams = {}, headers = {} }) {
+  static async invoke({ action, data = null, pathParams = {}, urlParams = {}, headers = {}, options = {} }) {
     try {
       const endpoint = END_POINTS[action];
       if (!endpoint) {
         throw new Error(`Invalid action: ${action}`);
       }
 
-      console.log("Making request with params:", { action, pathParams });
+      console.log("Making request with params:", { action, pathParams, urlParams });
 
       // Don't set Content-Type if FormData is being sent
       const isFormData = data instanceof FormData;
@@ -206,19 +216,54 @@ export class APIClient {
         ? {}
         : { "Content-Type": "application/json" };
 
+      // Add authorization header if the endpoint requires authentication
+      let authHeaders = {};
+      if (endpoint.secure) {
+        const token = getToken();
+        if (token) {
+          authHeaders = { Authorization: `Bearer ${token}` };
+          console.log(`Added auth token for secure endpoint: ${action} (token length: ${token.length})`);
+        } else {
+          console.warn(`Attempting to access secure endpoint ${action} without authentication token`);
+        }
+      } else {
+        console.log(`Endpoint ${action} doesn't require authentication`);
+      }
+
+      // Log the final request configuration
+      console.log("Request config:", {
+        method: endpoint.method,
+        url: this._buildUrl(endpoint, pathParams),
+        hasAuthHeader: !!authHeaders.Authorization,
+        isSecure: endpoint.secure
+      });
+
       const response = await axios({
         method: endpoint.method,
         url: this._buildUrl(endpoint, pathParams),
         data,
         headers: {
-          ...headers,
           ...contentTypeHeader,
+          ...authHeaders,
+          ...headers, // User-provided headers should have highest priority
         },
       });
 
       return response.data;
     } catch (error) {
-      console.error("API Error:", error);
+      // Enhanced error logging
+      if (error.response) {
+        console.error(`API Error (${error.response.status}):`, {
+          action,
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data,
+          url: error.config?.url,
+          hasAuthHeader: !!error.config?.headers?.Authorization,
+        });
+      } else {
+        console.error("API Error:", error.message);
+      }
       throw error;
     }
   }
