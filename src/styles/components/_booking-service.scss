@@ -319,175 +319,373 @@
   
   // Booking confirmation
   .booking-confirmation {
-    .confirmation-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 25px;
-      
-      h4 {
-        font-size: 22px;
-        font-weight: 600;
-        color: #333;
-        margin: 0;
-      }
-      
-      .booking-id {
-        background-color: #f0f0f0;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 500;
-        color: #555;
-      }
-    }
-    
-    .confirmation-details {
-      .confirmation-section {
-        margin-bottom: 25px;
-        
-        h5 {
-          margin-bottom: 15px;
-          padding-bottom: 8px;
-          border-bottom: 1px solid #eee;
-        }
-        
-        .confirmation-item {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 10px;
-          
-          span:first-child {
-            color: #666;
-            font-size: 14px;
-          }
-          
-          span:last-child {
-            font-weight: 500;
-            color: #333;
-            text-align: right;
-          }
-          
-          &.total {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px dashed #eee;
-            font-size: 18px;
-            font-weight: 600;
-            
-            span:last-child {
-              color: #ff4f6f;
-            }
-          }
-        }
-      }
-    }
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 0;
   }
   
-  // Navigation buttons
-  .booking-navigation {
+  .booking-confirmation__title {
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .booking-confirmation__subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 15px;
+  }
+  
+  // Booking Summary styling
+  .booking-summary {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  }
+  
+  .booking-summary__title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #333;
+    text-align: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .booking-summary__item {
+    display: flex;
+    margin-bottom: 20px;
+    padding: 5px 0;
+  }
+  
+  .booking-summary__label {
+    font-weight: 500;
+    color: #555;
+    display: flex;
+    align-items: flex-start;
+    width: 140px;
+  }
+  
+  .booking-summary__label .icon {
+    margin-right: 8px;
+    color: #50b954;
+    font-size: 18px;
+  }
+  
+  .booking-summary__value {
+    flex: 1;
+  }
+  
+  .booking-summary__item.total {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 2px solid #f0f0f0;
+  }
+  
+  .booking-summary__item.total .total-amount {
+    color: #ff5a5f;
+  }
+  
+  // Action buttons
+  .booking-actions {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-top: 30px;
-    
-    button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 500;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: none;
-      
-      &.btn-secondary {
-        background-color: #f0f0f0;
-        color: #555;
-        
-        &:hover {
-          background-color: #e0e0e0;
-        }
-      }
-      
-      &.btn-primary {
-        background-color: #ff4f6f;
-        color: white;
-        
-        &:hover {
-          background-color: darken(#ff4f6f, 10%);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 8px rgba(255, 79, 111, 0.3);
-        }
-      }
-    }
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .booking-actions__left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .booking-actions__prev {
+    background-color: transparent;
+    border: 1px solid #ddd;
+    color: #666;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s;
+  }
+  
+  .booking-actions__prev .icon {
+    margin-right: 10px;
+  }
+  
+  .booking-actions__prev:hover {
+    background-color: #f5f5f5;
+    border-color: #ccc;
+  }
+  
+  .booking-actions__cancel {
+    margin-left: 15px;
+    color: #f44336;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .booking-actions__cancel:hover {
+    text-decoration: underline;
+  }
+  
+  .booking-actions__right {
+    display: flex;
+    align-items: center;
+  }
+  
+  .booking-actions__confirm {
+    background-color: #50b954;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s;
+    box-shadow: 0 4px 8px rgba(80, 185, 84, 0.2);
+  }
+  
+  .booking-actions__confirm .icon {
+    margin-left: 10px;
+  }
+  
+  .booking-actions__confirm:hover {
+    background-color: #449a48;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(80, 185, 84, 0.3);
+  }
+  
+  .booking-actions__confirm:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .booking-actions__confirm .spinner-small {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+  }
+  
+  // Therapist info styling
+  .therapist-info span {
+    font-weight: 500;
+    color: #333;
+    font-size: 16px;
+  }
+  
+  .time-slot {
+    margin-left: 10px;
+    font-weight: 500;
+    color: #50b954;
+  }
+  
+  // Voucher list styling
+  .voucher-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .voucher-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .voucher-item:hover {
+    border-color: #aaa;
+    background-color: #f5f5f5;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+  }
+  
+  .voucher-item.selected {
+    border-color: #50b954;
+    background-color: rgba(80, 185, 84, 0.05);
+  }
+  
+  .voucher-radio {
+    margin-right: 15px;
+    flex-shrink: 0;
+  }
+  
+  .radio-circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .radio-circle.checked {
+    border-color: #50b954;
+  }
+  
+  .radio-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #50b954;
+  }
+  
+  .voucher-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .voucher-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  
+  .voucher-discount {
+    color: #ff5a5f;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  
+  .discount-row {
+    display: flex;
+    justify-content: space-between;
+    color: #ff5a5f;
+    font-weight: 500;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #eee;
+  }
+  
+  // Service list styling
+  .service-list {
+    width: 100%;
+  }
+  
+  .service-item {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px dashed #eee;
+  }
+  
+  .service-item:last-child {
+    border-bottom: none;
+  }
+  
+  .service-name {
+    font-size: 15px;
+    color: #333;
+  }
+  
+  .service-price {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .service-subtotal {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 500;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+  }
+  
+  // Customer notes
+  .customer-notes {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 15px;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.3s ease;
+  }
+  
+  .customer-notes:focus {
+    outline: none;
+    border-color: #50b954;
+    box-shadow: 0 0 0 3px rgba(80, 185, 84, 0.1);
   }
 }
 
 @media (max-width: 768px) {
   .booking-service-form {
     padding: 25px 20px;
-    
-    h3 {
-      font-size: 24px;
-    }
-    
-    .booking-steps {
-      .booking-step {
-        .step-number {
-          width: 36px;
-          height: 36px;
-          font-size: 14px;
-        }
-        
-        .step-label {
-          font-size: 12px;
-        }
-      }
-    }
-    
-    .therapist-grid,
-    .service-options {
-      grid-template-columns: 1fr;
-    }
-    
-    .date-grid, 
-    .time-grid {
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 10px;
-    }
-    
-    .booking-navigation {
-      button {
-        padding: 10px 16px;
-        font-size: 14px;
-      }
-    }
   }
-
-  .book-appointment {
+  
+  .booking-summary {
     padding: 20px;
-
-    &__title {
-      font-size: 24px;
-    }
+    max-width: 100%;
   }
-
+  
   .booking-actions {
     flex-direction: column;
-    gap: 20px;
-
-    &__left {
-      width: 100%;
-      justify-content: space-between;
-    }
-
-    &__next,
-    &__confirm {
-      width: 100%;
-      justify-content: center;
-    }
+    gap: 15px;
+    max-width: 100%;
+  }
+  
+  .booking-actions__left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .booking-actions__right {
+    width: 100%;
+  }
+  
+  .booking-actions__confirm {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .step-indicators .step-indicator__label {
+    font-size: 12px;
+  }
+  
+  .step-indicators .step-indicator__number {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
   }
 }
 
@@ -1247,95 +1445,64 @@
     }
     
     .vouchers-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
     }
     
-    .voucher-card {
+    .voucher-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 15px;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
-      padding: 15px;
-      background-color: #fff;
+      background-color: #f9f9f9;
       cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      
-      &:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 5px;
-        height: 100%;
-        background-color: #ff5a5f;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-      }
+      transition: all 0.2s ease;
       
       &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        
-        &:before {
-          opacity: 1;
-        }
+        border-color: #ff5a5f;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
       }
       
       &.selected {
-        border-color: #ff5a5f;
-        box-shadow: 0 5px 15px rgba(255, 90, 95, 0.15);
-        
-        &:before {
-          opacity: 1;
-        }
+        border-color: #4CAF50;
+        background-color: rgba(76, 175, 80, 0.05);
       }
       
-      .voucher-info {
-        padding-right: 30px;
+      &__content {
+        display: flex;
+        flex-direction: column;
       }
       
-      .voucher-name {
-        font-size: 16px;
+      &__name {
         font-weight: 600;
-        margin-bottom: 8px;
         color: #333;
+        margin-bottom: 4px;
       }
       
-      .voucher-discount {
-        font-size: 20px;
-        font-weight: 700;
+      &__discount {
         color: #ff5a5f;
-        margin-bottom: 5px;
-      }
-      
-      .voucher-code {
+        font-weight: 500;
         font-size: 14px;
-        color: #666;
-        margin-bottom: 5px;
-        padding: 3px 0;
-        border-top: 1px dashed #eee;
-        border-bottom: 1px dashed #eee;
       }
       
-      .voucher-expiry {
-        font-size: 12px;
-        color: #999;
-      }
-      
-      .voucher-selected-mark {
-        position: absolute;
-        top: 15px;
-        right: 15px;
+      &__selected {
         width: 24px;
         height: 24px;
-        background-color: #ff5a5f;
+        background-color: #4CAF50;
         color: white;
         border-radius: 50%;
-      display: flex;
+        display: flex;
         align-items: center;
         justify-content: center;
+        
+        .icon {
+          font-size: 12px;
+        }
       }
     }
   }
@@ -1758,7 +1925,6 @@
       &:disabled {
         background-color: #ccc;
         cursor: not-allowed;
-        transform: none;
       }
     }
   }
@@ -1826,82 +1992,73 @@
   margin-left: auto;
   margin-right: auto;
   position: relative;
-  
-  // Horizontal line connecting steps
-  &::before {
-    content: '';
-    position: absolute;
-    top: 29px;
-    left: 16%;
-    right: 16%;
-    height: 1px;
-    background-color: #e0e0e0;
-    z-index: 1;
-  }
-  
-  .step-indicator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    z-index: 5;
-    flex: 1;
-    
-    &__number {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background-color: #f5f5f5;
-      border: 1px solid #e0e0e0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: #666;
-      transition: all 0.3s ease;
-      z-index: 2;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      
-      .check-icon {
-        color: white;
-      }
-    }
-    
-    &__label {
-      font-size: 14px;
-      color: #666;
-      text-align: center;
-      transition: all 0.3s ease;
-      white-space: nowrap;
-    }
-    
-    &.active {
-      .step-indicator__number {
-        background-color: #ff5a5f;
-        border-color: #ff5a5f;
-        color: white;
-        box-shadow: 0 2px 4px rgba(255, 90, 95, 0.3);
-      }
-      
-      .step-indicator__label {
-        color: #ff5a5f;
-        font-weight: 500;
-      }
-    }
-    
-    &.completed {
-      .step-indicator__number {
-        background-color: #4CAF50;
-        border-color: #4CAF50;
-        color: white;
-      }
-      
-      .step-indicator__label {
-        color: #4CAF50;
-      }
-    }
-  }
+}
+
+.step-indicators::before {
+  content: '';
+  position: absolute;
+  top: 29px;
+  left: 16%;
+  right: 16%;
+  height: 1px;
+  background-color: #e0e0e0;
+  z-index: 1;
+}
+
+.step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 5;
+  flex: 1;
+}
+
+.step-indicator__number {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #666;
+  transition: all 0.3s ease;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.step-indicator__label {
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.step-indicator.active .step-indicator__number {
+  background-color: #ff5a5f;
+  border-color: #ff5a5f;
+  color: white;
+  box-shadow: 0 2px 4px rgba(255, 90, 95, 0.3);
+}
+
+.step-indicator.active .step-indicator__label {
+  color: #ff5a5f;
+  font-weight: 500;
+}
+
+.step-indicator.completed .step-indicator__number {
+  background-color: #50b954;
+  border-color: #50b954;
+  color: white;
+}
+
+.step-indicator.completed .step-indicator__label {
+  color: #50b954;
 }
 
 // Container for the booking form
@@ -2008,21 +2165,6 @@
         flex-direction: column;
         text-align: center;
         gap: 10px;
-      }
-    }
-    
-    &__actions {
-      flex-direction: column;
-      gap: 15px;
-      
-      &-left {
-        width: 100%;
-        justify-content: center;
-      }
-      
-      &-next {
-        width: 100%;
-        justify-content: center;
       }
     }
   }
@@ -2219,14 +2361,30 @@
       }
       
       ul {
-        padding-left: 15px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
         
         li {
-        color: #555;
-          margin-bottom: 5px;
-        
-        &:last-child {
-          margin-bottom: 0;
+          display: flex;
+          justify-content: space-between;
+          padding-bottom: 8px;
+          margin-bottom: 8px;
+          border-bottom: 1px dashed #eee;
+          
+          &:last-child {
+            border-bottom: none;
+          }
+          
+          .service-name {
+            font-size: 14px;
+            color: #333;
+          }
+          
+          .service-price {
+            font-weight: 600;
+            color: #333;
+          }
         }
       }
     }
@@ -2326,9 +2484,10 @@
     }
   }
   
-  &__loading,
-  &__error,
-  &__empty {
+  // Loading, error, and empty states
+  .pending-bookings-loading,
+  .pending-bookings-error,
+  .pending-bookings-empty {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2374,7 +2533,6 @@
       }
     }
   }
-}
 
 @media (max-width: 768px) {
   .pending-bookings {
@@ -2560,4 +2718,235 @@
   font-size: 14px;
   color: #777;
   font-style: italic;
+}
+
+// Update therapist info to work without image
+.therapist-info {
+  span {
+    font-weight: 500;
+    color: #333;
+    font-size: 16px;
+  }
+}
+
+// Voucher section styling for confirmation page
+.voucher-section {
+  margin-bottom: 10px;
+}
+
+.voucher-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.voucher-option {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #aaa;
+    background-color: #f5f5f5;
+  }
+  
+  &.selected {
+    border-color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.05);
+  }
+  
+  &__radio {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #aaa;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    
+    .selected & {
+      border-color: #4CAF50;
+    }
+  }
+  
+  &__radio-inner {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+  }
+  
+  &__details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  &__name {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  
+  &__discount {
+    color: #ff5a5f;
+    font-weight: 500;
+    font-size: 13px;
+  }
+}
+
+.discount-info {
+  display: flex;
+  justify-content: space-between;
+  color: #ff5a5f;
+  font-weight: 500;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #eee;
+}
+
+// Service list styling updates
+.services-list {
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    
+    li {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px dashed #eee;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .service-name {
+        font-size: 14px;
+        color: #333;
+      }
+      
+      .service-price {
+        font-weight: 600;
+        color: #333;
+      }
+    }
+  }
+  
+  .services-subtotal {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 500;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+  }
+}
+
+// Voucher list styling for confirmation page
+.voucher-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.voucher-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #aaa;
+    background-color: #f5f5f5;
+  }
+  
+  &.selected {
+    border-color: #4CAF50;
+    background-color: rgba(76, 175, 80, 0.05);
+  }
+  
+  .voucher-radio {
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  
+  .voucher-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .voucher-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  
+  .voucher-discount {
+    color: #ff5a5f;
+    font-weight: 500;
+    font-size: 13px;
+  }
+}
+
+.discount-row {
+  display: flex;
+  justify-content: space-between;
+  color: #ff5a5f;
+  font-weight: 500;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #eee;
+}
+
+// Service list styling
+.service-list {
+  width: 100%;
+  
+  .service-item {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1px dashed #eee;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .service-name {
+      font-size: 14px;
+      color: #333;
+    }
+    
+    .service-price {
+      font-weight: 600;
+      color: #333;
+    }
+  }
+  
+  .service-subtotal {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 500;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+  }
 } 

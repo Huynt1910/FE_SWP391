@@ -477,7 +477,7 @@ const BookingListPending = () => {
       
       // Get authentication token
       const token = getCookie("token");
-        if (!token) {
+      if (!token) {
         throw new Error("Authentication token not found");
       }
       
@@ -486,134 +486,70 @@ const BookingListPending = () => {
       
       console.log('Invoking payment endpoint with token and bookingId:', bookingId);
       
-      // First attempt with API client
-      const response = await APIClient.invoke({
-        action: ACTIONS.PAYMENT,
-        pathParams: { bookingId: bookingId.toString() },
-        headers: authHeaders,
-        options: { preventRedirect: true }
-      });
-
-      console.log('Payment response:', response);
-      
-      // Handle different response formats
-      let paymentUrl = null;
-      
-      // Check if response is a URL string directly
-      if (typeof response === 'string' && response.includes('vnpayment.vn')) {
-        paymentUrl = response;
-      } 
-      // Handle JSON response - safely check for URL in result property
-      else if (response && response.result) {
-        if (typeof response.result === 'string') {
-          // Check if result is a URL string
-          if (response.result.includes('vnpayment.vn')) {
-            paymentUrl = response.result;
-          }
-          // Check if result might be a JSON string that contains a URL
-          else {
-            try {
-              const parsedResult = JSON.parse(response.result);
-              if (parsedResult && typeof parsedResult === 'object') {
-                // Look for URL in parsed object
-                for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
-                  if (parsedResult[prop] && typeof parsedResult[prop] === 'string' && parsedResult[prop].includes('vnpayment.vn')) {
-                    paymentUrl = parsedResult[prop];
-                    break;
-                  }
-                }
-              }
-            } catch (err) {
-              // Not a valid JSON string, continue to other checks
-              console.log('Result is not a valid JSON string:', err);
-            }
-          }
-        }
-      } 
-      // Look for URL in direct response object properties
-      else if (response && typeof response === 'object') {
-        // Look for URL in response properties
-        for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
-          if (response[prop] && typeof response[prop] === 'string' && response[prop].includes('vnpayment.vn')) {
-            paymentUrl = response[prop];
-            break;
-          }
-        }
-      }
-      
-      if (paymentUrl) {
-        console.log('Found payment URL:', paymentUrl);
-        window.location.href = paymentUrl;
-        setShowCompletionModal(false);
-        return;
-      }
-      
-      // If we couldn't find a payment URL in the response, try direct fetch as fallback
-      console.log('No payment URL found in API response, trying direct fetch...');
-      await delay(500); // Add a small delay before retrying
-      
       const paymentApiUrl = `${API_URL}/payment/${bookingId}`;
-      console.log('Direct payment URL:', paymentApiUrl);
+      console.log('Payment URL:', paymentApiUrl);
       
-      const directResponse = await fetch(paymentApiUrl, {
+      const response = await fetch(paymentApiUrl, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
+          'Accept': 'text/plain, application/json, */*',
           'Authorization': `Bearer ${token}`
         }
       });
             
-      console.log('Direct payment response status:', directResponse.status);
+      console.log('Payment response status:', response.status);
       
-      if (directResponse.ok) {
-        // Try to get response text first, then parse as JSON only if it's actually JSON
-        const responseText = await directResponse.text();
-        console.log('Direct payment response text:', responseText);
+      if (response.ok) {
+        // Get response as text first
+        const responseText = await response.text();
+        console.log('Payment response text:', responseText);
         
-        // Check if response text is a URL directly
-        if (responseText.includes('vnpayment.vn')) {
-          window.location.href = responseText;
+        // Direct check for URL in text response
+        if (responseText.includes('vnpayment.vn') || responseText.trim().startsWith('http')) {
+          console.log('Found direct URL in response text, redirecting to:', responseText.trim());
+          window.location.href = responseText.trim();
           setShowCompletionModal(false);
           return;
         }
         
-        // Try to parse as JSON if it looks like JSON
-        let jsonResponse;
+        // Try parsing as JSON only if it looks like JSON
         if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
           try {
-            jsonResponse = JSON.parse(responseText);
-            console.log('JSON payment response:', jsonResponse);
+            const jsonResponse = JSON.parse(responseText);
+            console.log('Parsed JSON response:', jsonResponse);
             
-            // Check for URL in JSON response
-            if (typeof jsonResponse === 'string' && jsonResponse.includes('vnpayment.vn')) {
+            // Look for URL in JSON response
+            if (typeof jsonResponse === 'string' && 
+                (jsonResponse.includes('vnpayment.vn') || jsonResponse.startsWith('http'))) {
+              console.log('Found URL in parsed JSON string:', jsonResponse);
               window.location.href = jsonResponse;
               setShowCompletionModal(false);
               return;
-            } else if (jsonResponse?.result && typeof jsonResponse.result === 'string') {
-              if (jsonResponse.result.includes('vnpayment.vn')) {
-                window.location.href = jsonResponse.result;
+            }
+            
+            // Check various properties for URLs
+            for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data', 'result']) {
+              if (jsonResponse[prop] && typeof jsonResponse[prop] === 'string' && 
+                  (jsonResponse[prop].includes('vnpayment.vn') || jsonResponse[prop].startsWith('http'))) {
+                console.log(`Found URL in response.${prop}:`, jsonResponse[prop]);
+                window.location.href = jsonResponse[prop];
                 setShowCompletionModal(false);
                 return;
               }
-            } else {
-              // Look for URL in properties
-              for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
-                if (jsonResponse[prop] && typeof jsonResponse[prop] === 'string' && jsonResponse[prop].includes('vnpayment.vn')) {
-                  window.location.href = jsonResponse[prop];
-                  setShowCompletionModal(false);
-                  return;
-                }
-              }
             }
-          } catch (error) {
-            console.error('Error parsing JSON response:', error);
-            // Continue with other checks - the response might still be a URL
+            
+            // No URL found in JSON
+            throw new Error("Payment URL not found in response");
+          } catch (err) {
+            console.error('Error parsing or processing JSON response:', err);
+            throw new Error("Failed to process payment response");
           }
+        } else {
+          throw new Error("Unexpected response format from payment endpoint");
         }
+      } else {
+        throw new Error(`Payment request failed with status: ${response.status}`);
       }
-      
-      throw new Error("Could not find valid payment URL in response");
     } catch (err) {
       console.error('Error getting payment URL:', err);
       showToast(err.message || "Failed to get payment URL. Please try again later.", "error");

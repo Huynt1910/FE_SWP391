@@ -157,47 +157,45 @@
   }
   
   // State components
-  .service-list {
-    &__loading,
-    &__error,
-    &__empty {
+  .service-list__loading,
+  .service-list__error,
+  .service-list__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 50px 0;
+    text-align: center;
+
+    .spinner-container {
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      min-height: 300px;
-      padding: 50px 0;
-      text-align: center;
-
-      .spinner-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-
-      .spinner {
-        width: 50px;
-        height: 50px;
-        border: 5px solid rgba(0, 0, 0, 0.1);
-        border-radius: 50%;
-        border-top-color: #ff4f6f;
-        animation: spin 1s ease-in-out infinite;
-      }
-
-      .loading-text {
-        font-size: 18px;
-        color: #666;
-        margin-top: 10px;
-      }
+      align-items: center;
+      margin-bottom: 20px;
     }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: #ff4f6f;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    .loading-text {
+      font-size: 18px;
+      color: #666;
+      margin-top: 10px;
+    }
+  }
+  
+  .service-list__empty {
+    width: 100%;
     
-    &__empty {
+    .services-grid {
       width: 100%;
-      
-      .services-grid {
-        width: 100%;
-      }
     }
   }
   
@@ -438,44 +436,42 @@
 }
 
 // Placeholder styles for loading state
-.service-card {
-  &--placeholder {
-    animation: pulse 1.5s infinite;
-  }
-  
-  .placeholder-image {
-    height: 200px;
-    background-color: #f0f0f0;
-    border-radius: 10px 10px 0 0;
-  }
-  
-  .placeholder-text {
-    background-color: #f0f0f0;
-    height: 16px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    
-    &.placeholder-title {
-      height: 24px;
-      width: 70%;
-    }
-    
-    &.placeholder-description {
-      width: 100%;
-    }
-    
-    &.placeholder-price {
-      width: 40%;
-      height: 20px;
-    }
-  }
-  
-  .placeholder-button {
-    background-color: #f0f0f0;
-    height: 36px;
-    width: 100px;
-    border-radius: 5px;
-  }
+.service-card--placeholder {
+  animation: pulse 1.5s infinite;
+}
+
+.placeholder-image {
+  height: 200px;
+  background-color: #f0f0f0;
+  border-radius: 10px 10px 0 0;
+}
+
+.placeholder-text {
+  background-color: #f0f0f0;
+  height: 16px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+.placeholder-text.placeholder-title {
+  height: 24px;
+  width: 70%;
+}
+
+.placeholder-text.placeholder-description {
+  width: 100%;
+}
+
+.placeholder-text.placeholder-price {
+  width: 40%;
+  height: 20px;
+}
+
+.placeholder-button {
+  background-color: #f0f0f0;
+  height: 36px;
+  width: 100px;
+  border-radius: 5px;
 }
 
 // Loading animation

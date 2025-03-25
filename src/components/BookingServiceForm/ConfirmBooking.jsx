@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowLeft, FaArrowRight, FaCheck, FaTag, FaUserMd, FaCalendarAlt, FaTags, FaTicketAlt, FaMoneyBillWave, FaCommentAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaCheck, FaUserMd, FaCalendarAlt, FaTags, FaTicketAlt, FaMoneyBillWave, FaCommentAlt } from 'react-icons/fa';
 import useBookingHook from "@/auth/hook/useBookingHook";
 import Link from 'next/link';
 
@@ -62,36 +62,12 @@ const ConfirmBooking = ({
 
   // Handle voucher selection
   const handleVoucherSelect = (voucher) => {
-    console.log("Voucher selection triggered:", voucher);
-    
-    if (selectedVoucher && selectedVoucher.voucherCode === voucher.voucherCode) {
-      console.log("Deselecting voucher:", selectedVoucher);
-      onVoucherSelect(null); // Deselect if already selected
+    // If the voucher is already selected, deselect it
+    if (selectedVoucher && selectedVoucher.voucherId === voucher.voucherId) {
+      onVoucherSelect(null);
     } else {
-      console.log("Selecting voucher:", voucher);
-      console.log("Voucher ID:", voucher.voucherId, typeof voucher.voucherId);
-      
-      // Make sure the voucherId is a number
-      const parsedVoucher = {
-        ...voucher,
-        voucherId: Number(voucher.voucherId)
-      };
-      
-      console.log("Formatted voucher:", parsedVoucher);
-      onVoucherSelect(parsedVoucher);
+      onVoucherSelect(voucher);
     }
-  };
-
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
   };
 
   // Function to handle the next button click (submit booking)
@@ -118,15 +94,6 @@ const ConfirmBooking = ({
             <div className="booking-summary__value">
               {selectedTherapist ? (
                 <div className="therapist-info">
-                  <img 
-                    src={selectedTherapist.imgUrl || selectedTherapist.image || selectedTherapist.avatar || '/assets/img/therapists/default.jpg'} 
-                    alt={selectedTherapist.fullName || selectedTherapist.name} 
-                    className="therapist-thumbnail"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/assets/img/therapists/default.jpg";
-                    }}
-                  />
                   <span>{selectedTherapist.fullName || selectedTherapist.name}</span>
                 </div>
               ) : (
@@ -164,28 +131,27 @@ const ConfirmBooking = ({
             <div className="booking-summary__label">
               <FaTags className="icon" /> Services
             </div>
-            <div className="booking-summary__value services-list">
+            <div className="booking-summary__value">
               {selectedServices && selectedServices.length > 0 ? (
-                <ul>
+                <div className="service-list">
                   {selectedServices.map((service) => (
-                    <li key={service.id}>
+                    <div key={service.id} className="service-item">
                       <span className="service-name">{service.name}</span>
                       <span className="service-price">
                         {formatPrice(service.price)}
                       </span>
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                  <div className="service-subtotal">
+                    <span>Subtotal:</span>
+                    <span className="subtotal-amount">
+                      {formatPrice(totalPrice)}
+                    </span>
+                  </div>
+                </div>
               ) : (
                 "No services selected"
               )}
-              
-              <div className="services-subtotal">
-                <span>Subtotal:</span>
-                <span className="subtotal-amount">
-                  {formatPrice(totalPrice)}
-                </span>
-              </div>
             </div>
           </div>
           
@@ -196,22 +162,31 @@ const ConfirmBooking = ({
                 <FaTicketAlt className="icon" /> Voucher
               </div>
               <div className="booking-summary__value">
-                <select 
-                  className="voucher-select"
-                  value={selectedVoucher ? selectedVoucher.voucherId : ""}
-                  onChange={(e) => handleVoucherSelect({ ...selectedVoucher, voucherId: Number(e.target.value) })}
-                >
-                  <option value="">Select a voucher (optional)</option>
+                <div className="voucher-list">
                   {vouchers.map(voucher => (
-                    <option key={voucher.voucherId} value={voucher.voucherId}>
-                      {voucher.voucherName} ({voucher.percentDiscount}% off)
-                    </option>
+                    <div 
+                      key={voucher.voucherId} 
+                      className={`voucher-item ${selectedVoucher && selectedVoucher.voucherId === voucher.voucherId ? 'selected' : ''}`}
+                      onClick={() => handleVoucherSelect(voucher)}
+                    >
+                      <div className="voucher-radio">
+                        <div className={`radio-circle ${selectedVoucher && selectedVoucher.voucherId === voucher.voucherId ? 'checked' : ''}`}>
+                          {selectedVoucher && selectedVoucher.voucherId === voucher.voucherId && (
+                            <div className="radio-dot"></div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="voucher-details">
+                        <div className="voucher-name">{voucher.voucherName}</div>
+                        <div className="voucher-discount">{voucher.percentDiscount}% off</div>
+                      </div>
+                    </div>
                   ))}
-                </select>
+                </div>
                 
                 {selectedVoucher && (
-                  <div className="discount-info">
-                    <span className="discount-label">Discount:</span>
+                  <div className="discount-row">
+                    <span>Discount:</span>
                     <span className="discount-amount">
                       - {formatPrice(discountAmount)}
                     </span>
@@ -242,36 +217,10 @@ const ConfirmBooking = ({
                 placeholder="Any special requests or notes for your treatment?"
                 value={customerNotes}
                 onChange={(e) => onCustomerNotesChange(e.target.value)}
-                rows={4}
+                rows={3}
               />
             </div>
           </div>
-          
-          {/* Payment Method - could be implemented in the future
-          <div className="booking-summary__item">
-            <div className="booking-summary__label">
-              <FaCreditCard className="icon" /> Payment
-            </div>
-            <div className="booking-summary__value payment-methods">
-              <div className="payment-method-options">
-                {paymentMethods.map(method => (
-                  <div 
-                    key={method.id}
-                    className={`payment-method ${paymentMethod?.id === method.id ? 'selected' : ''}`}
-                    onClick={() => onPaymentMethodSelect(method)}
-                  >
-                    <div className="payment-method__icon">
-                      {method.icon}
-                    </div>
-                    <div className="payment-method__name">
-                      {method.name}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          */}
         </div>
       </div>
       

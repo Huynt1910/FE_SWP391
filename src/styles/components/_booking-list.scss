@@ -7,125 +7,132 @@
     margin-bottom: 20px;
     color: #333;
   }
+}
 
-  &__loading,
-  &__error,
-  &__auth-error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-    text-align: center;
+.booking-list__loading,
+.booking-list__error,
+.booking-list__auth-error,
+.booking-list-pending__loading,
+.booking-list-pending__error,
+.booking-list-pending__auth-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  text-align: center;
 
-    .spinner,
-    .loading-spinner {
-      animation: spin 1s linear infinite;
-      font-size: 24px;
-      color: #f06eaa;
-      margin-bottom: 10px;
-    }
-
-    .error-icon,
-    .auth-error-icon {
-      color: #dc3545;
-      margin-bottom: 15px;
-    }
-
-    h3 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 18px;
-    }
-
-    p {
-      color: #666;
-      margin-bottom: 15px;
-    }
-
-    .btn-retry,
-    .error-refresh-button,
-    .auth-error-button {
-      padding: 8px 20px;
-      background-color: #f06eaa;
-      color: white;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-
-      &:hover {
-        background-color: darken(#f06eaa, 10%);
-      }
-    }
+  .spinner,
+  .loading-spinner {
+    animation: spin 1s linear infinite;
+    font-size: 24px;
+    color: #f06eaa;
+    margin-bottom: 10px;
   }
 
-  &__empty {
-    text-align: center;
-    padding: 40px 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-
-    .empty-icon {
-      color: #f06eaa;
-      margin-bottom: 15px;
-    }
-
-    h3 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 18px;
-    }
-
-    p {
-      color: #666;
-      margin-bottom: 20px;
-    }
-
-    .btn-book,
-    .book-now-button {
-      display: inline-block;
-      padding: 10px 25px;
-      background-color: #f06eaa;
-      color: white;
-      text-decoration: none;
-      border-radius: 25px;
-      transition: all 0.3s ease;
-      border: none;
-      cursor: pointer;
-      font-weight: 500;
-
-      &:hover {
-        background-color: darken(#f06eaa, 10%);
-        transform: translateY(-2px);
-      }
-    }
+  .error-icon,
+  .auth-error-icon {
+    color: #dc3545;
+    margin-bottom: 15px;
   }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+  h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 18px;
   }
 
-  &__header {
+  p {
+    color: #666;
+    margin-bottom: 15px;
+  }
+
+  .btn-retry,
+  .error-refresh-button,
+  .auth-error-button {
+    padding: 8px 20px;
+    background-color: #f06eaa;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: darken(#f06eaa, 10%);
+    }
+  }
+}
+
+.booking-list__empty,
+.booking-list-pending__empty {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+
+  .empty-icon {
+    color: #f06eaa;
+    margin-bottom: 15px;
+  }
+
+  h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+
+  p {
+    color: #666;
     margin-bottom: 20px;
-    
-    h2 {
-      margin-bottom: 5px;
-    }
-    
-    p {
-      color: #666;
-      font-size: 14px;
-    }
   }
 
-  &__list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  .btn-book,
+  .book-now-button {
+    display: inline-block;
+    padding: 10px 25px;
+    background-color: #f06eaa;
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+
+    &:hover {
+      background-color: darken(#f06eaa, 10%);
+      transform: translateY(-2px);
+    }
   }
+}
+
+.booking-list__grid,
+.booking-list-pending__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.booking-list__header,
+.booking-list-pending__header {
+  margin-bottom: 20px;
+  
+  h2 {
+    margin-bottom: 5px;
+  }
+  
+  p {
+    color: #666;
+    font-size: 14px;
+  }
+}
+
+.booking-list__list,
+.booking-list-pending__list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .booking-card {
