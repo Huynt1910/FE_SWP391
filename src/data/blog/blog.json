@@ -1,21 +1,17 @@
 [
   {
-    "title": "Perfumes, perfumed or eau de toilette?",
+    "title": "Basic Skincare Routine",
     "subTitle": "What is actually on your table?",
     "id": "2323",
     "image": "/assets/img/blog-img1.jpg",
-    "shortDescription": "Nourish your skin with toxin-free cosmetic products. With the offers that yo skin with toxin-free cosmetic products that you can’t refuse.",
-    "date": {
-      "month": "june",
-      "date": "21",
-      "year": "2020"
-    },
+    "shortDescription": "A proper skincare routine includes cleansing twice daily, exfoliating 2-3 times a week, and moisturizing to keep the skin hydrated. Sun protection with daily sunscreen prevents damage and aging, while serums & treatments with ingredients like Vitamin C and Hyaluronic Acid provide additional benefits.",
+    
     "authorName": "Melissa Jones",
     "totalWatchCount": "114",
     "totalCommentCount": "50",
     "content": "The history of perfume is about 5,000 years old and dates back to ancient Egypt and Mesopotamia. The fragrances of those times differed significantly from modern ones in that they were very concentrated and were more often intended for religious ceremonies than for cosmetic purposes. Although the same Cleopatra had her own perfume factory and left behind a recipe for a fragrance of 16 ingredients - \"kifi\". It is difficult to call it a perfume in the modern sense - it is rather a mixture of oils and herbs. Modern perfumes can have a maximum of 30% aromatic component, everything else - an alcoholic solution. But do not be upset. If you do not need such extravagant appearances as in the queen of Egypt, when he fragrances of her ships spread throughout the coast, then 100% concentrate is unlikely to be needed.",
-    "titleTwo": "About sustainability",
-    "contentTwo": "It would seem that everything is clear here: the higher the concentration of aromatic components - the more stable the aroma. But not everything is so simple: even if in the laboratory the aroma stays calm for a day or more, in life it is influenced by humidity and temperature, skin condition and the aroma of your body. Therefore, experts advise to apply fragrances on a clean, moisturizing body lotion. But even this does not guarantee that super-concentrated perfumes will last longer than perfumed or eau de toilette. It all depends on the volatility of the ingredients themselves.",
+    "titleTwo": "Basic Skincare Routine",
+    "contentTwo": "",
     "quote": {
       "content": "Fruity notes are considered the lightest, but sandalwood and amber - the strongest. This does not mean that fruit flavors should be forgotten. First, they have a good plume, and secondly, history knows many cases where the aroma was much more stable than required by the situation.",
       "author": "Melissa Jones"
@@ -116,15 +112,11 @@
   },
   {
     "subTitle": "What is actually on your table?",
-    "title": "Best multi-step skin care treatment",
+    "title": "Popular Spa Treatments",
     "id": "23225",
     "image": "/assets/img/blog-img2.jpg",
-    "shortDescription": "Nourish your skin with toxin-free cosmetic products. With the offers that yo skin with toxin-free cosmetic products that you can’t refuse.",
-    "date": {
-      "month": "june",
-      "date": "21",
-      "year": "2020"
-    },
+    "shortDescription": "Spa treatments promote skin health and relaxation. Facials deeply cleanse and hydrate, body scrubs exfoliate for smoother skin, massages improve circulation and reduce stress, and hydrotherapy revitalizes the skin with mineral-rich water.",
+   
     "authorName": "Melissa Jones",
     "totalWatchCount": "114",
     "totalCommentCount": "50",

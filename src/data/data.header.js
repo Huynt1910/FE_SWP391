@@ -9,7 +9,7 @@ export const navItem = [
     auth: false,
   },
   {
-    title: "Service",
+    title: "Services",
     path: "/service",
     auth: false,
   },

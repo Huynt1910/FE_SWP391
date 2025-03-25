@@ -19,7 +19,7 @@ const TherapistsPage = () => {
   return (
     <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Therapists">
       <TherapistList />
-      <Subscribe />
+      {/* <Subscribe /> */}
     </PublicLayout>
   );
 };

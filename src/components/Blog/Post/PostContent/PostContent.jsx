@@ -5,26 +5,9 @@ export const PostContent = ({ blog }) => {
     <>
       <div className="post-top">
         <h2>{blog.title}</h2>
-        <p>{blog.subTitle}</p>
+        {/* <p>{blog.subTitle}</p> */}
         <img src={blog.image} className="js-img" alt="" />
-        <ul className="post-top__info">
-          <li className="post-top__date">
-            <i className="icon-date"></i>
-            {blog.date?.month} {blog.date.date}, {blog.date.year}
-          </li>
-          <li className="post-top__user">
-            <i className="icon-user2"></i>
-            <a href="#/">by {blog.authorName}</a>
-          </li>
-          <li className="post-top__watch">
-            <i className="icon-eye"></i>
-            {blog.totalWatchCount}
-          </li>
-          <li className="post-top__comment">
-            <i className="icon-comment"></i>
-            {blog.totalCommentCount}
-          </li>
-        </ul>
+       
       </div>
       <div className="post-content">
         <p>{blog.content}</p>

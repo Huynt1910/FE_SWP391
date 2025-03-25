@@ -62,7 +62,7 @@ export const Header = () => {
   const headerOptions = [
     // { path: "/faq", icon: "icon-search", auth: false },
     { path: "/profile", icon: "icon-user", auth: true },
-    { path: "/wishlist", icon: "icon-heart", auth: true },
+    // { path: "/wishlist", icon: "icon-heart", auth: true },
     // {
     //   path: "/cart",
     //   icon: "icon-cart",

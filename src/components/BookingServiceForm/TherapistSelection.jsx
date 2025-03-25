@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaArrowLeft, FaArrowRight, FaUser, FaCircle, FaExclamationTriangle, FaUserMd, FaCalendarAlt, FaClock } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaUser, FaCircle, FaExclamationTriangle, FaUserMd, FaClock, FaRandom } from 'react-icons/fa';
 import Link from 'next/link';
 
 const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, onNext, onPrev, loading, error }) => {
@@ -24,6 +24,12 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
         <span className="rating-value">{rating}</span>
       </div>
     );
+  };
+
+  // Function to handle auto-selection of therapist and proceed
+  const handleAutoSelect = () => {
+    // Simply call onNext - the BookingServiceForm will handle auto-selection
+    onNext();
   };
 
   // Render loading state
@@ -69,6 +75,11 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
       <div className="service-selection">
         <h2 className="service-selection__title">Choose Your Therapist</h2>
         <p className="service-selection__subtitle">Select from our team of experienced therapists for your treatment</p>
+        
+        {/* Auto-selection information */}
+        {/* <div className="service-selection__auto-select-info">
+          <p>Don't have a preference? Click <strong>"Next"</strong> and we'll assign a therapist for you.</p>
+        </div> */}
         
         <div className="service-selection__list">
           {therapists && therapists.length > 0 ? (
@@ -135,13 +146,19 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
             Cancel
           </Link>
         </div>
-        <button 
-          className="booking-actions__next" 
-          onClick={onNext}
-          disabled={!selectedTherapist}
-        >
-          Next <FaArrowRight className="icon" />
-        </button>
+        <div className="booking-actions__right">
+          <button 
+            className="booking-actions__next" 
+            onClick={onNext}
+          >
+            {!selectedTherapist ? (
+              // <><Next></Next> <FaRandom className="icon" /></>
+              <>Next <FaArrowRight className="icon" /></>
+            ) : (
+              <>Next <FaArrowRight className="icon" /></>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

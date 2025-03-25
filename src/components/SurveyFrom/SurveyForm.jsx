@@ -591,7 +591,7 @@ function SurveyForm() {
               className="btn btn-primary"
               onClick={() => window.location.href = '/booking'}
             >
-              Book a Consultation
+              Book Services
             </button>
           </div>
         </div>

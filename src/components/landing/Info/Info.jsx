@@ -18,25 +18,20 @@ export const Info = () => {
           <div className="wrapper">
             <div className="info-blocks__item-img">
               <img
-                src="/assets/img/info-item-img1.jpg"
+                src="/assets/img/Facial Lymphatic Drainage.jpg"
                 className="js-img"
                 alt=""
               />
             </div>
             <div className="info-blocks__item-text">
-              <span className="saint-text">Check This Out</span>
-              <h2>new collection for delicate skin</h2>
+              {/* <span className="saint-text">Check This Out</span> */}
+              <h2>The Importance of Skincare</h2>
               <span className="info-blocks__item-descr">
-                Nourish your skin with toxin-free cosmetic products. With the
-                offers that you can’t refuse.
+                Your skin is the largest organ in your body and acts as a protective barrier.
+                 Proper skincare not only enhances your appearance but also prevents premature aging, 
+                 acne, and other skin conditions. A consistent skincare routine can leave your skin feeling fresh, hydrated, and rejuvenated.
               </span>
-              <p>
-                Non aliqua reprehenderit reprehenderit culpa laboris nulla minim
-                anim velit adipisicing ea aliqua alluptate sit do do.Non aliqua
-                reprehenderit reprehenderit culpa laboris nulla minim anim velit
-                adipisicing ea aliqua alluptate sit do do.Non aliqua
-                reprehenderit reprehenderit culpa laboris nulla minim.
-              </p>
+             
               <Link href="/service" className="btn">
                 Services
               </Link>
@@ -49,31 +44,20 @@ export const Info = () => {
         >
           <div className="wrapper">
             <div className="info-blocks__item-img">
-              <PromoVideo
-                videoUrl={url}
-                play={play}
-                onVideoPlay={() => setPlay(true)}
-                image="/assets/img/info-item-img2.jpg"
+            <img
+                src="/assets/img/Body Scrub.jpg"
+                className="js-img"
+                alt=""
               />
             </div>
             <div className="info-blocks__item-text">
-              <span className="saint-text">About Us</span>
-              <h2>Who we are</h2>
+              {/* <span className="saint-text">About Us</span> */}
+              <h2>Benefits of Spa Treatmentse</h2>
               <span className="info-blocks__item-descr">
-                Nourish your skin with toxin-free cosmetic products. With the
-                offers that you can’t refuse.
+              A spa day is more than just a luxury; it's a necessity for skin health and relaxation. 
+              Spa treatments help detoxify the skin, improve circulation, and relieve stress.
               </span>
-              <p>
-                Non aliqua reprehenderit reprehenderit culpa laboris nulla minim
-                anim velit adipisicing ea aliqua alluptate sit do do.Non aliqua
-                reprehenderit reprehenderit culpa laboris nulla minim anim velit
-                adipisicing ea aliqua alluptate sit do do.Non aliqua
-                reprehenderit reprehenderit culpa laboris nulla minim.
-              </p>
-              <Link href="/about" className="info-blocks__item-link">
-                <i className="icon-video"></i>Watch video about us
-                <i className="icon-arrow-lg"></i>
-              </Link>
+              
             </div>
           </div>
         </div>

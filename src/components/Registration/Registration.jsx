@@ -27,6 +27,8 @@ export const Registration = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -134,53 +136,68 @@ export const Registration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    // Basic validation before sending
     if (!validateForm()) {
-      showToast("Please fix the errors in the form", "error");
+      showToast("Please check the form for errors", "error");
       return;
     }
-
+    
+    setIsLoading(true);
+    
     try {
-      const payload = {
+      console.log("Submitting registration form with data:", { 
+        ...formData, 
+        password: '********' // Hide password in logs
+      });
+      
+      // Format the data for the API with ALL required fields
+      const userData = {
         username: formData.username,
         password: formData.password,
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-        gender: formData.gender,
-        birthDate: formData.birthDate,
+        phone: formData.phone || "0000000000", // Include phone
+        address: formData.address || "HCM", // Include address
+        gender: formData.gender || "Male",
+        birthDate: formData.birthDate || "2000-01-01"
       };
-
-      const result = await signUp(payload);
-
-      if (result.success) {
-        showToast("Registration successful! Please log in.", "success");
-        setTimeout(() => {
-          router.push("/login");
-        }, 1500);
-      } else {
+      
+      const result = await signUp(userData);
+      
+      console.log("Registration result:", {
+        success: result.success,
+        error: result.error
+      });
+      
+      if (!result.success) {
+        // If we have a field-specific error, set it
         if (result.field) {
-          setErrors((prev) => ({
-            ...prev,
-            [result.field]: result.error,
-          }));
-          const element = document.querySelector(`[name="${result.field}"]`);
-          if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "center" });
-            element.focus();
-          }
+          setErrors({
+            ...errors,
+            [result.field]: result.error
+          });
         } else {
-          showToast(
-            result.error || "Registration failed. Please try again.",
-            "error"
-          );
+          // Otherwise set it as a general error
+          setError(result.error || "Registration failed. Please try again.");
+          showToast(result.error || "Registration failed. Please try again.", "error");
         }
+        setIsLoading(false);
+        return;
       }
-    } catch (error) {
-      console.error("Registration error:", error);
-      showToast("An unexpected error occurred. Please try again.", "error");
+      
+      // Reset errors
+      setError("");
+      setErrors({});
+      
+      // Registration successful - handled by the success handler in useSignUp
+    } catch (err) {
+      console.error("Registration error:", err);
+      setError(err.message || "An unexpected error occurred. Please try again.");
+      showToast(err.message || "An unexpected error occurred. Please try again.", "error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -414,8 +431,8 @@ export const Registration = () => {
               {errors.agreeToTerms && <div className="error-message">{errors.agreeToTerms}</div>}
             </div> */}
 
-            <button className="btn" type="submit" disabled={isPending}>
-              {isPending ? (
+            <button className="btn" type="submit" disabled={isLoading}>
+              {isLoading ? (
                 <>
                   <FaSpinner className="icon-spinner" /> Creating Account...
                 </>

@@ -7,7 +7,13 @@ export const RequestMethod = {
 
 export const END_POINTS = {
   // Authentication
-  signIn: { path: "/authentication/log-in", method: "POST" },
+  signIn: { 
+    path: "/authentication/log-in", 
+    method: "POST",
+    secure: false,
+    publicAccess: true
+  },
+  signUp: { path: "/users", method: "POST", secure: false, publicAccess: true },
   refreshToken: {
     path: "/authentication/refresh-token",
     method: "POST",
@@ -22,16 +28,22 @@ export const END_POINTS = {
     path: "/forgot-password/verifyEmail/:email",
     method: "POST",
     parameterized: true,
+    secure: false,
+    publicAccess: true
   },
   verifyOtp: {
     path: "/forgot-password/verifyOtp/:email/:otp",
     method: "POST",
     parameterized: true,
+    secure: false,
+    publicAccess: true
   },
   changeForgotPassword: {
     path: "/forgot-password/changeForgotPassword/:email",
     method: "POST",
     parameterized: true,
+    secure: false,
+    publicAccess: true
   },
   changePassword: {
     path: "/users/change-password",

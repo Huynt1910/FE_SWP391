@@ -1,8 +1,13 @@
 export const PagingList = ({ paginate }) => {
+  // Safely handle cases where paginate or its properties might be undefined
+  if (!paginate || typeof paginate.maxPage !== 'number' || paginate.maxPage <= 0) {
+    return null; // Don't render anything if no valid pagination data
+  }
+
   return (
     <ul className='paging-list'>
       <li
-        onClick={() => paginate.prev()}
+        onClick={() => paginate.prev && paginate.prev()}
         className='paging-list__item paging-prev'
       >
         <button className='paging-list__link'>
@@ -13,7 +18,7 @@ export const PagingList = ({ paginate }) => {
       {[...Array(paginate.maxPage)].map((x, i) => (
         <li
           key={i}
-          onClick={() => paginate.jump(i + 1)}
+          onClick={() => paginate.jump && paginate.jump(i + 1)}
           className={`paging-list__item ${
             paginate.currentPage === i + 1 && 'active'
           }`}
@@ -23,7 +28,7 @@ export const PagingList = ({ paginate }) => {
       ))}
 
       <li
-        onClick={() => paginate.next()}
+        onClick={() => paginate.next && paginate.next()}
         className='paging-list__item paging-next'
       >
         <button className='paging-list__link'>

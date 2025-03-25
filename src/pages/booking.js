@@ -18,7 +18,7 @@ const BookingPage = () => {
   return (
     <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Booking">
       <BookingServiceForm />
-      <Subscribe />
+      {/* <Subscribe /> */}
     </PublicLayout>
   );
 };

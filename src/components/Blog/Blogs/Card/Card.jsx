@@ -7,19 +7,19 @@ export const Card = ({ blog }) => {
       <Link href={`/blog/${id}`} className='blog-item__img'>
 
         <img src={image} className='js-img' alt='' />
-        <span className='blog-item__date'>
+        {/* <span className='blog-item__date'>
           <span>{date.month}</span> {date.date}
-        </span>
+        </span> */}
 
       </Link>
       <Link href={`/blog/${id}`} className='blog-item__title'>
         {title}
       </Link>
       <p>{shortDescription}</p>
-      <Link href={`/blog/${id}`} className='blog-item__link'>
+      {/* <Link href={`/blog/${id}`} className='blog-item__link'>
         Read more <i className='icon-arrow-md'></i>
 
-      </Link>
+      </Link> */}
     </div>)
   );
 };

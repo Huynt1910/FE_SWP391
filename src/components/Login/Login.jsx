@@ -27,7 +27,10 @@ export const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting login form:", formData); // Debug log
+    console.log("Submitting login form:", {
+      username: formData.username.trim(),
+      password: "********" // Hide password in logs
+    });
 
     try {
       const response = await signIn({
@@ -35,8 +38,12 @@ export const Login = () => {
         password: formData.password,
       });
 
-      console.log("Login response:", response); // Debug log
+      // If login failed, don't proceed (the toast is already shown in the hook)
+      if (!response.success) {
+        return;
+      }
 
+      // If we have a response with a token, proceed with login
       if (response?.result?.token) {
         // Lưu token và role
         setAuthData(
@@ -44,8 +51,6 @@ export const Login = () => {
           response.result.role,
           formData.rememberMe ? 30 : 1
         );
-
-        toast.success("Login successful!");
 
         // Chuyển hướng dựa trên role
         switch (response.result.role.toUpperCase()) {
@@ -66,15 +71,12 @@ export const Login = () => {
             router.push("/");
         }
       } else {
-        throw new Error("Invalid response format");
+        console.error("Invalid response format - missing token");
+        showToast("Login failed - invalid response from server", "error");
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error(
-        error.response?.data?.message ||
-          error.message ||
-          "Login failed. Please try again."
-      );
+      // All error handling is now in the hook
     }
   };
 

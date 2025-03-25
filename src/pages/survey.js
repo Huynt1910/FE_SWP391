@@ -18,7 +18,7 @@ const SurveyPage = () => {
   return (
     <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Survey">
       <SurveyForm />
-      <Subscribe />
+      {/* <Subscribe /> */}
     </PublicLayout>
   );
 };

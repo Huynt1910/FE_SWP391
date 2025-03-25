@@ -8,10 +8,18 @@ export function useForgotPassword() {
   const { mutateAsync: verifyEmail, isPending: isVerifyingEmail } = useMutation({
     mutationFn: async (email) => {
       try {
+        console.log("Verifying email:", email);
+        
         const response = await APIClient.invoke({
           action: ACTIONS.VERIFY_EMAIL,
-          data: { email }
+          pathParams: { email },
+          options: { 
+            preventRedirect: true,
+            publicAccess: true
+          }
         });
+
+        console.log("Email verification response:", response);
 
         if (response.success) {
           showToast("OTP sent to your email", "success");
@@ -32,10 +40,18 @@ export function useForgotPassword() {
   const { mutateAsync: verifyOtp, isPending: isVerifyingOtp } = useMutation({
     mutationFn: async ({ email, otp }) => {
       try {
+        console.log("Verifying OTP:", { email, otp });
+        
         const response = await APIClient.invoke({
           action: ACTIONS.VERIFY_OTP,
-          data: { email, otp }
+          pathParams: { email, otp },
+          options: { 
+            preventRedirect: true,
+            publicAccess: true
+          }
         });
+
+        console.log("OTP verification response:", response);
 
         if (response.success) {
           showToast("OTP verified successfully", "success");
@@ -56,10 +72,19 @@ export function useForgotPassword() {
   const { mutateAsync: changePassword, isPending: isChangingPassword } = useMutation({
     mutationFn: async ({ email, password, repassword }) => {
       try {
+        console.log("Changing password for email:", email);
+        
         const response = await APIClient.invoke({
           action: ACTIONS.CHANGE_FORGOT_PASSWORD,
-          data: { email, password, repassword }
+          pathParams: { email },
+          data: { password, repassword },
+          options: { 
+            preventRedirect: true,
+            publicAccess: true
+          }
         });
+
+        console.log("Password change response:", response);
 
         if (response.success) {
           showToast("Password changed successfully", "success");

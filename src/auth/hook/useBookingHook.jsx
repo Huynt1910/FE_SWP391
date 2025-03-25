@@ -48,25 +48,44 @@ export const useBookingHook = () => {
   // Validate form
   const validateForm = () => {
     const errors = {};
+    let isValid = true;
 
-    if (!formState.selectedTherapistId) {
+    // If no therapist is selected but we have data (therapists), auto-select the first one
+    if (!formState.selectedTherapistId && data && data.length > 0) {
+      console.log("Auto-selecting a therapist...");
+      // Choose a random therapist from the available ones
+      const randomIndex = Math.floor(Math.random() * data.length);
+      const randomTherapist = data[randomIndex];
+      
+      // Update the form state with the selected therapist
+      setFormState(prev => ({
+        ...prev,
+        selectedTherapistId: randomTherapist.id
+      }));
+      
+      console.log(`Auto-selected therapist: ${randomTherapist.fullName || randomTherapist.name} (ID: ${randomTherapist.id})`);
+    } else if (!formState.selectedTherapistId && (!data || data.length === 0)) {
       errors.therapist = "Please select a therapist";
+      isValid = false;
     }
 
     if (!formState.selectedDate) {
       errors.date = "Please select a date";
+      isValid = false;
     }
 
     if (!formState.selectedTime) {
       errors.time = "Please select a time";
+      isValid = false;
     }
 
     if (!formState.selectedServiceIds.length) {
       errors.services = "Please select at least one service";
+      isValid = false;
     }
 
     setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+    return isValid;
   };
 
   // Check if user is authenticated
@@ -100,11 +119,10 @@ export const useBookingHook = () => {
       const token = getCookie("token");
       const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
+      // Since it's a GET request, we need to pass serviceIds as URL parameters instead of body
       const response = await APIClient.invoke({
         action: ACTIONS.GET_ACTIVE_THERAPISTS,
-        action: ACTIONS.GET_ACTIVE_THERAPISTS,
-        data: { serviceId: serviceIds },
-        options: { preventRedirect: true },
+        urlParams: { serviceId: serviceIds.join(',') }, // Use comma-separated list for the serviceId parameter
         headers: authHeaders,
         options: { preventRedirect: true },
       });
@@ -409,7 +427,6 @@ export const useBookingHook = () => {
       const response = await APIClient.invoke({
         action: ACTIONS.CREATE_BOOKING,
         data: bookingData,
-        options: { preventRedirect: true },
         headers: authHeaders,
         options: { preventRedirect: true },
       });

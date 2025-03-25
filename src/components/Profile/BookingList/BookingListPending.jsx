@@ -37,8 +37,8 @@ const BookingListPending = () => {
   // Check authentication on component mount
   useEffect(() => {
     const checkAuth = async () => {
-      const isUserAuthenticated = isAuthenticated();
-      console.log("BookingListPending: User authentication status:", isUserAuthenticated);
+    const isUserAuthenticated = isAuthenticated();
+    console.log("BookingListPending: User authentication status:", isUserAuthenticated);
       
       if (isUserAuthenticated) {
         // Also verify token validity
@@ -173,8 +173,8 @@ const BookingListPending = () => {
           alert('Booking cancelled successfully');
           await delay(500); // Short delay before refreshing
           refreshPendingBookings();
-        } else {
-          alert(response?.message || 'Failed to cancel booking');
+      } else {
+        alert(response?.message || 'Failed to cancel booking');
         }
       }
     } catch (err) {
@@ -414,25 +414,24 @@ const BookingListPending = () => {
         await delay(500);
         
         // Make direct API call as fallback
-        const finishUrl = `${API_URL}/booking/${bookingId}/finish`;
+      const finishUrl = `${API_URL}/booking/${bookingId}/finish`;
         console.log('Direct finish booking URL:', finishUrl);
-        
+      
         const directResponse = await fetch(finishUrl, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
         console.log('Direct finish response status:', directResponse.status);
         
         let responseData;
         try {
           responseData = await directResponse.json();
         } catch (e) {
-          console.log('Response is not JSON:', e);
           // If not JSON, create simple response
           responseData = { success: directResponse.ok };
         }
@@ -440,20 +439,20 @@ const BookingListPending = () => {
         console.log('Direct finish response:', responseData);
         
         if (directResponse.ok && (responseData.success !== false)) {
-          // Update localStorage and state with the completed booking
-          const updatedCompletedBookings = [...completedBookings, bookingId];
-          localStorage.setItem('completedBookings', JSON.stringify(updatedCompletedBookings));
-          setCompletedBookings(updatedCompletedBookings);
-          
+        // Update localStorage and state with the completed booking
+        const updatedCompletedBookings = [...completedBookings, bookingId];
+        localStorage.setItem('completedBookings', JSON.stringify(updatedCompletedBookings));
+        setCompletedBookings(updatedCompletedBookings);
+        
           // Enable payment button
-          setShowPaymentButton(true);
-          
+        setShowPaymentButton(true);
+        
           showToast("Booking completed successfully! You can now proceed to payment.", "success");
           
-          // Refresh booking list
-          refreshPendingBookings();
-        } else {
-          throw new Error(responseData?.message || "Failed to complete booking");
+        // Refresh booking list
+        refreshPendingBookings();
+      } else {
+        throw new Error(responseData?.message || "Failed to complete booking");
         }
       }
     } catch (err) {
@@ -478,7 +477,7 @@ const BookingListPending = () => {
       
       // Get authentication token
       const token = getCookie("token");
-      if (!token) {
+        if (!token) {
         throw new Error("Authentication token not found");
       }
       
@@ -494,17 +493,45 @@ const BookingListPending = () => {
         headers: authHeaders,
         options: { preventRedirect: true }
       });
-      
+
       console.log('Payment response:', response);
       
       // Handle different response formats
       let paymentUrl = null;
       
+      // Check if response is a URL string directly
       if (typeof response === 'string' && response.includes('vnpayment.vn')) {
         paymentUrl = response;
-      } else if (response?.result && typeof response.result === 'string' && response.result.includes('vnpayment.vn')) {
-        paymentUrl = response.result;
-      } else if (response && typeof response === 'object') {
+      } 
+      // Handle JSON response - safely check for URL in result property
+      else if (response && response.result) {
+        if (typeof response.result === 'string') {
+          // Check if result is a URL string
+          if (response.result.includes('vnpayment.vn')) {
+            paymentUrl = response.result;
+          }
+          // Check if result might be a JSON string that contains a URL
+          else {
+            try {
+              const parsedResult = JSON.parse(response.result);
+              if (parsedResult && typeof parsedResult === 'object') {
+                // Look for URL in parsed object
+                for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
+                  if (parsedResult[prop] && typeof parsedResult[prop] === 'string' && parsedResult[prop].includes('vnpayment.vn')) {
+                    paymentUrl = parsedResult[prop];
+                    break;
+                  }
+                }
+              }
+            } catch (err) {
+              // Not a valid JSON string, continue to other checks
+              console.log('Result is not a valid JSON string:', err);
+            }
+          }
+        }
+      } 
+      // Look for URL in direct response object properties
+      else if (response && typeof response === 'object') {
         // Look for URL in response properties
         for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
           if (response[prop] && typeof response[prop] === 'string' && response[prop].includes('vnpayment.vn')) {
@@ -536,42 +563,53 @@ const BookingListPending = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+            
       console.log('Direct payment response status:', directResponse.status);
       
       if (directResponse.ok) {
-        // Try to parse as JSON first
-        let directPaymentUrl;
-        const contentType = directResponse.headers.get('content-type');
+        // Try to get response text first, then parse as JSON only if it's actually JSON
+        const responseText = await directResponse.text();
+        console.log('Direct payment response text:', responseText);
         
-        if (contentType && contentType.includes('application/json')) {
-          const jsonResponse = await directResponse.json();
-          console.log('JSON payment response:', jsonResponse);
-          
-          // Check for URL in JSON response
-          if (typeof jsonResponse === 'string' && jsonResponse.includes('vnpayment.vn')) {
-            directPaymentUrl = jsonResponse;
-          } else if (jsonResponse?.result && typeof jsonResponse.result === 'string') {
-            directPaymentUrl = jsonResponse.result;
-          } else {
-            // Look for URL in properties
-            for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
-              if (jsonResponse[prop] && typeof jsonResponse[prop] === 'string' && jsonResponse[prop].includes('vnpayment.vn')) {
-                directPaymentUrl = jsonResponse[prop];
-                break;
-              }
-            }
-          }
-        } else {
-          // Handle text response
-          directPaymentUrl = await directResponse.text();
-        }
-        
-        if (directPaymentUrl && directPaymentUrl.includes('vnpayment.vn')) {
-          console.log('Found payment URL from direct fetch:', directPaymentUrl);
-          window.location.href = directPaymentUrl;
+        // Check if response text is a URL directly
+        if (responseText.includes('vnpayment.vn')) {
+          window.location.href = responseText;
           setShowCompletionModal(false);
           return;
+        }
+        
+        // Try to parse as JSON if it looks like JSON
+        let jsonResponse;
+        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+          try {
+            jsonResponse = JSON.parse(responseText);
+            console.log('JSON payment response:', jsonResponse);
+            
+            // Check for URL in JSON response
+            if (typeof jsonResponse === 'string' && jsonResponse.includes('vnpayment.vn')) {
+              window.location.href = jsonResponse;
+              setShowCompletionModal(false);
+              return;
+            } else if (jsonResponse?.result && typeof jsonResponse.result === 'string') {
+              if (jsonResponse.result.includes('vnpayment.vn')) {
+                window.location.href = jsonResponse.result;
+                setShowCompletionModal(false);
+                return;
+              }
+            } else {
+              // Look for URL in properties
+              for (const prop of ['url', 'redirectUrl', 'paymentUrl', 'link', 'data']) {
+                if (jsonResponse[prop] && typeof jsonResponse[prop] === 'string' && jsonResponse[prop].includes('vnpayment.vn')) {
+                  window.location.href = jsonResponse[prop];
+                  setShowCompletionModal(false);
+                  return;
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error parsing JSON response:', error);
+            // Continue with other checks - the response might still be a URL
+          }
         }
       }
       
@@ -670,11 +708,6 @@ const BookingListPending = () => {
                 <span className="value">{booking.bookingId}</span>
               </div>
               
-              <div className="booking-status">
-                <span className="status-dot"></span>
-                <span className="status-text">{booking.status}</span>
-              </div>
-              
               <button 
                 className="expand-button"
                 onClick={() => toggleExpandBooking(booking.bookingId)}
@@ -766,7 +799,7 @@ const BookingListPending = () => {
         <div className="feedback-modal">
           <div className="feedback-modal__content">
             <h3>Leave Your Feedback</h3>
-            <p>Booking #{selectedBookingForFeedback?.bookingId}</p>
+            <p>Booking: {selectedBookingForFeedback?.bookingId}</p>
             
             <div className="rating-section">
               <p>Your Rating:</p>
@@ -823,7 +856,7 @@ const BookingListPending = () => {
       {showCompletionModal && selectedBookingForCompletion && (
         <div className="completion-modal">
           <div className="completion-modal__content">
-            <div className="finish-booking-status">
+            {/* <div className="finish-booking-status">
               <div className="status-icon">
                 <FaCheckCircle />
               </div>
@@ -833,7 +866,7 @@ const BookingListPending = () => {
                   ? "Booking completed successfully! Please proceed to payment."
                   : "Please review the booking details before completion."}
               </p>
-            </div>
+            </div> */}
             
             <div className="booking-details">
               <h2>Booking Information</h2>
@@ -914,7 +947,60 @@ const BookingListPending = () => {
       )}
 
       <style jsx>{`
-        /* Existing styles... */
+        .booking-card {
+          background-color: #fff;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          margin-bottom: 15px;
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+        
+        .booking-card.expanded {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .booking-card__header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 15px;
+          background-color: #f8f9fa;
+          border-bottom: 1px solid #eee;
+        }
+        
+        .booking-id {
+          display: flex;
+          align-items: center;
+        }
+        
+        .booking-id .label {
+          color: #666;
+          margin-right: 5px;
+          font-size: 0.9rem;
+        }
+        
+        .booking-id .value {
+          font-weight: 600;
+          color: #333;
+        }
+        
+        .expand-button {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #555;
+          padding: 5px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background-color 0.2s;
+        }
+        
+        .expand-button:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+        }
         
         .booking-actions {
           display: flex;

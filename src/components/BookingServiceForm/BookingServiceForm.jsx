@@ -425,17 +425,20 @@ export const BookingServiceForm = () => {
         break;
       case 2: // Therapist selection
         // Auto-select a therapist if none is selected and therapists are available
-        if (selectedTherapist === null && therapists && therapists.length > 0) {
+        if (!selectedTherapist && therapists && therapists.length > 0) {
+          // Choose a random therapist
           const randomIndex = Math.floor(Math.random() * therapists.length);
           const randomTherapist = therapists[randomIndex];
           
+          // Update the selected therapist
           setSelectedTherapist(randomTherapist);
-          showToast(`Auto-selected random therapist: ${randomTherapist.fullName || randomTherapist.name}`, "info");
+          console.log(`Auto-selected therapist: ${randomTherapist.fullName || randomTherapist.name}`);
+          // showToast(`A therapist has been automatically assigned to you`, "info");
           canProceed = true;
         } else {
           canProceed = selectedTherapist !== null;
           if (!canProceed) {
-            showToast("Please select a therapist", "error");
+            showToast("No therapists available. Please try again later.", "error");
           }
         }
         break;
@@ -447,14 +450,12 @@ export const BookingServiceForm = () => {
         break;
       case 4: // Confirmation
         canProceed = true; // No specific validation needed for confirmation
-        // Submit booking on final step without requiring an event object
-        handleSubmitBooking(); 
-        return; // Return early to prevent incrementing the step
+        break;
       default:
         canProceed = true;
     }
     
-    if (canProceed && currentStep < totalSteps) {
+    if (canProceed) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -570,11 +571,55 @@ export const BookingServiceForm = () => {
             onVoucherSelect={handleVoucherSelect}
             customerNotes={customerNotes}
             onCustomerNotesChange={setCustomerNotes}
-            onNext={handleNextStep}
+            onNext={handleSubmitBooking}
             onPrev={handlePrevStep}
             isPending={isPending}
           />
         );
+      case 5: // After confirmation, automatically redirect to confirmation page
+        // If booking details are set in state, use them
+        if (bookingDetails) {
+          // Redirect to confirmation page if not already there
+          if (router.pathname !== "/booking/confirmation") {
+            router.push("/booking/confirmation");
+          }
+          
+          return (
+            <div className="redirect-container">
+              <div className="spinner"></div>
+              <p>Redirecting to booking confirmation...</p>
+            </div>
+          );
+        } else {
+          // Try to redirect if details are in localStorage
+          const storedDetails = localStorage.getItem('bookingDetails');
+          if (storedDetails) {
+            if (router.pathname !== "/booking/confirmation") {
+              router.push("/booking/confirmation");
+            }
+            
+            return (
+              <div className="redirect-container">
+                <div className="spinner"></div>
+                <p>Redirecting to booking confirmation...</p>
+              </div>
+            );
+          }
+          
+          // If no details found, show error and option to start over
+          return (
+            <div className="error-container">
+              <h3>Booking Information Missing</h3>
+              <p>We couldn't find your booking information. Please try again.</p>
+              <button 
+                className="btn-primary" 
+                onClick={() => setCurrentStep(1)}
+              >
+                Start New Booking
+              </button>
+            </div>
+          );
+        }
       default:
         return <div>Unknown step</div>;
     }

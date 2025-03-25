@@ -220,8 +220,11 @@ export class APIClient {
 
       console.log("Making request with params:", {
         action,
+        endpoint: `${endpoint.method} ${endpoint.path}`,
         pathParams,
         urlParams,
+        secure: endpoint.secure,
+        publicAccess: endpoint.publicAccess
       });
 
       // Don't set Content-Type if FormData is being sent
@@ -247,41 +250,64 @@ export class APIClient {
       } else {
         console.log(`Endpoint ${action} doesn't require authentication`);
       }
+      
+      // Combine all headers
+      const combinedHeaders = {
+        ...contentTypeHeader,
+        ...authHeaders,
+        ...headers,
+      };
+      
+      console.log(`Request headers for ${action}:`, combinedHeaders);
 
-      // Log the final request configuration
-      console.log("Request config:", {
+      const url = this._buildUrl(endpoint, pathParams);
+      const requestOptions = {
+        publicAccess: endpoint.publicAccess,
+        preventRedirect: options.preventRedirect || endpoint.publicAccess,
+        ...options,
+      };
+
+      // Log full request details for easier debugging
+      console.log(`Full request details for ${action}:`, {
+        url,
         method: endpoint.method,
-        url: this._buildUrl(endpoint, pathParams),
-        hasAuthHeader: !!authHeaders.Authorization,
-        isSecure: endpoint.secure,
+        headers: combinedHeaders,
+        data: isFormData ? "[FormData]" : data,
+        options: requestOptions
       });
 
-      const response = await axios({
-        method: endpoint.method,
-        url: this._buildUrl(endpoint, pathParams),
-        data,
-        headers: {
-          ...contentTypeHeader,
-          ...authHeaders,
-          ...headers, // User-provided headers should have highest priority
-        },
-      });
-
-      return response.data;
+      return await this.request(
+        url,
+        endpoint.method,
+        isFormData ? data : data,
+        combinedHeaders,
+        urlParams,
+        requestOptions
+      );
     } catch (error) {
-      // Enhanced error logging
+      console.error(`Error in invoke for action ${action}:`, error);
+      
+      // Enhanced error logging for debugging
       if (error.response) {
-        console.error(`API Error (${error.response.status}):`, {
-          action,
+        console.error("Response error details:", {
           status: error.response.status,
           statusText: error.response.statusText,
           data: error.response.data,
-          url: error.config?.url,
-          hasAuthHeader: !!error.config?.headers?.Authorization,
+          headers: error.response.headers
         });
-      } else {
-        console.error("API Error:", error.message);
+        
+        // Special handling for login-related 404 errors
+        if (error.response.status === 404 && action === ACTIONS.SIGN_IN) {
+          console.error("Login endpoint not found. Check API URL and endpoint path configuration.");
+          return {
+            success: false,
+            errorType: "not_found",
+            message: "Login service unavailable. Please try again later.",
+            status: 404
+          };
+        }
       }
+      
       throw error;
     }
   }
