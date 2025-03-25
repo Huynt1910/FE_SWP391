@@ -448,12 +448,12 @@ export const Registration = () => {
               </span>
             </div>
 
-            <div className="registration-form__social">
+            {/* <div className="registration-form__social">
               <div className="social-title">
                 <span>Or sign up with</span>
               </div>
               <SocialLogin />
-            </div>
+            </div> */}
           </form>
         </div>
       </div>

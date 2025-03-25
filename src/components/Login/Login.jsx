@@ -38,8 +38,9 @@ export const Login = () => {
         password: formData.password,
       });
 
-      // If login failed, don't proceed (the toast is already shown in the hook)
+      // If login failed, display a specific toast message for incorrect credentials
       if (!response.success) {
+        // showToast("Wrong username or password. Please try again.", "error");
         return;
       }
 

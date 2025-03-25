@@ -56,19 +56,18 @@ export const Footer = () => {
               <span className="footer-nav__col-title">Contact</span>
               <ul>
                 <li>
-                  <i className="icon-map-pin"></i> 27 Division St, New York, NY
-                  10002, USA
+                  <i className="icon-map-pin"></i> Ho Chi Minh City, Vietnam
                 </li>
                 <li>
                   <i className="icon-smartphone"></i>
                   <div className="footer-nav__col-phones">
-                    <a href="tel:+13459971345">+1 345 99 71 345</a>
+                    <a href="tel:+84 327718441">+84 327 718 441</a>
                     <a href="tel:+13457464975">+1 345 74 64 975</a>
                   </div>
                 </li>
                 <li>
                   <i className="icon-mail"></i>
-                  <a href="mailto:info@BamboSpa.com">info@BamboSpa.com</a>
+                  <a href="mailto:BamboSpa@gmai.com">BamboSpa@gmai.com</a>
                 </li>
               </ul>
             </div>

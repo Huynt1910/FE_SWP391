@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 
 
 // Enhanced survey questions with more details
-const surveyQuestions = [
+const skincareSurveyQuestions = [
   {
     id: 1,
     title: "Skincare Routine",
@@ -17,19 +17,19 @@ const surveyQuestions = [
         id: "basic", 
         value: "Basic", 
         description: "Cleansing and occasional moisturizing",
-        serviceId: 1
+        serviceId: 1001
       },
       { 
         id: "regular", 
         value: "Regular", 
         description: "Daily cleansing, toning, and moisturizing",
-        serviceId: 1
+        serviceId: 1002
       },
       { 
         id: "advanced", 
         value: "Advanced", 
         description: "Complete routine with specialized products and treatments",
-        serviceId: 1
+        serviceId: 1003
       }
     ],
     validation: (value) => value !== "",
@@ -46,19 +46,19 @@ const surveyQuestions = [
         id: "mild", 
         value: "Mild", 
         description: "Occasional breakouts, minor concerns",
-        serviceId: 2
+        serviceId: 1004
       },
       { 
         id: "moderate", 
         value: "Moderate", 
         description: "Regular breakouts, visible concerns",
-        serviceId: 2
+        serviceId: 1005
       },
       { 
         id: "severe", 
         value: "Severe", 
         description: "Persistent breakouts, significant concerns",
-        serviceId: 2
+        serviceId: 1006
       }
     ],
     validation: (value) => value !== "",
@@ -75,31 +75,31 @@ const surveyQuestions = [
         id: "dry", 
         value: "Dry", 
         description: "Feels tight, may have flaky patches",
-        serviceId: 3
+        serviceId: 1007
       },
       { 
         id: "oily", 
         value: "Oily", 
         description: "Shiny appearance, especially in T-zone",
-        serviceId: 4
+        serviceId: 1008
       },
       { 
         id: "combination", 
         value: "Combination", 
         description: "Oily in some areas, dry in others",
-        serviceId: 5
+        serviceId: 1009
       },
       { 
         id: "normal", 
         value: "Normal", 
         description: "Well-balanced, neither too oily nor too dry",
-        serviceId: 6
+        serviceId: 1010
       },
       { 
         id: "sensitive", 
         value: "Sensitive", 
         description: "Easily irritated, may redden or sting with products",
-        serviceId: 7
+        serviceId: 1011
       }
     ],
     validation: (value) => value !== "",
@@ -112,11 +112,11 @@ const surveyQuestions = [
     text: "What are your primary skin concerns? (Select all that apply)",
     type: "checkbox",
     options: [
-      { id: "acne", value: "Acne", description: "Breakouts and blemishes", serviceId: 2 },
-      { id: "aging", value: "Aging", description: "Fine lines and wrinkles", serviceId: 3 },
-      { id: "pigmentation", value: "Pigmentation", description: "Dark spots or uneven tone", serviceId: 4 },
-      { id: "dryness", value: "Dryness", description: "Flaky or tight feeling skin", serviceId: 5 },
-      { id: "sensitivity", value: "Sensitivity", description: "Easily irritated skin", serviceId: 6 }
+      { id: "acne", value: "Acne", description: "Breakouts and blemishes", serviceId: 1012 },
+      { id: "aging", value: "Aging", description: "Fine lines and wrinkles", serviceId: 1013 },
+      { id: "pigmentation", value: "Pigmentation", description: "Dark spots or uneven tone", serviceId: 1014 },
+      { id: "dryness", value: "Dryness", description: "Flaky or tight feeling skin", serviceId: 1015 },
+      { id: "sensitivity", value: "Sensitivity", description: "Easily irritated skin", serviceId: 1016 }
     ],
     validation: (value) => Array.isArray(value) && value.length > 0,
     name: "skin_concerns",
@@ -124,10 +124,146 @@ const surveyQuestions = [
   }
 ];
 
+// New spa survey questions
+const spaSurveyQuestions = [
+  {
+    id: 1,
+    title: "Spa Experience",
+    text: "How often do you visit spas?",
+    type: "radio",
+    options: [
+      { 
+        id: "never", 
+        value: "Never", 
+        description: "First-time spa visitor",
+        serviceId: 2001
+      },
+      { 
+        id: "occasionally", 
+        value: "Occasionally", 
+        description: "A few times per year",
+        serviceId: 2002
+      },
+      { 
+        id: "regularly", 
+        value: "Regularly", 
+        description: "Monthly spa visits",
+        serviceId: 2003
+      }
+    ],
+    validation: (value) => value !== "",
+    name: "spa_experience",
+    icon: "🧖"
+  },
+  {
+    id: 2,
+    title: "Treatment Preference",
+    text: "What type of spa treatments do you prefer?",
+    type: "checkbox",
+    options: [
+      { 
+        id: "massage", 
+        value: "Massage", 
+        description: "Relaxing and therapeutic body massage",
+        serviceId: 2004
+      },
+      { 
+        id: "facial", 
+        value: "Facial", 
+        description: "Skin care treatments for the face",
+        serviceId: 2005
+      },
+      { 
+        id: "bodyTreatment", 
+        value: "Body Treatment", 
+        description: "Scrubs, wraps, and other body treatments",
+        serviceId: 2006
+      },
+      { 
+        id: "nailCare", 
+        value: "Nail Care", 
+        description: "Manicures and pedicures",
+        serviceId: 2007
+      }
+    ],
+    validation: (value) => Array.isArray(value) && value.length > 0,
+    name: "treatment_preference",
+    icon: "✨"
+  },
+  {
+    id: 3,
+    title: "Stress Level",
+    text: "How would you rate your current stress level?",
+    type: "radio",
+    options: [
+      { 
+        id: "low", 
+        value: "Low", 
+        description: "Minimal stress, generally relaxed",
+        serviceId: 2008
+      },
+      { 
+        id: "medium", 
+        value: "Medium", 
+        description: "Moderate stress levels",
+        serviceId: 2009
+      },
+      { 
+        id: "high", 
+        value: "High", 
+        description: "High stress, feeling tense or overwhelmed",
+        serviceId: 2010
+      }
+    ],
+    validation: (value) => value !== "",
+    name: "stress_level",
+    icon: "😌"
+  },
+  {
+    id: 4,
+    title: "Treatment Goals",
+    text: "What are your primary goals for spa treatments?",
+    type: "checkbox",
+    options: [
+      { 
+        id: "relaxation", 
+        value: "Relaxation", 
+        description: "Reduce stress and promote relaxation",
+        serviceId: 2011
+      },
+      { 
+        id: "painRelief", 
+        value: "Pain Relief", 
+        description: "Alleviate muscle pain or tension",
+        serviceId: 2012
+      },
+      { 
+        id: "beautification", 
+        value: "Beautification", 
+        description: "Enhance appearance and beauty",
+        serviceId: 2013
+      },
+      { 
+        id: "detox", 
+        value: "Detoxification", 
+        description: "Remove toxins and promote wellness",
+        serviceId: 2014
+      }
+    ],
+    validation: (value) => Array.isArray(value) && value.length > 0,
+    name: "treatment_goals",
+    icon: "🎯"
+  }
+];
+
 function SurveyForm() {
+  // Survey type
+  const [surveyType, setSurveyType] = useState(null); // null, 'skincare', or 'spa'
+  const [surveyQuestions, setSurveyQuestions] = useState([]);
+  
   // Step tracking
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = surveyQuestions.length + 1; // Questions + Results
+  const [currentStep, setCurrentStep] = useState(0); // Start at survey selection screen
+  const [totalSteps, setTotalSteps] = useState(2); // Initial value for selection screen + minimum one step
 
   // Form state
   const [formData, setFormData] = useState({});
@@ -139,6 +275,17 @@ function SurveyForm() {
   const { loading: servicesLoading, error: servicesError, data: services, getAllServices } = useListAllServices();
   const router = useRouter();
 
+  // Set the survey questions based on type
+  useEffect(() => {
+    if (surveyType === 'skincare') {
+      setSurveyQuestions(skincareSurveyQuestions);
+      setTotalSteps(skincareSurveyQuestions.length + 2); // +2 for selection screen and results
+    } else if (surveyType === 'spa') {
+      setSurveyQuestions(spaSurveyQuestions);
+      setTotalSteps(spaSurveyQuestions.length + 2); // +2 for selection screen and results
+    }
+  }, [surveyType]);
+
   // Fetch services when form is completed
   useEffect(() => {
     if (surveyCompleted) {
@@ -149,9 +296,38 @@ function SurveyForm() {
     }
   }, [surveyCompleted]);
 
+  // Handle survey type selection
+  const selectSurveyType = (type) => {
+    setSurveyType(type);
+    setFormData({}); // Reset form data when changing survey type
+    setCurrentStep(1); // Move to first question after selection
+    window.scrollTo(0, 0);
+  };
+
   // Get service recommendations based on survey answers
   const getServiceRecommendations = (answers, availableServices) => {
     if (!availableServices || availableServices.length === 0) {
+      return [];
+    }
+
+    // Filter services based on survey type first
+    let categoryFilteredServices = availableServices;
+    
+    // For skincare survey, only recommend "Facial Treatments"
+    if (surveyType === 'skincare') {
+      categoryFilteredServices = availableServices.filter(service => 
+        service.category === "Facial Treatments"
+      );
+    } 
+    // For spa survey, only recommend "Full-Body Massage" and "Packages"
+    else if (surveyType === 'spa') {
+      categoryFilteredServices = availableServices.filter(service => 
+        service.category === "Full-Body Massage" || service.category === "Packages"
+      );
+    }
+
+    // If no services match the category filter, return empty
+    if (categoryFilteredServices.length === 0) {
       return [];
     }
 
@@ -160,7 +336,7 @@ function SurveyForm() {
 
     // Map survey answers to service IDs
     Object.entries(answers).forEach(([questionName, answer]) => {
-      // Find the question
+      // Find the question from the current survey type
       const question = surveyQuestions.find(q => q.name === questionName);
       
       if (!question) return;
@@ -183,14 +359,19 @@ function SurveyForm() {
       }
     });
 
-    // Filter available services to only include recommended ones
-    const recommendations = availableServices.filter(service => 
+    // First try to filter by both category and recommended IDs
+    let recommendations = categoryFilteredServices.filter(service => 
       recommendedServiceIds.has(service.id)
     );
 
-    // If no specific recommendations, return top 3 services
-    if (recommendations.length === 0 && availableServices.length > 0) {
-      return availableServices.slice(0, 3);
+    // If no specific recommendations within category, return top services from the category
+    if (recommendations.length === 0) {
+      console.log(`No specific service recommendations found for ${surveyType} survey. Returning top services from appropriate categories.`);
+      
+      // Sort by price (higher price first) and return top 3
+      return categoryFilteredServices
+        .sort((a, b) => parseFloat(b.price || 0) - parseFloat(a.price || 0))
+        .slice(0, 3);
     }
 
     return recommendations;
@@ -261,21 +442,26 @@ function SurveyForm() {
 
   // Navigate to next step
   const nextStep = () => {
-    const currentQuestion = surveyQuestions[currentStep - 1];
-    
+    // If we're on the survey type selection screen and no survey type is selected
+    if (currentStep === 0 && !surveyType) {
+      showToast("Please select a survey type", "error");
+      return;
+    }
+
     // If we're on a question step, validate before proceeding
-    if (currentStep <= surveyQuestions.length) {
+    if (currentStep >= 1 && currentStep <= surveyQuestions.length) {
+      const currentQuestion = surveyQuestions[currentStep - 1];
       if (!currentQuestion.validation(formData[currentQuestion.name])) {
         showToast("Please answer the question before proceeding", "error");
         return;
       }
     }
     
-    if (currentStep < totalSteps) {
+    if (currentStep < totalSteps - 1) {
       // If moving to results step, mark survey as completed and fetch recommendations
       if (currentStep === surveyQuestions.length) {
         setSurveyCompleted(true);
-        console.log("Survey completed with answers:", formData);
+        console.log(`${surveyType} survey completed with answers:`, formData);
         
         // Start loading service recommendations
         getAllServices().then((fetchedServices) => {
@@ -295,7 +481,7 @@ function SurveyForm() {
 
   // Navigate to previous step
   const prevStep = () => {
-    if (currentStep > 1) {
+    if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       window.scrollTo(0, 0);
     }
@@ -321,13 +507,18 @@ function SurveyForm() {
   // Restart the survey
   const restartSurvey = () => {
     setFormData({});
-    setCurrentStep(1);
+    setSurveyType(null);
+    setCurrentStep(0);
     setSurveyCompleted(false);
     window.scrollTo(0, 0);
   };
 
   // Render step indicators
   const renderStepIndicators = () => {
+    if (currentStep === 0) {
+      return null; // Don't show step indicators on the selection screen
+    }
+
     const steps = surveyQuestions.map(q => ({ 
       number: q.id, 
       label: q.title,
@@ -354,6 +545,42 @@ function SurveyForm() {
             <div className="step-label">{step.label}</div>
           </div>
         ))}
+      </div>
+    );
+  };
+
+  // Render survey type selection
+  const renderSurveyTypeSelection = () => {
+    return (
+      <div className="survey-type-selection">
+        <h4>Choose a Survey Type</h4>
+        <div className="options-grid">
+          <div
+            className={`option-card ${surveyType === 'skincare' ? 'selected' : ''}`}
+            onClick={() => selectSurveyType('skincare')}
+          >
+            <div className="option-content">
+              <h5>Skincare Assessment</h5>
+              <div className="option-icon">🧴</div>
+              <p className="option-description">
+                Evaluate your skin type, concerns, and get personalized skincare recommendations.
+              </p>
+            </div>
+          </div>
+          
+          <div
+            className={`option-card ${surveyType === 'spa' ? 'selected' : ''}`}
+            onClick={() => selectSurveyType('spa')}
+          >
+            <div className="option-content">
+              <h5>Spa Treatment Assessment</h5>
+              <div className="option-icon">🧖</div>
+              <p className="option-description">
+                Discover the perfect spa treatments based on your preferences and needs.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   };
@@ -415,24 +642,12 @@ function SurveyForm() {
     );
   };
 
-  // Render textarea question
-  const renderTextareaQuestion = (question) => {
-    return (
-      <div className="survey-question">
-        <h4>{question.text}</h4>
-        <textarea
-          placeholder={question.placeholder}
-          value={formData[question.name] || ""}
-          onChange={(e) => handleTextareaChange(question.name, e.target.value)}
-          rows={5}
-          className="survey-textarea"
-        />
-      </div>
-    );
-  };
-
   // Render current question based on type
   const renderCurrentQuestion = () => {
+    if (currentStep === 0) {
+      return renderSurveyTypeSelection();
+    }
+    
     if (currentStep > surveyQuestions.length) {
       return null; // We're on the results step
     }
@@ -451,10 +666,16 @@ function SurveyForm() {
 
   // Render results
   const renderResults = () => {
+    const surveyTitle = surveyType === 'skincare' ? 'Skin Analysis' : 'Spa Treatment Analysis';
+    const categoryText = surveyType === 'skincare' 
+      ? "Facial Treatments" 
+      : "Full-Body Massage and Packages";
+    
     return (
       <div className="survey-results">
         <div className="results-header">
-          <h4>Your Skin Analysis Results</h4>
+          <h4>Your {surveyTitle} Results</h4>
+          <p className="category-filter-info">Showing recommendations from <strong>{categoryText}</strong> category</p>
         </div>
         
         <div className="results-summary">
@@ -465,8 +686,6 @@ function SurveyForm() {
             
             if (question.type === "checkbox" && formData[question.name]) {
               answerDisplay = formData[question.name].join(", ");
-            } else if (question.type === "textarea") {
-              answerDisplay = formData[question.name] || "No additional information provided";
             } else {
               answerDisplay = formData[question.name] || "Not answered";
             }
@@ -484,7 +703,7 @@ function SurveyForm() {
         </div>
         
         <div className="recommended-services">
-          <h5>Recommended Services Based On Your Answers</h5>
+          <h5>Recommended {categoryText} Based On Your Answers</h5>
           
           {servicesLoading ? (
             <div className="loading-indicator">
@@ -503,7 +722,7 @@ function SurveyForm() {
             </div>
           ) : recommendedServices.length === 0 ? (
             <div className="no-recommendations">
-              <p>No specific recommendations found based on your answers.</p>
+              <p>No specific {surveyType === 'skincare' ? 'Facial Treatments' : 'Massage or Package'} recommendations found based on your answers.</p>
               <p>Browse our services to find the perfect treatment for you.</p>
               <button 
                 className="btn btn-primary"
@@ -604,7 +823,7 @@ function SurveyForm() {
       <div className="wrapper">
         <div className="survey-form">
           <form onSubmit={(e) => e.preventDefault()}>
-            <h3>Skin Assessment Survey</h3>
+            <h3>{currentStep === 0 ? "Assessment Surveys" : surveyType === 'skincare' ? "Skin Assessment Survey" : "Spa Treatment Survey"}</h3>
             
             {/* Step indicators */}
             {renderStepIndicators()}
@@ -620,7 +839,7 @@ function SurveyForm() {
             
             {/* Navigation buttons */}
             <div className="survey-navigation">
-              {currentStep > 1 && (
+              {currentStep > 0 && (
                 <button
                   type="button"
                   className="btn btn-secondary"
@@ -630,7 +849,25 @@ function SurveyForm() {
                 </button>
               )}
               
-              {currentStep < totalSteps ? (
+              {currentStep === 0 ? (
+                // Selection screen - show just "Start Survey" button (disabled until a survey type is selected)
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={nextStep}
+                  disabled={!surveyType}
+                  style={{
+                    opacity: surveyType ? 1 : 0.7,
+                    position: 'relative',
+                    left: '50%', 
+                    transform: 'translateX(-50%)',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  {!surveyType ? 'Please Select a Survey Type' : 'Start Survey'}
+                </button>
+              ) : currentStep < totalSteps - 1 ? (
+                // Question screens - show "Next" button
                 <button
                   type="button"
                   className="btn btn-primary"
@@ -639,13 +876,14 @@ function SurveyForm() {
                   Next <FaArrowRight />
                 </button>
               ) : (
+                // Results screen - show "Take Another Survey" button
                 <button
                   type="button"
                   className="btn btn-success"
                   onClick={restartSurvey}
                   disabled={isPending}
                 >
-                  Take Survey Again
+                  Take Another Survey
                 </button>
               )}
             </div>

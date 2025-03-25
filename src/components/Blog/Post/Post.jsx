@@ -24,13 +24,13 @@ export const Post = () => {
       <div className="post">
         <div className="wrapper">
           <PostContent blog={blog} />
-          <PostComment blog={blog} />
+          {/* <PostComment blog={blog} /> */}
         </div>
-        <img
+        {/* <img
           className="promo-video__decor js-img"
           src="/assets/img/promo-video__decor.jpg"
           alt=""
-        />
+        /> */}
       </div>
       {/* <!-- POST EOF   --> */}
     </>

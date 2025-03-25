@@ -28,6 +28,7 @@ export const Service = () => {
   const [sortedServices, setSortedServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const [categorizedServices, setCategorizedServices] = useState({});
 
   // Fetch services on component mount
   useEffect(() => {
@@ -49,6 +50,10 @@ export const Service = () => {
       });
       setSortedServices(sorted);
       setFilteredServices(sorted); // Initialize filtered services
+      
+      // Group services by category
+      const groupedByCategory = groupServicesByCategory(sorted);
+      setCategorizedServices(groupedByCategory);
     }
   }, [services]);
 
@@ -71,20 +76,29 @@ export const Service = () => {
       });
       
       setFilteredServices(filtered);
+      
+      // Update categorized services when filters change
+      const groupedByCategory = groupServicesByCategory(filtered);
+      setCategorizedServices(groupedByCategory);
     }
   }, [sortedServices, searchTerm, categoryFilter]);
 
-  // Categorize services by price range
-  const categorizeServices = (services) => {
-    return {
-      basic: services.filter(service => parseFloat(service.price) < 1000000),
-      medium: services.filter(service => parseFloat(service.price) >= 1000000 && parseFloat(service.price) <= 2000000),
-      advance: services.filter(service => parseFloat(service.price) > 2000000)
-    };
+  // Group services by their category
+  const groupServicesByCategory = (services) => {
+    const grouped = {};
+    
+    services.forEach(service => {
+      const category = service.category || "Uncategorized";
+      
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      
+      grouped[category].push(service);
+    });
+    
+    return grouped;
   };
-
-  // Get services for each category
-  const categorizedServices = categorizeServices(filteredServices);
 
   // Handle sorting
   const handleSort = (option) => {
@@ -95,6 +109,10 @@ export const Service = () => {
       return value === "highToMin" ? priceB - priceA : priceA - priceB;
     });
     setFilteredServices(sorted);
+    
+    // Update categorized services after sorting
+    const groupedByCategory = groupServicesByCategory(sorted);
+    setCategorizedServices(groupedByCategory);
   };
 
   // Format duration
@@ -304,6 +322,7 @@ export const Service = () => {
             {/* <!-- Service Aside --> */}
             <div className="shop-aside">
               <div className="box-field box-field__search">
+                {/* <FaSearch className="icon-search" /> */}
                 <input
                   type="search"
                   className="form-control"
@@ -311,7 +330,7 @@ export const Service = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <FaSearch className="icon-search" />
+                
               </div>
               <div className="shop-aside__item">
                 <span className="shop-aside__item-title">Categories</span>
@@ -377,37 +396,14 @@ export const Service = () => {
                     </button>
                   </div>
                 ) : (
-                  <>
-                    {/* Basic Services Section */}
-                    {categorizedServices.basic.length > 0 && (
-                      <div className="service-category">
-                        <h2 className="service-category__title">Basic Services</h2>
-                        <div className="services-grid">
-                          {categorizedServices.basic.map(renderServiceCard)}
-                        </div>
+                  Object.entries(categorizedServices).map(([category, categoryServices]) => (
+                    <div className="service-category" key={category}>
+                      <h2 className="service-category__title">{category}</h2>
+                      <div className="services-grid">
+                        {categoryServices.map(renderServiceCard)}
                       </div>
-                    )}
-
-                    {/* Medium Services Section */}
-                    {categorizedServices.medium.length > 0 && (
-                      <div className="service-category">
-                        <h2 className="service-category__title">Medium Services</h2>
-                        <div className="services-grid">
-                          {categorizedServices.medium.map(renderServiceCard)}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Advanced Services Section */}
-                    {categorizedServices.advance.length > 0 && (
-                      <div className="service-category">
-                        <h2 className="service-category__title">Advanced Services</h2>
-                        <div className="services-grid">
-                          {categorizedServices.advance.map(renderServiceCard)}
-                        </div>
-                      </div>
-                    )}
-                  </>
+                    </div>
+                  ))
                 )}
               </div>
               {paginate?.maxPage > 1 && (
@@ -444,28 +440,20 @@ export const Service = () => {
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .service-category:first-child {
-          border-top: 4px solid #4CAF50;
+        .service-category:nth-child(odd) {
+          border-top: 4px solid #e2879d;
         }
 
-        .service-category:nth-child(2) {
-          border-top: 4px solid #2196F3;
-        }
-
-        .service-category:nth-child(3) {
-          border-top: 4px solid #9C27B0;
+        .service-category:nth-child(even) {
+          border-top: 4px solid #7facc8;
         }
 
         .service-category__title {
           font-size: 24px;
           color: #333;
-          margin-bottom: 8px;
-        }
-
-        .service-category__description {
-          color: #666;
           margin-bottom: 20px;
-          font-size: 14px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #eee;
         }
 
         .services-grid {

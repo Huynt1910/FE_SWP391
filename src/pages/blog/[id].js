@@ -10,10 +10,7 @@ const breadcrumbsData = [
     label: "Blog",
     path: "/blog",
   },
-  {
-    label: "Post",
-    path: "/post",
-  },
+ 
 ];
 const PostPage = () => {
   return (

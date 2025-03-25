@@ -40,11 +40,11 @@ export const PostComment = ({ blog }) => {
         </div>
       ))}
 
-      <div className='post-comment__form'>
-        <div className='subscribe-form__img'>
+      {/* <div className='post-comment__form'> */}
+        {/* <div className='subscribe-form__img'>
           <img src='/assets/img/subscribe-img.png' className='js-img' alt='' />
-        </div>
-        <form>
+        </div> */}
+        {/* <form>
           <h3>Leave a comment</h3>
           <p>Your email address will not be published.</p>
           <div className='box-field__row'>
@@ -79,8 +79,8 @@ export const PostComment = ({ blog }) => {
           <button type='submit' className='btn'>
             post a comment
           </button>
-        </form>
-      </div>
+        </form> */}
+      {/* </div> */}
     </div>
   );
 };

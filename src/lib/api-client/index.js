@@ -98,7 +98,7 @@ export class APIClient {
           console.error("Not found error (404):", response.statusText);
           return {
             success: false,
-            message: "The requested resource was not found.",
+            // message: "The requested resource was not found.",
             status: response.status,
           };
         }
