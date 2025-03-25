@@ -195,60 +195,57 @@ export const BookingServiceForm = () => {
   // Fetch available dates when therapist is selected
   useEffect(() => {
     const fetchAvailableDates = async () => {
-      if (selectedTherapist) {
-        try {
-          setLoading(true);
+      try {
+        setLoading(true);
         
+        // Generate dates for the next 7 days
+        const dates = [];
+        const today = new Date();
+        
+        for (let i = 0; i <= 7; i++) { // Changed to include today (i = 0)
+          const date = new Date(today);
+          date.setDate(today.getDate() + i);
           
-          // Generate dates for the next 7 days as a workaround
-          const dates = [];
-          const today = new Date();
-          
-          for (let i = 1; i <= 7; i++) {
-            const date = new Date(today);
-            date.setDate(today.getDate() + i);
-            
-            const dayOfWeek = date.getDay();
-              dates.push({
-                date: date.toISOString().split('T')[0],
-                available: true,
-                shifts: [1],
-                therapistName: selectedTherapist.fullName || selectedTherapist.name || "Therapist"
-              });
-            
-          }
-          
-          console.log(`Generated ${dates.length} available dates for therapist ${selectedTherapist.id}`);
-          setAvailableDates(dates);
-          
-          // Clear any previously selected date and time
-          setSelectedDate("");
-          setSelectedTime("");
-          setSelectedSlot(null);
-          
-        } catch (err) {
-          console.error("Error setting up available dates:", err);
-          setError(err.message || "Failed to set up available dates");
-          setAvailableDates([]);
+          dates.push({
+            date: date.toISOString().split('T')[0],
+            available: true,
+            shifts: [1],
+            therapistName: selectedTherapist ? 
+              (selectedTherapist.fullName || selectedTherapist.name || "Therapist") : 
+              "Available Therapist"
+          });
+        }
+        
+        console.log(`Generated ${dates.length} available dates${selectedTherapist ? ` for therapist ${selectedTherapist.id}` : ''}`);
+        setAvailableDates(dates);
+        
+        // Clear any previously selected date and time
+        setSelectedDate("");
+        setSelectedTime("");
+        setSelectedSlot(null);
+        
+      } catch (err) {
+        console.error("Error setting up available dates:", err);
+        setError(err.message || "Failed to set up available dates");
+        setAvailableDates([]);
       } finally {
         setLoading(false);
-        }
       }
     };
     
-    if (selectedTherapist) {
-      fetchAvailableDates();
-    }
+    // Call fetchAvailableDates regardless of therapist selection
+    fetchAvailableDates();
   }, [selectedTherapist]);
 
   // Fetch available slots when therapist and date are selected
   useEffect(() => {
     const fetchAvailableSlots = async () => {
-      if (selectedTherapist && selectedDate) {
+      if (selectedDate) { // Remove therapist check to allow fetching slots without therapist
         try {
           setLoading(true);
           const serviceIds = selectedServices.map(service => service.id);
-          const slots = await getAvailableSlots(selectedTherapist.id, serviceIds, selectedDate);
+          const therapistId = selectedTherapist ? selectedTherapist.id : null;
+          const slots = await getAvailableSlots(therapistId, serviceIds, selectedDate);
           
           if (slots && slots.length > 0) {
             console.log("Available slots:", slots);
@@ -283,7 +280,7 @@ export const BookingServiceForm = () => {
       }
     };
     
-    if (selectedTherapist && selectedDate) {
+    if (selectedDate) { // Remove therapist check here too
       fetchAvailableSlots();
     }
   }, [selectedTherapist, selectedDate]);
@@ -424,22 +421,11 @@ export const BookingServiceForm = () => {
         }
         break;
       case 2: // Therapist selection
-        // Auto-select a therapist if none is selected and therapists are available
-        if (!selectedTherapist && therapists && therapists.length > 0) {
-          // Choose a random therapist
-          const randomIndex = Math.floor(Math.random() * therapists.length);
-          const randomTherapist = therapists[randomIndex];
-          
-          // Update the selected therapist
-          setSelectedTherapist(randomTherapist);
-          console.log(`Auto-selected therapist: ${randomTherapist.fullName || randomTherapist.name}`);
-          // showToast(`A therapist has been automatically assigned to you`, "info");
-          canProceed = true;
-        } else {
-          canProceed = selectedTherapist !== null;
-          if (!canProceed) {
-            showToast("No therapists available. Please try again later.", "error");
-          }
+        // Allow proceeding with either a selected therapist or null (spa choice)
+        canProceed = true; // Always allow proceeding since null is a valid choice
+        if (!selectedTherapist && therapists.length === 0) {
+          showToast("No therapists available. Please try again later.", "error");
+          canProceed = false;
         }
         break;
       case 3: // Schedule selection
@@ -689,7 +675,7 @@ export const BookingServiceForm = () => {
         slotId: Number(selectedSlot),
         bookingDate: selectedDate,
         serviceId: selectedServices.map(service => service.id),
-        therapistId: Number(selectedTherapist.id),
+        therapistId: selectedTherapist ? Number(selectedTherapist.id) : null,
         voucherId: voucherId,
         email: "customer@example.com" // Add a default email to ensure the booking goes through
       };
@@ -715,7 +701,7 @@ export const BookingServiceForm = () => {
         // Prepare booking details for confirmation page
         const bookingDetails = {
           bookingId: result.bookingId,
-          therapistName: selectedTherapist.fullName || selectedTherapist.name,
+          therapistName: selectedTherapist ? (selectedTherapist.fullName || selectedTherapist.name) : "To be assigned by Spa",
           bookingDate: selectedDate,
           bookingTime: selectedTime,
           servicePrices: selectedServices.map(service => ({

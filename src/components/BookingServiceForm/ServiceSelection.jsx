@@ -22,17 +22,27 @@ const ServiceSelection = ({
     }).format(price);
   };
 
-  // Categorize services by price range
-  const categorizeServices = (services) => {
-    return {
-      basic: services.filter(service => parseFloat(service.price) < 1000000),
-      medium: services.filter(service => parseFloat(service.price) >= 1000000 && parseFloat(service.price) <= 2000000),
-      advance: services.filter(service => parseFloat(service.price) > 2000000)
-    };
+  // Group services by their category
+  const groupServicesByCategory = (services) => {
+    const grouped = {};
+    
+    if (services) {
+      services.forEach(service => {
+        const category = service.category || "Other Services";
+        
+        if (!grouped[category]) {
+          grouped[category] = [];
+        }
+        
+        grouped[category].push(service);
+      });
+    }
+    
+    return grouped;
   };
 
-  // Get services for each category
-  const categorizedServices = services ? categorizeServices(services) : { basic: [], medium: [], advance: [] };
+  // Get categorized services
+  const categorizedServices = groupServicesByCategory(services);
 
   // Render loading state
   if (loading) {
@@ -116,35 +126,14 @@ const ServiceSelection = ({
 
       {services && services.length > 0 ? (
         <div className="service-selection__categories">
-          {/* Basic Services Section */}
-          {categorizedServices.basic.length > 0 && (
-            <div className="service-selection__category basic">
-              <h3 className="service-selection__category-title">Basic Services</h3>
+          {Object.entries(categorizedServices).map(([category, categoryServices]) => (
+            <div className="service-selection__category" key={category}>
+              <h3 className="service-selection__category-title">{category}</h3>
               <div className="service-selection__list">
-                {categorizedServices.basic.map(renderServiceCard)}
+                {categoryServices.map(renderServiceCard)}
               </div>
             </div>
-          )}
-
-          {/* Medium Services Section */}
-          {categorizedServices.medium.length > 0 && (
-            <div className="service-selection__category medium">
-              <h3 className="service-selection__category-title">Medium Services</h3>
-              <div className="service-selection__list">
-                {categorizedServices.medium.map(renderServiceCard)}
-              </div>
-            </div>
-          )}
-
-          {/* Advanced Services Section */}
-          {categorizedServices.advance.length > 0 && (
-            <div className="service-selection__category advance">
-              <h3 className="service-selection__category-title">Advanced Services</h3>
-              <div className="service-selection__list">
-                {categorizedServices.advance.map(renderServiceCard)}
-              </div>
-            </div>
-          )}
+          ))}
         </div>
       ) : (
         <div className="service-selection__empty">
@@ -191,43 +180,42 @@ const ServiceSelection = ({
         }
 
         .service-selection__category {
-          padding: 1.5rem;
+          margin-bottom: 40px;
+          padding: 20px;
           background: white;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .service-selection__category.basic {
-          border-top: 4px solid #4CAF50;
+        .service-selection__category:nth-child(odd) {
+          border-top: 4px solid #e2879d;
         }
 
-        .service-selection__category.medium {
-          border-top: 4px solid #2196F3;
-        }
-
-        .service-selection__category.advance {
-          border-top: 4px solid #9C27B0;
+        .service-selection__category:nth-child(even) {
+          border-top: 4px solid #7facc8;
         }
 
         .service-selection__category-title {
-          font-size: 1.5rem;
+          font-size: 24px;
           color: #333;
-          margin-bottom: 1rem;
+          margin-bottom: 20px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid #eee;
         }
 
         .service-selection__list {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 1.25rem;
+          gap: 20px;
         }
 
         @media (max-width: 768px) {
           .service-selection__category {
-            padding: 1rem;
+            padding: 15px;
           }
 
           .service-selection__category-title {
-            font-size: 1.25rem;
+            font-size: 20px;
           }
 
           .service-selection__list {

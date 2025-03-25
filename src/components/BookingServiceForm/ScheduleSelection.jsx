@@ -17,7 +17,7 @@ const ScheduleSelection = ({
 
   // Get therapist name from different possible properties
   const getTherapistName = () => {
-    if (!selectedTherapist) return 'None';
+    if (!selectedTherapist) return 'Spa Will Choose Best Available Therapist';
     return selectedTherapist.fullName || selectedTherapist.name || 'Unnamed Therapist';
   };
 
@@ -141,6 +141,11 @@ const ScheduleSelection = ({
       
       <div className="schedule-selection__therapist">
         <h3>Selected Therapist: {getTherapistName()}</h3>
+        {!selectedTherapist && (
+          <p className="schedule-selection__note">
+            Don't worry! We'll assign the best available therapist for your selected time slot.
+          </p>
+        )}
       </div>
       
       <div className="schedule-selection__dates">
@@ -160,8 +165,8 @@ const ScheduleSelection = ({
             ))
           ) : (
             <div className="no-dates-message">
-              <p>No available dates for this therapist</p>
-              <p className="select-another">Please select another therapist</p>
+              <p>No available dates found</p>
+              <p className="select-another">Please try again later</p>
             </div>
           )}
         </div>

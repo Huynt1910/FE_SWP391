@@ -341,6 +341,11 @@ export const END_POINTS = {
     method: "POST",
     secure: true,
   },
+  updateInfo: {
+    path: "/users",
+    method: "PUT",
+    secure: true,
+  },
 };
 
 export const ACTIONS = {

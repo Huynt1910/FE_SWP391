@@ -2,7 +2,7 @@ export const Subscribe = () => {
   return (
     <>
       {/* <!-- BEGIN SUBSCRIBE --> */}
-      <div className='subscribe'>
+       <div className='subscribe'>
         <div className='wrapper'>
           <div className='subscribe-form'>
             <div className='subscribe-form__img'>
@@ -30,7 +30,7 @@ export const Subscribe = () => {
             </form>
           </div>
         </div>
-      </div>
+      </div> 
       {/* <!-- SUBSCRIBE EOF   --> */}
     </>
   );

@@ -82,6 +82,31 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
         </div> */}
         
         <div className="service-selection__list">
+          {/* Add auto-select therapist card */}
+          <div 
+            className={`service-selection__card ${selectedTherapist === null ? 'selected' : ''}`}
+            onClick={() => onSelectTherapist(null)}
+          >
+            <div className="service-selection__card-image">
+              <div className="auto-select-placeholder">
+                <FaUserMd size={40} />
+              </div>
+            </div>
+
+            <div className="service-selection__card-content">
+              <h3 className="service-selection__card-title">Let Spa Choose For You</h3>
+              <div className="service-selection__card-details">
+                <p className="service-selection__card-specialization">
+                  <FaUserMd className="icon" /> Best Match For Your Services
+                </p>
+                <p className="service-selection__card-experience">
+                  <FaClock className="icon" /> Available For Your Schedule
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Existing therapist cards */}
           {therapists && therapists.length > 0 ? (
             therapists.map((therapist) => {
               // Extract therapist properties with fallbacks
@@ -90,8 +115,6 @@ const TherapistSelection = ({ therapists, selectedTherapist, onSelectTherapist, 
               const image = therapist.imgUrl || therapist.image || therapist.avatar || "/assets/img/therapists/default.jpg";
               const specialization = therapist.specialization || therapist.specialty || "Skin Care Specialist";
               const experience = therapist.yearsOfExperience || therapist.yearExperience || 5;
-              // const rating = therapist.rating || 4.5;
-              // const bio = therapist.bio || therapist.description || "Specialized in providing exceptional skin care treatments.";
 
               return (
                 <div 
