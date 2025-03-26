@@ -2,71 +2,88 @@ import { useState } from "react";
 import { format } from "date-fns";
 import DatePicker from "react-datepicker";
 import { FaSpinner } from "react-icons/fa";
-import { useServiceActions } from "@/auth/hook/admin/useServiceActionsHook";
-import { useTherapistActions } from "@/auth/hook/admin/useTherapistActions";
 import { useVoucherActions } from "@/auth/hook/admin/useVoucherActions";
 import { useSlotActions } from "@/auth/hook/admin/useSlotActions";
+import { useCheckTherapistAvailability } from "@/auth/hook/admin/useCheckTherapistAvailability";
+import { useGetActiveService } from "@/auth/hook/admin/useGetActiveService";
+import Select from "react-select";
 
 const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
   const [formData, setFormData] = useState({
     phoneNumber: "",
     slotId: "",
     bookingDate: new Date(),
-    serviceId: [],
+    serviceId: [], // Chọn nhiều dịch vụ
     therapistId: "",
     voucherId: "",
   });
 
-  const { services, isLoading: loadingServices } = useServiceActions();
-  const { activeTherapists, isLoading: loadingTherapists } =
-    useTherapistActions();
   const { vouchers } = useVoucherActions();
   const { slots } = useSlotActions();
+  const {
+    data: services,
+    isLoading: loadingServices,
+    error,
+  } = useGetActiveService();
+  console.log("Dữ liệu dịch vụ trong modal:", services);
+  const {
+    therapists,
+    loading: loadingTherapists,
+    error: therapistError,
+    checkTherapistAvailability,
+  } = useCheckTherapistAvailability();
 
-  // Filter active services
-  const activeServices = services?.filter((s) => s.status) || [];
-
+  // ✅ Chọn nhiều dịch vụ
   const handleServiceChange = (serviceId) => {
     setFormData((prev) => {
       const updatedServices = prev.serviceId.includes(serviceId)
-        ? prev.serviceId.filter((id) => id !== serviceId)
-        : [...prev.serviceId, serviceId];
+        ? prev.serviceId.filter((id) => id !== serviceId) // Bỏ chọn nếu đã chọn
+        : [...prev.serviceId, serviceId]; // Thêm vào danh sách nếu chưa chọn
       return { ...prev, serviceId: updatedServices };
     });
   };
 
-  const handleSlotChange = (e) => {
-    const selectedSlotId = e.target.value;
-    console.log("Selected slot:", {
-      value: selectedSlotId,
-      time: slots.find((slot) => slot.slotid === Number(selectedSlotId))
-        ?.slottime,
-    });
-    setFormData({ ...formData, slotId: selectedSlotId });
-  };
+  const handleCheckTherapist = async () => {
+    const { serviceId, bookingDate, slotId } = formData;
 
-  const handleVoucherChange = (e) => {
-    const selectedVoucherId = e.target.value;
-    console.log("Selected voucher:", {
-      value: selectedVoucherId,
-      code: vouchers.find((v) => v.voucherId === Number(selectedVoucherId))
-        ?.voucherCode,
-    });
-    setFormData({ ...formData, voucherId: selectedVoucherId });
+    if (!serviceId.length || !slotId || !bookingDate) {
+      alert("Vui lòng chọn dịch vụ, ngày và khung giờ trước khi kiểm tra!");
+      return;
+    }
+
+    const date = format(bookingDate, "yyyy-MM-dd");
+    const payload = {
+      serviceId,
+      date,
+      slotId: Number(slotId),
+    };
+
+    console.log("📤 Payload gửi đến API:", payload);
+
+    try {
+      await checkTherapistAvailability(payload);
+    } catch (error) {
+      console.error("❌ Lỗi khi kiểm tra therapist:", error);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.therapistId) {
+      alert("Vui lòng chọn chuyên viên trước khi tạo lịch hẹn!");
+      return;
+    }
+
     const bookingData = {
       phoneNumber: formData.phoneNumber,
-      slotId: formData.slotId ? Number(formData.slotId) : null,
+      slotId: Number(formData.slotId),
       bookingDate: format(formData.bookingDate, "yyyy-MM-dd"),
-      serviceId: formData.serviceId.map((id) => Number(id)),
+      serviceId: formData.serviceId.map(Number), // Convert thành số
       therapistId: Number(formData.therapistId),
       voucherId: formData.voucherId ? Number(formData.voucherId) : null,
     };
 
-    console.log("Submitting booking data:", bookingData);
     try {
       await onConfirm(bookingData);
       onClose();
@@ -75,7 +92,9 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
     }
   };
 
-  const isLoaders = loadingServices || loadingTherapists;
+  // Xử lý nếu không có dữ liệu hoặc đang tải
+  if (loadingServices) return <p>Đang tải danh sách dịch vụ...</p>;
+  if (error) return <p>Lỗi: {error.message}</p>;
 
   return (
     <div className="admin-page__modal">
@@ -116,7 +135,6 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
               dateFormat="dd/MM/yyyy"
               minDate={new Date()}
               className="form-control"
-              placeholderText="Chọn ngày hẹn"
               required
             />
           </div>
@@ -125,7 +143,9 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
             <label>Khung giờ:</label>
             <select
               value={formData.slotId}
-              onChange={handleSlotChange}
+              onChange={(e) =>
+                setFormData({ ...formData, slotId: e.target.value })
+              }
               required
               className="form-control"
             >
@@ -140,25 +160,41 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
 
           <div className="form-group">
             <label>Dịch vụ:</label>
-            <div className="services-checkbox-group">
-              {activeServices.map((service) => (
-                <div key={service.id} className="service-checkbox-item">
-                  <input
-                    type="checkbox"
-                    id={`service-${service.id}`}
-                    checked={formData.serviceId.includes(service.id)}
-                    onChange={() => handleServiceChange(service.id)}
-                  />
-                  <label htmlFor={`service-${service.id}`}>
-                    {service.name}
-                  </label>
-                </div>
-              ))}
-            </div>
+            <Select
+              isMulti
+              options={services?.map((service) => ({
+                value: service.serviceId,
+                label: service.serviceName || "Tên dịch vụ trống!",
+              }))}
+              value={services
+                ?.filter((service) =>
+                  formData.serviceId.includes(service.serviceId)
+                )
+                .map((service) => ({
+                  value: service.serviceId,
+                  label: service.serviceName,
+                }))}
+              onChange={(selectedOptions) =>
+                setFormData({
+                  ...formData,
+                  serviceId: selectedOptions.map((option) => option.value),
+                })
+              }
+              className="form-control"
+            />
           </div>
 
           <div className="form-group">
             <label>Chuyên viên:</label>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleCheckTherapist}
+              disabled={loadingTherapists}
+            >
+              {loadingTherapists ? "Đang kiểm tra..." : "Kiểm tra chuyên viên"}
+            </button>
+            {therapistError && <p className="error">{therapistError}</p>}
             <select
               value={formData.therapistId}
               onChange={(e) =>
@@ -168,7 +204,7 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
               className="form-control"
             >
               <option value="">-- Chọn chuyên viên --</option>
-              {activeTherapists?.map((therapist) => (
+              {therapists?.map((therapist) => (
                 <option key={therapist.id} value={therapist.id}>
                   {therapist.fullName}
                 </option>
@@ -177,20 +213,20 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
           </div>
 
           <div className="form-group">
-            <label>Mã giảm giá (không bắt buộc):</label>
+            <label>Mã giảm giá (Voucher):</label>
             <select
               value={formData.voucherId}
-              onChange={handleVoucherChange}
+              onChange={(e) =>
+                setFormData({ ...formData, voucherId: e.target.value })
+              }
               className="form-control"
             >
               <option value="">-- Chọn voucher --</option>
-              {vouchers
-                ?.filter((v) => v.isActive)
-                ?.map((voucher) => (
-                  <option key={voucher.voucherId} value={voucher.voucherId}>
-                    {voucher.voucherCode} - Giảm {voucher.percentDiscount}%
-                  </option>
-                ))}
+              {vouchers?.map((voucher) => (
+                <option key={voucher.voucherId} value={voucher.voucherId}>
+                  {voucher.voucherCode} - Giảm {voucher.percentDiscount}%
+                </option>
+              ))}
             </select>
           </div>
 
@@ -199,14 +235,14 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
               type="button"
               className="btn btn-secondary"
               onClick={onClose}
-              disabled={isLoaders || isLoading}
+              disabled={isLoading}
             >
               Hủy
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={isLoaders || isLoading}
+              disabled={isLoading}
             >
               {isLoading ? (
                 <>

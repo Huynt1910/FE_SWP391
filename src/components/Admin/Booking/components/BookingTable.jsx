@@ -3,6 +3,8 @@ import { FaEdit, FaCheck, FaPrint, FaSpinner } from "react-icons/fa";
 import { format } from "date-fns";
 import InvoiceModal from "./InvoiceModal";
 import { toast } from "react-toastify";
+import EditBookingModal from "./EditBookingModal";
+import { useSlotActions } from "@/auth/hook/admin/useSlotActions";
 
 const BookingTable = ({
   bookings,
@@ -10,14 +12,14 @@ const BookingTable = ({
   customers = [],
   therapists = [],
   vouchers = [],
-  onEdit,
   onCheckIn,
   onComplete,
 }) => {
   const [showInvoice, setShowInvoice] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [processingId, setProcessingId] = useState(null);
-
+  const [editingBooking, setEditingBooking] = useState(null);
+  const { slots } = useSlotActions();
   const serviceMap = useMemo(() => {
     const map = {};
     services.forEach((s) => {
@@ -105,6 +107,14 @@ const BookingTable = ({
     }
   };
 
+  const handleEdit = (booking) => {
+    if (booking.status !== "PENDING") {
+      toast.error("Chỉ có thể chỉnh sửa lịch hẹn ở trạng thái Pending!");
+      return;
+    }
+    setEditingBooking(booking);
+  };
+
   const getActionButton = (booking) => {
     if (processingId === booking.id) {
       return (
@@ -186,7 +196,7 @@ const BookingTable = ({
                     <div className="action-buttons">
                       <button
                         className="edit-btn"
-                        onClick={() => onEdit(booking)}
+                        onClick={() => handleEdit(booking)}
                         disabled={
                           booking.status === "CANCELLED" ||
                           booking.status === "COMPLETED" ||
@@ -205,7 +215,7 @@ const BookingTable = ({
         </table>
       </div>
 
-      {/* Hóa đơn chỉ hiện khi hoàn tất booking */}
+      {/* Hóa đơn chỉ hiện khi hoàn tất booking
       {showInvoice && selectedBooking && (
         <InvoiceModal
           data={selectedBooking}
@@ -213,6 +223,15 @@ const BookingTable = ({
             setShowInvoice(false);
             setSelectedBooking(null);
           }}
+        />
+      )} */}
+
+      {editingBooking && (
+        <EditBookingModal
+          booking={editingBooking}
+          slots={slots}
+          therapists={therapists}
+          onClose={() => setEditingBooking(null)}
         />
       )}
     </>

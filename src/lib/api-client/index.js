@@ -45,86 +45,85 @@ export class APIClient {
       const handleResponse = async (response, options = {}) => {
         // Check if response is OK (status in the range 200-299)
         if (response.ok) {
-          try {
-            const data = await response.json();
-            return data;
-          } catch (error) {
-            console.error("Error parsing JSON response:", error);
-            return { success: false, message: "Invalid response format" };
-          }
-        }
+          // Get response as text first
+          const responseText = await response.text();
 
-        // Handle specific error status codes
-        if (response.status === 401) {
-          console.error("Authentication error (401):", response.statusText);
-
-          // If this endpoint doesn't require authentication, return empty data instead of error
-          if (options.requiresAuth === false) {
-            console.log(
-              "Non-authenticated endpoint received 401, returning empty data"
-            );
+          // If the response is empty, return success
+          if (!responseText) {
             return {
-              success: false,
-              message: "Authentication required",
-              result: [],
+              success: true,
+              message: "Operation successful",
+              result: null,
             };
           }
 
-          // For endpoints that do require auth, handle normally
-          if (!options.preventRedirect) {
-            // Redirect to login page if not prevented
-            if (typeof window !== "undefined") {
-              window.location.href = "/login";
-            }
+          // Check if it starts with specific text patterns
+          if (
+            responseText.startsWith("Staff") ||
+            responseText.includes("successfully") ||
+            !responseText.trim().startsWith("{")
+          ) {
+            return {
+              success: true,
+              message: responseText,
+              result: responseText,
+            };
           }
 
-          return {
-            success: false,
-            message: "Authentication required. Please log in.",
-            status: response.status,
-          };
+          // Try parsing as JSON if it looks like JSON
+          try {
+            const jsonData = JSON.parse(responseText);
+            return {
+              success: true,
+              message: jsonData.message || "Operation successful",
+              result: jsonData.result || jsonData,
+            };
+          } catch (error) {
+            // If JSON parsing fails, return the text response
+            console.log(
+              "Response is not JSON, treating as text:",
+              responseText
+            );
+            return {
+              success: true,
+              message: responseText,
+              result: responseText,
+            };
+          }
         }
 
-        if (response.status === 403) {
-          console.error("Authorization error (403):", response.statusText);
-          return {
-            success: false,
-            message: "You don't have permission to access this resource.",
-            status: response.status,
-          };
-        }
-
-        if (response.status === 404) {
-          console.error("Not found error (404):", response.statusText);
-          return {
-            success: false,
-            // message: "The requested resource was not found.",
-            status: response.status,
-          };
-        }
-
-        if (response.status === 500) {
-          console.error("Server error (500):", response.statusText);
-          return {
-            success: false,
-            message:
-              "An internal server error occurred. Please try again later.",
-            status: response.status,
-          };
-        }
-
-        // For other error status codes
+        // For error responses, try to get the response as text first
         try {
-          const errorData = await response.json();
-          console.error(`Error (${response.status}):`, errorData);
-          return {
-            success: false,
-            message: errorData.message || `Error: ${response.statusText}`,
-            status: response.status,
-            ...errorData,
-          };
+          const errorText = await response.text();
+
+          // If it's a plain text error
+          if (!errorText.startsWith("{")) {
+            return {
+              success: false,
+              message: errorText,
+              status: response.status,
+            };
+          }
+
+          // Try parsing as JSON
+          try {
+            const errorJson = JSON.parse(errorText);
+            return {
+              success: false,
+              message: errorJson.message || errorText,
+              status: response.status,
+              ...errorJson,
+            };
+          } catch {
+            // If JSON parsing fails, return the text
+            return {
+              success: false,
+              message: errorText,
+              status: response.status,
+            };
+          }
         } catch (error) {
-          console.error(`Error (${response.status}):`, response.statusText);
+          // If we can't even get the text, return a generic error
           return {
             success: false,
             message: `Error: ${response.statusText}`,
@@ -224,7 +223,7 @@ export class APIClient {
         pathParams,
         urlParams,
         secure: endpoint.secure,
-        publicAccess: endpoint.publicAccess
+        publicAccess: endpoint.publicAccess,
       });
 
       // Don't set Content-Type if FormData is being sent
@@ -250,14 +249,14 @@ export class APIClient {
       } else {
         console.log(`Endpoint ${action} doesn't require authentication`);
       }
-      
+
       // Combine all headers
       const combinedHeaders = {
         ...contentTypeHeader,
         ...authHeaders,
         ...headers,
       };
-      
+
       console.log(`Request headers for ${action}:`, combinedHeaders);
 
       const url = this._buildUrl(endpoint, pathParams);
@@ -273,7 +272,7 @@ export class APIClient {
         method: endpoint.method,
         headers: combinedHeaders,
         data: isFormData ? "[FormData]" : data,
-        options: requestOptions
+        options: requestOptions,
       });
 
       return await this.request(
@@ -286,28 +285,30 @@ export class APIClient {
       );
     } catch (error) {
       console.error(`Error in invoke for action ${action}:`, error);
-      
+
       // Enhanced error logging for debugging
       if (error.response) {
         console.error("Response error details:", {
           status: error.response.status,
           statusText: error.response.statusText,
           data: error.response.data,
-          headers: error.response.headers
+          headers: error.response.headers,
         });
-        
+
         // Special handling for login-related 404 errors
         if (error.response.status === 404 && action === ACTIONS.SIGN_IN) {
-          console.error("Login endpoint not found. Check API URL and endpoint path configuration.");
+          console.error(
+            "Login endpoint not found. Check API URL and endpoint path configuration."
+          );
           return {
             success: false,
             errorType: "not_found",
             message: "Login service unavailable. Please try again later.",
-            status: 404
+            status: 404,
           };
         }
       }
-      
+
       throw error;
     }
   }

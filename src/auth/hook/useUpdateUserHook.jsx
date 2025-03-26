@@ -1,10 +1,11 @@
 import { APIClient } from "@/lib/api-client";
 import { ACTIONS } from "@/lib/api-client/constant";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCookie } from "cookies-next";
 
 export function useUpdateUser() {
   const token = getCookie("token");
+  const queryClient = useQueryClient(); // Khai báo queryClient
 
   return useMutation({
     mutationFn: async (userData) => {
@@ -24,6 +25,10 @@ export function useUpdateUser() {
       }
 
       return response.result;
+    },
+    onSuccess: () => {
+      // Làm mới dữ liệu sau khi cập nhật thành công
+      queryClient.invalidateQueries(["myInfo"]);
     },
   });
 }

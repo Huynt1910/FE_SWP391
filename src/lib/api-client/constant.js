@@ -1,3 +1,5 @@
+import { path } from "d3-path";
+
 export const RequestMethod = {
   GET: "GET",
   POST: "POST",
@@ -7,11 +9,11 @@ export const RequestMethod = {
 
 export const END_POINTS = {
   // Authentication
-  signIn: { 
-    path: "/authentication/log-in", 
+  signIn: {
+    path: "/authentication/log-in",
     method: "POST",
     secure: false,
-    publicAccess: true
+    publicAccess: true,
   },
   signUp: { path: "/users", method: "POST", secure: false, publicAccess: true },
   refreshToken: {
@@ -29,21 +31,21 @@ export const END_POINTS = {
     method: "POST",
     parameterized: true,
     secure: false,
-    publicAccess: true
+    publicAccess: true,
   },
   verifyOtp: {
     path: "/forgot-password/verifyOtp/:email/:otp",
     method: "POST",
     parameterized: true,
     secure: false,
-    publicAccess: true
+    publicAccess: true,
   },
   changeForgotPassword: {
     path: "/forgot-password/changeForgotPassword/:email",
     method: "POST",
     parameterized: true,
     secure: false,
-    publicAccess: true
+    publicAccess: true,
   },
   changePassword: {
     path: "/users/change-password",
@@ -130,12 +132,14 @@ export const END_POINTS = {
     path: "/staffs/delete/:id",
     method: "PUT",
     parameterized: true,
+    acceptText: true,
     secure: true,
   },
   activateStaff: {
     path: "/staffs/restore/:id",
     method: "PUT",
     parameterized: true,
+    acceptText: true,
     secure: true,
   },
   resetStaffPassword: {
@@ -277,7 +281,17 @@ export const END_POINTS = {
     parameterized: true,
     secure: true,
   },
-
+  checkTherapistAvailability: {
+    path: "/booking/therapist/update",
+    method: "POST",
+    secure: true,
+  },
+  updateBooking: {
+    path: "/booking/update/:id",
+    method: "PUT",
+    parameterized: true,
+    secure: true,
+  },
   // Separate voucher endpoints
   getAllVouchers: {
     path: "/vouchers",
@@ -342,7 +356,7 @@ export const END_POINTS = {
     secure: true,
   },
   updateInfo: {
-    path: "/users",
+    path: "/users/update",
     method: "PUT",
     secure: true,
   },
@@ -406,6 +420,7 @@ export const ACTIONS = {
   DELETE_BOOKING: "deleteBooking",
   FINISH_BOOKING: "finishBooking",
   SUBMIT_FEEDBACK: "submitFeedback",
+  CHECK_THERAPIST_AVAILABILITY: "checkTherapistAvailability",
   PAYMENT: "payment",
   GET_ALL_USERS: "getAllUsers",
   GET_USER_BY_ID: "getUserById",
@@ -414,6 +429,7 @@ export const ACTIONS = {
   ACTIVATE_USER: "activateUser",
   RESET_USER_PASSWORD: "resetUserPassword",
   CHECKOUT_BOOKING: "checkOutBooking",
+  UPDATE_BOOKING: "updateBooking",
   // Separate voucher actions
   GET_ALL_VOUCHERS: "getAllVouchers",
   GET_ACTIVE_VOUCHERS: "getActiveVouchers",

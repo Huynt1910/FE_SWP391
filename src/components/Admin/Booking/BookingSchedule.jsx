@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { FaSpinner, FaCalendarPlus } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -23,9 +23,9 @@ const Bookings = () => {
     [selectedDate]
   );
 
-  const [modalState, setModalState] = useState({ add: false });
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [invoiceData, setInvoiceData] = useState(null);
-  const [showInvoice, setShowInvoice] = useState(false);
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -46,63 +46,63 @@ const Bookings = () => {
   const { therapists } = useTherapistActions();
   const { vouchers } = useVoucherActions();
 
-  const handleDateChange = (date) => {
+  const handleDateChange = useCallback((date) => {
     setSelectedDate(date);
-  };
+  }, []);
 
-  const handleCheckIn = async (bookingId) => {
-    try {
-      await checkInBooking(bookingId);
-      toast.success("Check-in thành công!");
-    } catch {
-      toast.error("Lỗi khi check-in!");
-    }
-  };
-
-  const handleComplete = async (bookingId) => {
-    try {
-      const invoice = await completeBooking(bookingId);
-      if (invoice) {
-        setInvoiceData(invoice); // Hiển thị modal hóa đơn
-        setShowInvoice(true);
-        queryClient.invalidateQueries(["bookings"]);
+  const handleCheckIn = useCallback(
+    async (bookingId) => {
+      try {
+        await checkInBooking(bookingId);
+        toast.success("Check-in thành công!");
+      } catch (error) {
+        toast.error("Lỗi khi check-in: " + error.message);
       }
-    } catch {
-      toast.error("Lỗi khi hoàn thành dịch vụ!");
-    }
-  };
+    },
+    [checkInBooking]
+  );
 
-  const handleCreateBooking = async (data) => {
-    try {
-      await createBookingStaff(data);
-      closeModal("add");
-    } catch {
-      toast.error("Lỗi khi thêm lịch hẹn!");
-    }
-  };
+  const handleComplete = useCallback(
+    async (bookingId) => {
+      try {
+        const invoice = await completeBooking(bookingId);
+        if (invoice) {
+          setInvoiceData(invoice);
+          setIsInvoiceOpen(true);
+          queryClient.invalidateQueries(["bookings"]);
+        }
+      } catch (error) {
+        toast.error("Lỗi khi hoàn thành dịch vụ: " + error.message);
+      }
+    },
+    [completeBooking, queryClient]
+  );
 
-  const handleCheckout = async (bookingId) => {
-    try {
-      await checkoutBooking(bookingId); // Gọi API checkout
-      toast.success("Thanh toán thành công!");
-    } catch (error) {
-      console.error("Error during checkout:", error);
-      toast.error("Lỗi khi thực hiện thanh toán!");
-    }
-  };
+  const handleCreateBooking = useCallback(
+    async (bookingData) => {
+      try {
+        await createBookingStaff(bookingData);
+        setIsAddModalOpen(false);
+        queryClient.invalidateQueries(["bookings"]);
+        toast.success("Thêm lịch hẹn thành công!");
+      } catch (error) {
+        toast.error("Lỗi khi thêm lịch hẹn: " + error.message);
+      }
+    },
+    [createBookingStaff, queryClient]
+  );
 
-  const openModal = (type) => {
-    setModalState((prev) => ({ ...prev, [type]: true }));
-  };
-
-  const closeModal = (type) => {
-    setModalState((prev) => ({ ...prev, [type]: false }));
-  };
-
-  const handleCloseInvoice = () => {
-    setInvoiceData(null);
-    setShowInvoice(false);
-  };
+  const handleCheckout = useCallback(
+    async (bookingId) => {
+      try {
+        await checkoutBooking(bookingId);
+        toast.success("Thanh toán thành công!");
+      } catch (error) {
+        toast.error("Lỗi khi thanh toán: " + error.message);
+      }
+    },
+    [checkoutBooking]
+  );
 
   if (isLoadingServices || isLoadingBookings) {
     return (
@@ -126,7 +126,10 @@ const Bookings = () => {
             dateFormat="yyyy-MM-dd"
             className="date-picker"
           />
-          <button className="btn-primary" onClick={() => openModal("add")}>
+          <button
+            className="btn-primary"
+            onClick={() => setIsAddModalOpen(true)}
+          >
             <FaCalendarPlus className="btn-icon" />
             <span>Thêm Lịch hẹn</span>
           </button>
@@ -143,21 +146,24 @@ const Bookings = () => {
         onComplete={handleComplete}
       />
 
-      {modalState.add && (
+      {isAddModalOpen && (
         <BookingAddModal
-          services={services}
+          services={services || []}
           therapists={therapists}
           vouchers={vouchers}
-          onClose={() => closeModal("add")}
+          onClose={() => setIsAddModalOpen(false)}
           onConfirm={handleCreateBooking}
         />
       )}
 
-      {showInvoice && invoiceData && (
+      {isInvoiceOpen && invoiceData && (
         <InvoiceModal
-          data={invoiceData} // Dữ liệu hóa đơn từ API
-          onCheckout={handleCheckout} // Truyền hàm xử lý thanh toán
-          onClose={handleCloseInvoice}
+          data={invoiceData}
+          onCheckout={handleCheckout}
+          onClose={() => {
+            setInvoiceData(null);
+            setIsInvoiceOpen(false);
+          }}
         />
       )}
     </div>

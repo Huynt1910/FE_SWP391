@@ -1,7 +1,7 @@
 import React from "react";
 import { useCustomerActions } from "@/auth/hook/admin/useCustomerActions";
-import CustomerTable from "./components/CustomerTable";
 import { FaSpinner } from "react-icons/fa";
+import CustomerTable from "./Components/CustomerTable";
 
 const Customers = () => {
   const { customers, isLoading, deactivateCustomer, activateCustomer } =
