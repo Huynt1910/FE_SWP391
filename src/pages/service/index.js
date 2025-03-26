@@ -17,7 +17,7 @@ const ServicePage = () => {
   return (
     <PublicLayout breadcrumb={breadcrumbsData} breadcrumbTitle="Our Services">
       <Service />
-      <Subscribe />
+      {/* <Subscribe /> */}
     </PublicLayout>
   );
 };

@@ -156,12 +156,12 @@ const TherapistList = () => {
                 <p className="therapist-card__experience">
                   <FaClock className="icon" /> {experience} years of experience
                 </p>
-                <button 
+                {/* <button 
                   className="therapist-card__button"
                   onClick={() => handleSelectTherapist(id)}
                 >
                   Book Appointment
-                </button>
+                </button> */}
               </div>
             </div>
           );
