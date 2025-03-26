@@ -118,6 +118,11 @@ export const END_POINTS = {
     parameterized: true,
     secure: true,
   },
+  therapistProfile: {
+    path: "/therapists/therapistProfile",
+    method: "GET",
+    secure: true,
+  },
 
   // Staff
   getAllStaffs: { path: "/staffs", method: "GET", secure: true },
@@ -402,6 +407,7 @@ export const ACTIONS = {
   DELETE_THERAPIST: "deleteTherapist",
   RESTORE_THERAPIST: "restoreTherapist",
   RESET_PASSWORD: "resetPassword",
+  THERAPIST_PROFILE: "therapistProfile",
   //--------------- STAFF ACTIONS ----------------
   GET_ALL_STAFFS: "getAllStaffs",
   CREATE_STAFF: "createStaff",

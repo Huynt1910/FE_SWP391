@@ -29,7 +29,7 @@ export const Login = () => {
     e.preventDefault();
     console.log("Submitting login form:", {
       username: formData.username.trim(),
-      password: "********" // Hide password in logs
+      password: "********", // Hide password in logs
     });
 
     try {
@@ -62,7 +62,7 @@ export const Login = () => {
             router.push("/admin/bookings");
             break;
           case ROLES.THERAPIST:
-            router.push("/admin/schedules");
+            router.push("/admin/therapist-schedule");
             break;
           case ROLES.CUSTOMER:
             router.push("/");

@@ -84,7 +84,7 @@ const Sidebar = ({ isCollapsed }) => {
       label: "Đánh giá",
       path: "/admin/feedback",
       icon: <FaStar />,
-      roles: ["THERAPIST"], // Only visible to therapists
+      roles: ["THERAPIST"],
     },
     {
       label: "Lịch làm việc của tôi",
@@ -97,6 +97,12 @@ const Sidebar = ({ isCollapsed }) => {
       path: "/admin/staff-profile",
       icon: <FaUser />,
       roles: ["STAFF"],
+    },
+    {
+      label: "Thông tin cá nhân",
+      path: "/admin/therapist-profile",
+      icon: <FaUser />,
+      roles: ["THERAPIST"],
     },
   ];
 

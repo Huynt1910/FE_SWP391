@@ -12,8 +12,8 @@ const PAGE_ACCESS = {
   "/admin/services": ["ADMIN"],
   "/admin/settings": ["ADMIN"],
   "/admin/feedback": ["THERAPIST"],
-  "/admin/profile": ["ADMIN", "STAFF", "THERAPIST"],
   "/admin/therapist-schedule": ["THERAPIST"],
+  "/admin/therapist-profile": ["THERAPIST"],
 };
 
 export const AuthGuard = ({ children, requiredRole }) => {

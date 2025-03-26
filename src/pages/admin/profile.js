@@ -1,5 +1,5 @@
 import AdminLayout from "@/components/Admin/AdminLayout";
-import { TherapistProfile } from "@/components/Admin/Profile/TherapistProfile";
+import { TherapistProfile } from "@/components/Admin/TherapistProfile/TherapistProfile";
 import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
 
 const breadcrumbsData = [
