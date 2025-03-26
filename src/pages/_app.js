@@ -9,6 +9,8 @@ import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
 import { protectedRoutes } from "@/auth/AUTHGUARD/protectedRoute";
 import { isAuthenticated, handleAuthError } from "@/utils/auth";
 import { CartProvider } from "@/context/CartContext";
+import { registerNetworkListeners, isOnline } from "@/utils/network";
+import { showNetworkErrorToast, showNetworkRestoredToast } from "@/utils/toast";
 
 const MyApp = ({ Component, pageProps }) => {
   const [queryClient] = useState(
@@ -29,11 +31,36 @@ const MyApp = ({ Component, pageProps }) => {
   );
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [isNetworkOnline, setIsNetworkOnline] = useState(true);
   
-  // Handle client-side mounting
+  // Handle client-side mounting and set up network listeners
   useEffect(() => {
     setMounted(true);
-  }, []);
+    
+    // Set initial network status
+    setIsNetworkOnline(isOnline());
+    
+    // Register network status change listeners
+    const cleanup = registerNetworkListeners(
+      // Online callback
+      () => {
+        console.log("Network connection restored");
+        setIsNetworkOnline(true);
+        showNetworkRestoredToast();
+        
+        // Optionally trigger refetch of stale queries
+        queryClient.invalidateQueries();
+      },
+      // Offline callback
+      () => {
+        console.log("Network connection lost");
+        setIsNetworkOnline(false);
+        showNetworkErrorToast();
+      }
+    );
+    
+    return cleanup;
+  }, [queryClient]);
 
   if (pageProps.error) {
     return (
@@ -63,6 +90,7 @@ const MyApp = ({ Component, pageProps }) => {
   console.log("Current path:", router.pathname);
   console.log("Is protected route:", requiresAuth);
   console.log("Is authenticated:", authenticated);
+  console.log("Network status:", isNetworkOnline ? "Online" : "Offline");
   
   return (
     <QueryClientProvider client={queryClient}>

@@ -36,4 +36,27 @@ export const showToast = (message, type = "info", options = {}) => {
   }
 };
 
+/**
+ * Show a network connectivity error toast
+ * @param {object} options - Additional toast options
+ */
+export const showNetworkErrorToast = (options = {}) => {
+  const config = { 
+    ...defaultConfig, 
+    autoClose: 5000, // Show longer than normal toasts
+    ...options 
+  };
+  
+  toast.error("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.", config);
+};
+
+/**
+ * Show a network connectivity restored toast
+ * @param {object} options - Additional toast options
+ */
+export const showNetworkRestoredToast = (options = {}) => {
+  const config = { ...defaultConfig, ...options };
+  toast.success("Kết nối Internet đã được khôi phục", config);
+};
+
 export default showToast;

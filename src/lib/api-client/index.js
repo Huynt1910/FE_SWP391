@@ -2,10 +2,34 @@ import { getCookie } from "cookies-next";
 import { API_URL, END_POINTS, ACTIONS } from "./constant";
 import { getToken, handleAuthError, redirectToLogin } from "@/utils/auth";
 import axios from "axios";
+import { isOnline } from "@/utils/network";
+import { showToast } from "@/utils/toast";
 
 export class APIClient {
   static async request(url, method, data, headers, query, options = {}) {
     try {
+      // Check for internet connectivity first
+      if (!isOnline() && !options.skipConnectivityCheck) {
+        console.warn("No internet connection detected before making request");
+        
+        // Show toast to user
+        if (!options.suppressToast) {
+          showToast("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.", "error");
+        }
+        
+        // Return empty data for public access endpoints
+        if (options.publicAccess) {
+          return { success: true, result: [], isOffline: true };
+        }
+        
+        // Return a consistent offline error for other endpoints
+        return { 
+          success: false, 
+          isOffline: true, 
+          message: "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+        };
+      }
+
       const queryParams = new URLSearchParams(query || {}).toString();
       const requestOptions = {
         method,
@@ -27,15 +51,24 @@ export class APIClient {
       } catch (networkError) {
         console.error("Network error:", networkError);
 
+        // Show toast notification for network errors
+        if (!options.suppressToast) {
+          showToast("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.", "error");
+        }
+
         // For public access endpoints, return empty data on network error
         if (options.publicAccess) {
           console.log(
             "Public access endpoint returning empty data for network error"
           );
-          return { success: true, result: [] };
+          return { success: true, result: [], isOffline: true };
         }
 
-        throw new Error("Network error: Please check your internet connection");
+        return { 
+          success: false, 
+          isOffline: true, 
+          message: "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+        };
       }
 
       // Log response status
@@ -135,6 +168,33 @@ export class APIClient {
       return await handleResponse(response, options);
     } catch (error) {
       console.error("API Request failed:", error);
+
+      // Check for network connectivity errors
+      if (
+        error.message?.includes("network") ||
+        error.message?.includes("internet") ||
+        error.message?.includes("connection") ||
+        error.message?.includes("offline") ||
+        error.name === "TypeError" && error.message?.includes("Failed to fetch")
+      ) {
+        console.warn("Network connectivity error detected:", error.message);
+        
+        // Show toast notification for network errors
+        if (!options.suppressToast) {
+          showToast("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.", "error");
+        }
+        
+        // For public access endpoints, return empty data on network error
+        if (options.publicAccess) {
+          return { success: true, result: [], isOffline: true };
+        }
+        
+        return { 
+          success: false, 
+          isOffline: true, 
+          message: "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+        };
+      }
 
       // Special handling for "not found" errors
       if (
