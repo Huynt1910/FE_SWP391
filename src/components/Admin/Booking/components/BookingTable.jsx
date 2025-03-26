@@ -152,6 +152,21 @@ const BookingTable = ({
     }
   };
 
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case "PENDING":
+        return "status-badge status-badge--pending"; // Màu vàng
+      case "IN_PROGRESS":
+        return "status-badge status-badge--in-progress"; // Màu xanh dương
+      case "COMPLETED":
+        return "status-badge status-badge--completed"; // Màu xanh lá
+      case "CANCELLED":
+        return "status-badge status-badge--cancelled"; // Màu đỏ
+      default:
+        return "status-badge";
+    }
+  };
+
   return (
     <>
       <div className="admin-page__table">
@@ -186,25 +201,22 @@ const BookingTable = ({
                     )}
                   </td>
                   <td>
-                    <span
-                      className={`status-badge ${booking.status.toLowerCase()}`}
-                    >
+                    <span className={getStatusBadgeClass(booking.status)}>
                       {booking.status}
                     </span>
                   </td>
                   <td>
                     <div className="action-buttons">
-                      <button
-                        className="edit-btn"
-                        onClick={() => handleEdit(booking)}
-                        disabled={
-                          booking.status === "CANCELLED" ||
-                          booking.status === "COMPLETED" ||
-                          processingId === booking.id
-                        }
-                      >
-                        <FaEdit />
-                      </button>
+                      {["CANCELLED", "COMPLETED", "IN_PROGRESS"].includes(
+                        booking.status
+                      ) ? null : (
+                        <button
+                          className="edit-btn"
+                          onClick={() => handleEdit(booking)}
+                        >
+                          <FaEdit />
+                        </button>
+                      )}
                       {getActionButton(booking)}
                     </div>
                   </td>

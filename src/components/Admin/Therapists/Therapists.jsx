@@ -109,9 +109,9 @@ const Therapists = () => {
           <p>Quản lý và cập nhật thông tin nhân viên</p>
         </div>
         <div className="admin-page__header-actions">
-          <button className="btn-primary" onClick={() => openModal("add")}>
+          <button className="btn btn-primary" onClick={() => openModal("add")}>
             <FaUserPlus className="btn-icon" />
-            <span>Thêm Nhân viên</span>
+            Thêm Nhân viên
           </button>
         </div>
       </div>
@@ -136,9 +136,9 @@ const Therapists = () => {
           onConfirm={handleUpdateConfirm}
         />
       )}
-      {modalState.resetPassword && selectedStaff && (
+      {modalState.resetPassword && selectedTherapist && (
         <ResetPasswordModal
-          staff={selectedStaff}
+          therapist={selectedTherapist}
           onClose={() => closeModal("resetPassword")}
           onConfirm={handleResetPasswordConfirm}
         />

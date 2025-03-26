@@ -1,0 +1,132 @@
+.invoice-modal {
+  .admin-page__modal-header {
+    h2 {
+      font-family: "Inter", sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+  }
+
+  .invoice-info {
+    margin-bottom: 16px;
+
+    p {
+      margin: 4px 0;
+      font-size: 14px;
+      color: #475569;
+
+      strong {
+        color: #1e293b;
+      }
+    }
+  }
+
+  .invoice-services {
+    margin-top: 16px;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      th {
+        background: #f8fafc;
+        font-weight: 600;
+      }
+
+      .service-image {
+        width: 60px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+    }
+  }
+
+  .invoice-total {
+    margin-top: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .admin-page__modal-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+
+      &:hover {
+        background: #2563eb;
+      }
+
+      &:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+// Date picker styles
+.date-picker {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+// Button icon styles
+.btn-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+// Trạng thái
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #ffffff;
+
+  &--pending {
+    background-color: #facc15; // Màu vàng
+  }
+
+  &--in-progress {
+    background-color: #3b82f6; // Màu xanh dương
+  }
+
+  &--completed {
+    background-color: #22c55e; // Màu xanh lá
+  }
+
+  &--cancelled {
+    background-color: #ef4444; // Màu đỏ
+  }
+}

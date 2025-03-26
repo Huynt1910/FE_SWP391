@@ -204,6 +204,132 @@
       color: #94a3b8;
     }
   }
+
+  // Bảng dịch vụ
+  &__table {
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th,
+      td {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 14px;
+        color: #1e293b;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      th {
+        background: #f8fafc;
+        font-weight: 600;
+        color: #475569;
+        white-space: nowrap;
+
+        &:hover {
+          background: #f1f5f9;
+        }
+      }
+
+      td {
+        vertical-align: middle;
+
+        &.description-cell {
+          max-width: 300px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        &.price-cell {
+          text-align: right;
+          font-family: "Roboto Mono", monospace;
+        }
+
+        &.duration-cell {
+          text-align: center;
+          white-space: nowrap;
+        }
+      }
+
+      // Hình ảnh dịch vụ
+      .service-image {
+        width: 120px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        background-color: #f3f4f6;
+        display: block;
+
+        // Fallback image khi ảnh không load được
+        &:not([src]) {
+          content: url("/images/fallback-service.png");
+        }
+      }
+    }
+
+    // Responsive styles cho bảng
+    @media (max-width: 768px) {
+      table {
+        th,
+        td {
+          font-size: 12px;
+          padding: 8px;
+        }
+
+        .service-image {
+          width: 100px;
+          height: 60px;
+        }
+      }
+    }
+  }
+
+  // Nút hành động
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+
+    button {
+      padding: 6px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .edit-btn {
+      background: #e2e8f0;
+      color: #475569;
+
+      &:hover {
+        background: #cbd5e1;
+      }
+    }
+
+    .delete-btn {
+      background: #fee2e2;
+      color: #b91c1c;
+
+      &:hover {
+        background: #fecaca;
+      }
+    }
+
+    .restore-btn {
+      background: #dcfce7;
+      color: #15803d;
+
+      &:hover {
+        background: #bbf7d0;
+      }
+    }
+  }
 }
 
 // Add responsive styles

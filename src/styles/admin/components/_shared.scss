@@ -600,6 +600,127 @@
       }
     }
   }
+
+  // New Modal
+  &__modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+
+    &-content {
+      background: white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      padding: 24px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.3s ease;
+
+      &-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 16px;
+
+        h2 {
+          font-size: 20px;
+          font-weight: 600;
+          color: #1e293b;
+        }
+
+        .close-btn {
+          background: none;
+          border: none;
+          font-size: 20px;
+          cursor: pointer;
+          color: #64748b;
+
+          &:hover {
+            color: #1e293b;
+          }
+        }
+      }
+
+      &-body {
+        margin-top: 16px;
+
+        .invoice-info {
+          margin-bottom: 16px;
+
+          p {
+            margin: 4px 0;
+            font-size: 14px;
+            color: #475569;
+
+            strong {
+              color: #1e293b;
+            }
+          }
+        }
+
+        .invoice-services {
+          margin-top: 16px;
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+
+            th,
+            td {
+              padding: 8px;
+              text-align: left;
+              border-bottom: 1px solid #e2e8f0;
+            }
+
+            th {
+              background: #f8fafc;
+              font-weight: 600;
+            }
+          }
+        }
+
+        .invoice-total {
+          margin-top: 16px;
+          font-size: 16px;
+          font-weight: 600;
+          color: #1e293b;
+        }
+      }
+
+      &-footer {
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+
+        .btn-primary {
+          background: #3b82f6;
+          color: white;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+
+          &:hover {
+            background: #2563eb;
+          }
+
+          &:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
 }
 
 // Add navbar styles to admin layout section
@@ -747,6 +868,21 @@
       color: #1e293b;
     }
   }
+
+  &-outline {
+    background-color: transparent;
+    color: #64748b; // Màu xám nhạt
+    border: 1px solid #e2e8f0;
+
+    &:hover {
+      background-color: #f1f5f9;
+      color: #1e293b;
+    }
+  }
+
+  .btn-icon {
+    font-size: 16px;
+  }
 }
 
 // Add form styles
@@ -789,4 +925,167 @@
   border-radius: 4px;
   color: #b91c1c;
   font-size: 14px;
+}
+
+// Add new modal styles
+.admin-page__modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  &-content {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease;
+
+    &-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 16px;
+
+      h2 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1e293b;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #64748b;
+
+        &:hover {
+          color: #1e293b;
+        }
+      }
+    }
+
+    &-footer {
+      margin-top: 16px;
+      display: flex;
+      justify-content: flex-end;
+
+      .btn-primary {
+        background: #3b82f6;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+
+        &:hover {
+          background: #2563eb;
+        }
+
+        &:disabled {
+          background: #94a3b8;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// Add form control styles
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1e293b;
+  transition: all 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+}
+
+// Nút hành động
+.btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &-primary {
+    background-color: #3b82f6; // Màu xanh dương
+    color: #ffffff;
+
+    &:hover {
+      background-color: #2563eb;
+    }
+  }
+
+  &-success {
+    background-color: #22c55e; // Màu xanh lá
+    color: #ffffff;
+
+    &:hover {
+      background-color: #16a34a;
+    }
+  }
+
+  &-secondary {
+    background-color: #94a3b8; // Màu xám
+    color: #ffffff;
+
+    &:hover {
+      background-color: #64748b;
+    }
+  }
+
+  &-danger {
+    background-color: #ef4444; // Màu đỏ
+    color: #ffffff;
+
+    &:hover {
+      background-color: #dc2626;
+    }
+  }
+
+  &-outline {
+    background-color: transparent;
+    color: #64748b; // Màu xám nhạt
+    border: 1px solid #e2e8f0;
+
+    &:hover {
+      background-color: #f1f5f9;
+      color: #1e293b;
+    }
+  }
+
+  .btn-icon {
+    font-size: 16px;
+  }
+
+  &:disabled {
+    background-color: #e5e7eb; // Màu xám nhạt
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
 }

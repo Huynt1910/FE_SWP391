@@ -6,12 +6,13 @@ import { toast } from "react-toastify";
 
 export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
   const token = getCookie("token");
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient(); // Lấy queryClient từ react-query
 
   const authHeaders = {
     Authorization: `Bearer ${token}`,
   };
 
+  // Tạo booking
   const createBookingStaff = useMutation({
     mutationFn: async (bookingData) => {
       const response = await APIClient.invoke({
@@ -23,13 +24,14 @@ export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
     },
     onSuccess: () => {
       toast.success("Thêm lịch hẹn thành công!");
-      queryClient.invalidateQueries(["bookings"]);
+      queryClient.invalidateQueries(["bookings"]); // Làm mới danh sách booking
     },
     onError: (error) => {
       toast.error(error.message || "Có lỗi khi thêm lịch hẹn!");
     },
   });
 
+  // Cập nhật booking
   const updateBooking = useMutation({
     mutationFn: async ({ id, data }) => {
       const response = await APIClient.invoke({
@@ -42,13 +44,14 @@ export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
     },
     onSuccess: () => {
       toast.success("Cập nhật thành công!");
-      queryClient.invalidateQueries(["bookings"]);
+      queryClient.invalidateQueries(["bookings"]); // Làm mới danh sách booking
     },
     onError: (error) => {
       toast.error(error.message || "Có lỗi khi cập nhật!");
     },
   });
 
+  // Check-in booking
   const checkInBooking = useMutation({
     mutationFn: async (bookingId) => {
       const response = await APIClient.invoke({
@@ -60,13 +63,14 @@ export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
     },
     onSuccess: () => {
       toast.success("Check-in thành công!");
-      queryClient.invalidateQueries(["bookings"]);
+      queryClient.invalidateQueries(["bookings"]); // Làm mới danh sách booking
     },
     onError: (error) => {
       toast.error(error.message || "Có lỗi khi check-in!");
     },
   });
 
+  // Hoàn tất booking
   const completeBooking = async (bookingId) => {
     try {
       const response = await APIClient.invoke({
@@ -74,12 +78,14 @@ export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
         pathParams: { id: bookingId },
         headers: authHeaders,
       });
+      queryClient.invalidateQueries(["bookings"]); // Làm mới danh sách booking
       return response.result;
     } catch (error) {
       toast.error("Có lỗi khi hoàn thành dịch vụ!");
     }
   };
 
+  // Thanh toán booking
   const checkoutBooking = async (bookingId) => {
     try {
       const response = await APIClient.invoke({
@@ -89,6 +95,7 @@ export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
       });
 
       if (response.success) {
+        queryClient.invalidateQueries(["bookings"]); // Làm mới danh sách booking
         return response;
       } else {
         throw new Error(response.message || "Có lỗi khi thanh toán!");

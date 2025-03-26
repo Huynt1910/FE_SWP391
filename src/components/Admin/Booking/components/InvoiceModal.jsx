@@ -2,33 +2,37 @@ import React, { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
 
-const InvoiceModal = ({ data, onCheckout }) => {
+const InvoiceModal = ({ data, onCheckout, onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (!data) return null;
 
   const formattedDate = data.bookingDate
     ? format(new Date(data.bookingDate), "dd/MM/yyyy")
-    : "N/A"; // Fallback nếu bookingDate không hợp lệ
+    : "N/A";
 
   const handleCheckout = async () => {
-    setIsProcessing(true); // Hiển thị trạng thái loading
+    setIsProcessing(true);
     try {
-      await onCheckout(data.bookingId); // Gọi hàm onCheckout với bookingId
+      await onCheckout(data.bookingId);
       toast.success("Thanh toán thành công!");
+      onClose();
     } catch (error) {
       console.error("Error during checkout:", error);
       toast.error("Lỗi khi thực hiện thanh toán!");
     } finally {
-      setIsProcessing(false); // Tắt trạng thái loading
+      setIsProcessing(false);
     }
   };
 
   return (
     <div className="admin-page__modal">
-      <div className="admin-page__modal-content">
+      <div className="admin-page__modal-content invoice-modal">
         <div className="admin-page__modal-header">
           <h2>Hóa đơn dịch vụ</h2>
+          <button className="close-btn" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <div className="admin-page__modal-body">
@@ -65,11 +69,7 @@ const InvoiceModal = ({ data, onCheckout }) => {
                       <img
                         src={service.image}
                         alt={service.serviceName}
-                        style={{
-                          width: "50px",
-                          height: "50px",
-                          objectFit: "cover",
-                        }}
+                        className="service-image"
                       />
                     </td>
                     <td>{service.price?.toLocaleString() || "0"}đ</td>
@@ -98,9 +98,9 @@ const InvoiceModal = ({ data, onCheckout }) => {
           <button
             className="btn btn-primary"
             onClick={handleCheckout}
-            disabled={isProcessing} // Vô hiệu hóa nút khi đang xử lý
+            disabled={isProcessing}
           >
-            {isProcessing ? "Đang xử lý..." : "Thanh toán tiền mặt"}
+            {isProcessing ? "Đang xử lý..." : "✅ Xác nhận thanh toán"}
           </button>
         </div>
       </div>

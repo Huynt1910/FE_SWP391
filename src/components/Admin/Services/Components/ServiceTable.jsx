@@ -20,9 +20,9 @@ const ServiceTable = ({ services, onEdit, onToggleStatus }) => {
           <tr>
             <th>Hình ảnh</th>
             <th>Tên dịch vụ</th>
-            <th>Mô tả</th>
-            <th>Giá</th>
-            <th>Thời gian</th>
+            <th className="description-cell">Mô tả</th>
+            <th className="price-cell">Giá</th>
+            <th className="duration-cell">Thời gian</th>
             <th>Phân loại</th>
             <th>Trạng thái</th>
             <th>Thao tác</th>
@@ -43,8 +43,8 @@ const ServiceTable = ({ services, onEdit, onToggleStatus }) => {
               </td>
               <td>{service.serviceName}</td>
               <td className="description-cell">{service.description}</td>
-              <td>{formatPrice(service.price)}</td>
-              <td>{service.duration} phút</td>
+              <td className="price-cell">{formatPrice(service.price)}</td>
+              <td className="duration-cell">{service.duration} phút</td>
               <td>{service.category}</td>
               <td>
                 <span

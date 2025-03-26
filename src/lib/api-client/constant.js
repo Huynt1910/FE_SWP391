@@ -360,6 +360,11 @@ export const END_POINTS = {
     method: "PUT",
     secure: true,
   },
+  createUserByStaff: {
+    path: "/staffs/customer",
+    method: "POST",
+    secure: true,
+  },
 };
 
 export const ACTIONS = {
@@ -430,6 +435,7 @@ export const ACTIONS = {
   RESET_USER_PASSWORD: "resetUserPassword",
   CHECKOUT_BOOKING: "checkOutBooking",
   UPDATE_BOOKING: "updateBooking",
+  CREATE_USER_BY_STAFF: "createUserByStaff",
   // Separate voucher actions
   GET_ALL_VOUCHERS: "getAllVouchers",
   GET_ACTIVE_VOUCHERS: "getActiveVouchers",

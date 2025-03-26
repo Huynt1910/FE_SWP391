@@ -16,7 +16,7 @@ import BookingTable from "./components/BookingTable";
 import BookingAddModal from "./components/BookingAddModal";
 import InvoiceModal from "./components/InvoiceModal";
 
-const Bookings = () => {
+const BookingSchedule = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const formattedDate = useMemo(
     () => selectedDate.toISOString().split("T")[0],
@@ -46,9 +46,12 @@ const Bookings = () => {
   const { therapists } = useTherapistActions();
   const { vouchers } = useVoucherActions();
 
-  const handleDateChange = useCallback((date) => {
-    setSelectedDate(date);
-  }, []);
+  const handleDateChange = (date) => {
+    // Đặt thời gian về 00:00:00 để tránh lệch ngày
+    const adjustedDate = new Date(date);
+    adjustedDate.setHours(0, 0, 0, 0);
+    setSelectedDate(adjustedDate);
+  };
 
   const handleCheckIn = useCallback(
     async (bookingId) => {
@@ -123,15 +126,17 @@ const Bookings = () => {
           <DatePicker
             selected={selectedDate}
             onChange={handleDateChange}
-            dateFormat="yyyy-MM-dd"
-            className="date-picker"
+            dateFormat="dd/MM/yyyy"
+            minDate={new Date()}
+            className="form-control"
+            placeholderText="Chọn ngày"
           />
           <button
-            className="btn-primary"
+            className="btn btn-primary"
             onClick={() => setIsAddModalOpen(true)}
           >
             <FaCalendarPlus className="btn-icon" />
-            <span>Thêm Lịch hẹn</span>
+            Thêm Lịch hẹn
           </button>
         </div>
       </div>
@@ -170,4 +175,4 @@ const Bookings = () => {
   );
 };
 
-export default Bookings;
+export default BookingSchedule;

@@ -66,7 +66,7 @@ const Sidebar = ({ isCollapsed }) => {
       label: "Quản lý lịch làm việc",
       path: "/admin/schedules",
       icon: <FaClock />,
-      roles: ["ADMIN", "STAFF", "THERAPIST"],
+      roles: ["ADMIN", "STAFF"],
     },
     {
       label: "Quản lý dịch vụ",

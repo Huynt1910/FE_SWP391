@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaSpinner, FaCog } from "react-icons/fa";
+import { FaSpinner, FaPlus } from "react-icons/fa";
 import { useServiceActions } from "@/auth/hook/admin/useServiceActionsHook";
 import { toast } from "react-toastify";
 import ServiceTable from "./Components/ServiceTable";
@@ -12,6 +12,7 @@ const Services = () => {
     edit: false,
     add: false,
   });
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const {
     services,
@@ -96,9 +97,12 @@ const Services = () => {
           <p>Quản lý và cập nhật các dịch vụ</p>
         </div>
         <div className="admin-page__header-actions">
-          <button className="btn-primary" onClick={() => openModal("add")}>
-            <FaCog className="btn-icon" />
-            <span>Thêm Dịch vụ</span>
+          <button
+            className="btn btn-primary"
+            onClick={() => setIsAddModalOpen(true)}
+          >
+            <FaPlus className="btn-icon" />
+            Thêm Dịch vụ
           </button>
         </div>
       </div>
@@ -109,9 +113,9 @@ const Services = () => {
         onToggleStatus={handleToggleStatus}
       />
 
-      {modalState.add && (
+      {isAddModalOpen && (
         <ServiceAddModal
-          onClose={() => closeModal("add")}
+          onClose={() => setIsAddModalOpen(false)}
           onConfirm={handleAddConfirm}
         />
       )}
