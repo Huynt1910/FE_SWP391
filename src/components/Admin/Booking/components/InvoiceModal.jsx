@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
+import { isOnline } from "@/utils/network";
+import { showNetworkErrorToast } from "@/utils/toast";
 
 const InvoiceModal = ({ data, onCheckout, onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -12,6 +14,12 @@ const InvoiceModal = ({ data, onCheckout, onClose }) => {
     : "N/A";
 
   const handleCheckout = async () => {
+    // Check for internet connection first
+    if (!isOnline()) {
+      showNetworkErrorToast();
+      return;
+    }
+    
     setIsProcessing(true);
     try {
       await onCheckout(data.bookingId);
@@ -19,17 +27,38 @@ const InvoiceModal = ({ data, onCheckout, onClose }) => {
       onClose();
     } catch (error) {
       console.error("Error during checkout:", error);
-      toast.error("Lỗi khi thực hiện thanh toán!");
+      // Check if it's a network error
+      if (error.isOffline || error.message?.includes("network") || 
+          error.message?.includes("internet") || error.message?.includes("connection")) {
+        showNetworkErrorToast();
+      } else {
+        toast.error("Lỗi khi thực hiện thanh toán!");
+      }
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Generate a service icon based on service name
+  const getServiceIcon = (serviceName) => {
+    if (!serviceName) return "🔹";
+    
+    const name = serviceName.toLowerCase();
+    if (name.includes("massage")) return "💆";
+    if (name.includes("facial") || name.includes("face")) return "👩";
+    if (name.includes("hair") || name.includes("tóc")) return "💇";
+    if (name.includes("nail") || name.includes("móng")) return "💅";
+    if (name.includes("spa")) return "🧖";
+    if (name.includes("stress") || name.includes("relax")) return "🧘";
+    if (name.includes("package")) return "📦";
+    return "✨"; // Default icon
   };
 
   return (
     <div className="admin-page__modal">
       <div className="admin-page__modal-content invoice-modal">
         <div className="admin-page__modal-header">
-          <h2>Hóa đơn dịch vụ</h2>
+          <h2>Hóa Đơn Dịch Vụ</h2>
           <button className="close-btn" onClick={onClose}>
             ×
           </button>
@@ -37,66 +66,63 @@ const InvoiceModal = ({ data, onCheckout, onClose }) => {
 
         <div className="admin-page__modal-body">
           <div className="invoice-info">
-            <p>
-              <strong>Mã đơn:</strong> {data.bookingId}
-            </p>
-            <p>
-              <strong>Ngày:</strong> {formattedDate}
-            </p>
-            <p>
-              <strong>Khách hàng:</strong> {data.customerName || "N/A"}
-            </p>
-            <p>
-              <strong>Nhân viên:</strong> {data.stylistName || "N/A"}
-            </p>
+            <div className="invoice-info__item">
+              <span className="invoice-info__label">Mã đơn:</span>
+              <span className="invoice-info__value">{data.bookingId}</span>
+            </div>
+            <div className="invoice-info__item">
+              <span className="invoice-info__label">Ngày:</span>
+              <span className="invoice-info__value">{formattedDate}</span>
+            </div>
+            <div className="invoice-info__item">
+              <span className="invoice-info__label">Khách hàng:</span>
+              <span className="invoice-info__value">{data.customerName || "N/A"}</span>
+            </div>
+            <div className="invoice-info__item">
+              <span className="invoice-info__label">Nhân viên:</span>
+              <span className="invoice-info__value">{data.stylistName || "N/A"}</span>
+            </div>
           </div>
 
           <div className="invoice-services">
-            <h3>Dịch vụ đã sử dụng</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Dịch vụ</th>
-                  <th>Hình ảnh</th>
-                  <th>Giá tiền</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.services?.map((service, index) => (
-                  <tr key={index}>
-                    <td>{service.serviceName || "N/A"}</td>
-                    <td>
-                      <img
-                        src={service.image}
-                        alt={service.serviceName}
-                        className="service-image"
-                      />
-                    </td>
-                    <td>{service.price?.toLocaleString() || "0"}đ</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <h3>Dịch Vụ Đã Sử Dụng</h3>
+            <div className="service-list">
+              {data.services?.map((service, index) => (
+                <div className="service-item" key={index}>
+                  <div className="service-item__info">
+                    <div className="service-item__icon">
+                      {getServiceIcon(service.serviceName)}
+                    </div>
+                    <div className="service-item__name">
+                      {service.serviceName || "N/A"}
+                    </div>
+                  </div>
+                  <div className="service-item__price">
+                    {service.price?.toLocaleString() || "0"}đ
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {data.voucher && (
             <div className="invoice-voucher">
-              <p>
-                <strong>Voucher áp dụng:</strong> {data.voucher}
-              </p>
+              <span className="invoice-voucher__label">Voucher áp dụng:</span>
+              <span className="invoice-voucher__value">{data.voucher}</span>
             </div>
           )}
 
           <div className="invoice-total">
-            <h3>
-              Tổng thanh toán: {data.totalAmount?.toLocaleString() || "0"}đ
-            </h3>
+            <span className="invoice-total__label">Tổng Thanh Toán:</span>
+            <span className="invoice-total__value">
+              {data.totalAmount?.toLocaleString() || "0"}đ
+            </span>
           </div>
         </div>
 
         <div className="admin-page__modal-footer">
           <button
-            className="btn btn-primary"
+            className={`btn-checkout ${isProcessing ? 'processing' : ''}`}
             onClick={handleCheckout}
             disabled={isProcessing}
           >

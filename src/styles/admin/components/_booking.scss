@@ -1,5 +1,9 @@
 .invoice-modal {
   .admin-page__modal-header {
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    
     h2 {
       font-family: "Inter", sans-serif;
       font-size: 20px;
@@ -8,75 +12,205 @@
     }
   }
 
+  .admin-page__modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 8px;
+    
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 10px;
+    }
+  }
+
   .invoice-info {
-    margin-bottom: 16px;
-
-    p {
-      margin: 4px 0;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    
+    &__item {
+      display: flex;
+      margin: 6px 0;
       font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    &__label {
+      flex: 0 0 100px;
+      font-weight: 600;
       color: #475569;
-
-      strong {
-        color: #1e293b;
-      }
+    }
+    
+    &__value {
+      flex: 1;
+      color: #1e293b;
     }
   }
 
   .invoice-services {
-    margin-top: 16px;
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-
-      th,
-      td {
-        padding: 8px;
-        text-align: left;
-        border-bottom: 1px solid #e2e8f0;
+    margin-top: 24px;
+    
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .service-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .service-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background-color: #f8fafc;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background-color: #f1f5f9;
       }
-
-      th {
-        background: #f8fafc;
-        font-weight: 600;
+      
+      &__info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
       }
-
-      .service-image {
-        width: 60px;
+      
+      &__icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
         height: 40px;
-        object-fit: cover;
+        background-color: #e0f2fe;
         border-radius: 8px;
+        font-size: 22px;
+      }
+      
+      &__name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1e293b;
+      }
+      
+      &__price {
+        font-size: 15px;
+        font-weight: 600;
+        color: #0f766e;
       }
     }
   }
 
+  .invoice-voucher {
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #fef3c7;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    
+    &__label {
+      margin-right: 8px;
+      font-weight: 600;
+      color: #92400e;
+    }
+    
+    &__value {
+      color: #92400e;
+      font-weight: 500;
+    }
+  }
+
   .invoice-total {
-    margin-top: 16px;
-    font-size: 16px;
-    font-weight: 600;
-    color: #1e293b;
+    margin-top: 24px;
+    padding: 16px;
+    background-color: #f0f9ff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    &__label {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0c4a6e;
+    }
+    
+    &__value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0369a1;
+    }
   }
 
   .admin-page__modal-footer {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
     display: flex;
     justify-content: flex-end;
-
-    .btn-primary {
-      background: #3b82f6;
+    
+    .btn-checkout {
+      background: #10b981;
       color: white;
       padding: 10px 20px;
       border-radius: 8px;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-
+      border: none;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      
       &:hover {
-        background: #2563eb;
+        background: #059669;
       }
-
-      &:disabled {
+      
+      &:active {
+        transform: translateY(1px);
+      }
+      
+      &:disabled, &.processing {
         background: #94a3b8;
         cursor: not-allowed;
+      }
+      
+      &.processing::after {
+        content: "";
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #ffffff;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spinner 0.6s linear infinite;
+        margin-left: 8px;
+      }
+    }
+    
+    @keyframes spinner {
+      to {
+        transform: rotate(360deg);
       }
     }
   }
