@@ -130,3 +130,22 @@
     background-color: #ef4444; // Màu đỏ
   }
 }
+
+.action-btn.cancel {
+  background-color: #f87171; // Màu đỏ
+  color: #ffffff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #ef4444; // Màu đỏ đậm hơn khi hover
+  }
+
+  &:disabled {
+    background-color: #fca5a5; // Màu đỏ nhạt khi disabled
+    cursor: not-allowed;
+  }
+}

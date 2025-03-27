@@ -1,10 +1,17 @@
 import React, { useMemo, useState } from "react";
-import { FaEdit, FaCheck, FaPrint, FaSpinner } from "react-icons/fa";
+import {
+  FaEdit,
+  FaCheck,
+  FaPrint,
+  FaSpinner,
+  FaTimesCircle,
+} from "react-icons/fa";
 import { format } from "date-fns";
 import InvoiceModal from "./InvoiceModal";
 import { toast } from "react-toastify";
 import EditBookingModal from "./EditBookingModal";
 import { useSlotActions } from "@/auth/hook/admin/useSlotActions";
+import { useCancelBooking } from "@/auth/hook/admin/useCancelBooking";
 
 const BookingTable = ({
   bookings,
@@ -15,6 +22,7 @@ const BookingTable = ({
   onCheckIn,
   onComplete,
 }) => {
+  const { mutate: cancelBooking, isLoading: isCancelling } = useCancelBooking();
   const [showInvoice, setShowInvoice] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [processingId, setProcessingId] = useState(null);
@@ -82,10 +90,8 @@ const BookingTable = ({
     setProcessingId(bookingId);
     try {
       await onCheckIn(bookingId); // Chỉ gọi API, không show hóa đơn
-      toast.success("Check-in thành công!");
     } catch (error) {
       console.error("Error during check-in:", error);
-      toast.error("Lỗi khi thực hiện check-in!");
     } finally {
       setProcessingId(null);
     }
@@ -101,7 +107,6 @@ const BookingTable = ({
       }
     } catch (error) {
       console.error("Error completing booking:", error);
-      toast.error("Lỗi khi hoàn tất booking!");
     } finally {
       setProcessingId(null);
     }
@@ -109,10 +114,20 @@ const BookingTable = ({
 
   const handleEdit = (booking) => {
     if (booking.status !== "PENDING") {
-      toast.error("Chỉ có thể chỉnh sửa lịch hẹn ở trạng thái Pending!");
       return;
     }
     setEditingBooking(booking);
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    setProcessingId(bookingId);
+    try {
+      await cancelBooking(bookingId);
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   const getActionButton = (booking) => {
@@ -127,13 +142,22 @@ const BookingTable = ({
     switch (booking.status) {
       case "PENDING":
         return (
-          <button
-            className="action-btn checkin"
-            onClick={() => handleCheckIn(booking.id)}
-            title="Check-in"
-          >
-            <FaCheck />
-          </button>
+          <>
+            <button
+              className="action-btn cancel"
+              onClick={() => handleCancelBooking(booking.id)}
+              title="Hủy lịch hẹn"
+            >
+              <FaTimesCircle />
+            </button>
+            <button
+              className="action-btn checkin"
+              onClick={() => handleCheckIn(booking.id)}
+              title="Check-in"
+            >
+              <FaCheck />
+            </button>
+          </>
         );
 
       case "IN_PROGRESS":

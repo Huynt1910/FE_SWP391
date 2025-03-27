@@ -59,7 +59,7 @@ export const Login = () => {
             router.push("/admin/dashboard");
             break;
           case ROLES.STAFF:
-            router.push("/admin/bookings");
+            router.push("/admin/dashboard");
             break;
           case ROLES.THERAPIST:
             router.push("/admin/therapist-schedule");

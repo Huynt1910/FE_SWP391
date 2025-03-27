@@ -14,6 +14,7 @@ const PAGE_ACCESS = {
   "/admin/feedback": ["THERAPIST"],
   "/admin/therapist-schedule": ["THERAPIST"],
   "/admin/therapist-profile": ["THERAPIST"],
+  "/admin/staff-profile": ["STAFF"],
 };
 
 export const AuthGuard = ({ children, requiredRole }) => {

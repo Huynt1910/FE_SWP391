@@ -1,24 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { APIClient } from "@/lib/api-client";
 import { ACTIONS } from "@/lib/api-client/constant";
 import { getCookie } from "cookies-next";
 
-export const useStaffInfo = () => {
+export const useChangePassword = () => {
   const token = getCookie("token");
 
-  return useQuery({
-    queryKey: ["staffInfo"], // Key này phải khớp với key trong invalidateQueries
-    queryFn: async () => {
+  return useMutation({
+    mutationFn: async (data) => {
       const response = await APIClient.invoke({
-        action: ACTIONS.GET_STAFF_INFO,
+        action: ACTIONS.CHANGE_PASSWORD_STAFF,
         headers: { Authorization: `Bearer ${token}` },
+        data,
       });
 
       if (response && response.success === true) {
         return response.result;
       }
 
-      throw new Error(response.message || "Lỗi khi lấy thông tin staff");
+      throw new Error(response.message || "Lỗi khi đổi mật khẩu");
     },
   });
 };

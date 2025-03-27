@@ -15,7 +15,7 @@ export const TherapistProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="admin-page__loading">
+      <div className="loading-container">
         <p>Đang tải thông tin...</p>
       </div>
     );
@@ -23,78 +23,70 @@ export const TherapistProfile = () => {
 
   if (error) {
     return (
-      <div className="admin-page__error">
+      <div className="error-container">
         <p>Có lỗi xảy ra khi tải thông tin</p>
       </div>
     );
   }
 
   return (
-    <div className="therapist-profile">
-      <div className="profile-card">
-        {/* Cột trái */}
-        <div className="profile-card__left">
-          <div className="profile-avatar">
-            <Image
-              src={therapist.imgUrl || "/default-avatar.png"}
-              alt={therapist.fullName}
-              width={150}
-              height={150}
-              className="avatar-image"
-            />
-          </div>
-          <div className="profile-info">
-            <h1 className="profile-name">{therapist.fullName}</h1>
-            <span className="profile-role">Therapist</span>
-          </div>
+    <div className="profile-container">
+      <div className="profile-header">
+        <div className="profile-avatar">
+          <Image
+            src={therapist.imgUrl || "/default-avatar.png"}
+            alt={therapist.fullName}
+            width={150}
+            height={150}
+            className="avatar-image"
+          />
         </div>
+        <h2>{therapist.fullName}</h2>
+        <span className="role-badge">Therapist</span>
+      </div>
 
-        {/* Cột phải */}
-        <div className="profile-card__right">
-          <div className="profile-details">
-            <div className="detail-item">
-              <FaEnvelope className="detail-icon" />
-              <div>
-                <label>Email</label>
-                <span>{therapist.email}</span>
-              </div>
+      <div className="profile-content">
+        <div className="info-group">
+          <div className="info-item">
+            <FaEnvelope className="info-icon" />
+            <div className="info-text">
+              <label>Email</label>
+              <p>{therapist.email}</p>
             </div>
-            <div className="detail-item">
-              <FaPhone className="detail-icon" />
-              <div>
-                <label>Số điện thoại</label>
-                <span>{therapist.phone}</span>
-              </div>
+          </div>
+          <div className="info-item">
+            <FaPhone className="info-icon" />
+            <div className="info-text">
+              <label>Số điện thoại</label>
+              <p>{therapist.phone}</p>
             </div>
-            <div className="detail-item">
-              <FaMapMarkerAlt className="detail-icon" />
-              <div>
-                <label>Địa chỉ</label>
-                <span>{therapist.address}</span>
-              </div>
+          </div>
+          <div className="info-item">
+            <FaMapMarkerAlt className="info-icon" />
+            <div className="info-text">
+              <label>Địa chỉ</label>
+              <p>{therapist.address}</p>
             </div>
-            <div className="detail-item">
-              <FaVenusMars className="detail-icon" />
-              <div>
-                <label>Giới tính</label>
-                <span>{therapist.gender}</span>
-              </div>
+          </div>
+          <div className="info-item">
+            <FaVenusMars className="info-icon" />
+            <div className="info-text">
+              <label>Giới tính</label>
+              <p>{therapist.gender}</p>
             </div>
-            <div className="detail-item">
-              <FaBirthdayCake className="detail-icon" />
-              <div>
-                <label>Ngày sinh</label>
-                <span>
-                  {new Date(therapist.birthDate).toLocaleDateString("vi-VN")}
-                </span>
-              </div>
+          </div>
+          <div className="info-item">
+            <FaBirthdayCake className="info-icon" />
+            <div className="info-text">
+              <label>Ngày sinh</label>
+              <p>{new Date(therapist.birthDate).toLocaleDateString("vi-VN")}</p>
             </div>
-            <div className="detail-item">
-              <FaMedal className="detail-icon" />
-              <div>
-                <label>Kinh nghiệm</label>
-                <span>{therapist.yearExperience} năm</span>
-              </div>
+          </div>
+          <div className="info-item">
+            <FaMedal className="info-icon" />
+            <div className="info-text">
+              <label>Kinh nghiệm</label>
+              <p>{therapist.yearExperience} năm</p>
             </div>
           </div>
         </div>

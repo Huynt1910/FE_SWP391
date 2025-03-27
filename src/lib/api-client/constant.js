@@ -128,9 +128,8 @@ export const END_POINTS = {
   getAllStaffs: { path: "/staffs", method: "GET", secure: true },
   createStaff: { path: "/staffs", method: "POST", secure: true },
   updateStaff: {
-    path: "/staffs/update/:id",
+    path: "/staffs/update/{staffId}",
     method: "PUT",
-    parameterized: true,
     secure: true,
   },
   deactivateStaff: {
@@ -156,6 +155,11 @@ export const END_POINTS = {
   getStaffInfo: {
     path: "/staffs/staffInfo",
     method: "GET",
+    secure: true,
+  },
+  changePasswordStaff: {
+    path: "/staffs/change-password",
+    method: "PUT",
     secure: true,
   },
 
@@ -370,6 +374,11 @@ export const END_POINTS = {
     method: "POST",
     secure: true,
   },
+  cancelBooking: {
+    path: "/booking/delete/{id}",
+    method: "DELETE",
+    secure: true,
+  },
 };
 
 export const ACTIONS = {
@@ -416,6 +425,7 @@ export const ACTIONS = {
   ACTIVATE_STAFF: "activateStaff",
   RESET_STAFF_PASSWORD: "resetStaffPassword",
   GET_STAFF_INFO: "getStaffInfo",
+  CHANGE_PASSWORD_STAFF: "changePasswordStaff",
   //--------------- SCHEDULE ACTIONS ----------------
   GET_THERAPIST_SCHEDULE_BY_DATE: "getTherapistScheduleByDate",
   GET_THERAPIST_SCHEDULE_BY_MONTH: "getTherapistScheduleByMonth",
@@ -452,6 +462,7 @@ export const ACTIONS = {
 
   GET_THERAPIST_BY_DATE: "getTherapistByDate",
   CHECK_IN_BOOKING: "checkInBooking",
+  CANCEL_BOOKING: "cancelBooking",
 };
 
 export const ROLES = {

@@ -87,7 +87,6 @@ const BookingSchedule = () => {
         await createBookingStaff(bookingData);
         setIsAddModalOpen(false);
         queryClient.invalidateQueries(["bookings"]);
-        toast.success("Thêm lịch hẹn thành công!");
       } catch (error) {
         toast.error("Lỗi khi thêm lịch hẹn: " + error.message);
       }

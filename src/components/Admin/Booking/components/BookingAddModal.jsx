@@ -25,7 +25,6 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
     isLoading: loadingServices,
     error,
   } = useGetActiveService();
-  console.log("Dữ liệu dịch vụ trong modal:", services);
   const {
     therapists,
     loading: loadingTherapists,
@@ -33,7 +32,6 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
     checkTherapistAvailability,
   } = useCheckTherapistAvailability();
 
-  // ✅ Chọn nhiều dịch vụ
   const handleServiceChange = (serviceId) => {
     setFormData((prev) => {
       const updatedServices = prev.serviceId.includes(serviceId)
@@ -58,12 +56,10 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
       slotId: Number(slotId),
     };
 
-    console.log("📤 Payload gửi đến API:", payload);
-
     try {
       await checkTherapistAvailability(payload);
     } catch (error) {
-      console.error("❌ Lỗi khi kiểm tra therapist:", error);
+      console.error("Lỗi khi kiểm tra therapist:", error);
     }
   };
 

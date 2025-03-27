@@ -81,15 +81,15 @@ const Sidebar = ({ isCollapsed }) => {
       roles: ["ADMIN"],
     },
     {
-      label: "Đánh giá",
-      path: "/admin/feedback",
-      icon: <FaStar />,
-      roles: ["THERAPIST"],
-    },
-    {
       label: "Lịch làm việc của tôi",
       path: "/admin/therapist-schedule",
       icon: <FaCalendarAlt />,
+      roles: ["THERAPIST"],
+    },
+    {
+      label: "Đánh giá",
+      path: "/admin/feedback",
+      icon: <FaStar />,
       roles: ["THERAPIST"],
     },
     {

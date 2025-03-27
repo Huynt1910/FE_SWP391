@@ -1,6 +1,6 @@
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { AuthGuard } from "@/auth/AUTHGUARD/AuthGuard";
-import Settings from "@/components/Admin/Settings/Settings";
+import StaffProfile from "@/components/Admin/StaffProfile/Staffprofile";
 
 const breadcrumbsData = [
   {
@@ -20,7 +20,7 @@ const SettingsPage = () => {
         breadcrumb={breadcrumbsData}
         breadcrumbTitle="Thông tin cá nhân của staff"
       >
-        <Settings />
+        <StaffProfile />
       </AdminLayout>
     </AuthGuard>
   );
