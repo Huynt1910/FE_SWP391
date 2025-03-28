@@ -7,7 +7,7 @@ export const Banner = () => {
       <div className="main-block load-bg">
         <div className="wrapper">
           <div className="main-block__content">
-            <span className="saint-text">Professional</span>
+            <span className="saint-text" style={{ color: "#52d093" }}>Professional</span>
             <h1 className="main-text">Beauty &amp; Care</h1>
             <h2>✨ Fast – Convenient – Effective ✨</h2>
             <p>Start your skincare journey today!</p>

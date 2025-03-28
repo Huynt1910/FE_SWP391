@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ProfileAside } from "./ProfileAside/ProfileAside";
 import BookingListPending from "./BookingList/BookingListPending";
+import BookingListCompleted from "./BookingCompleted/BookingListCompleted";
 import { ProfileMyInfo } from "./ProfileMyInfo/ProfileMyInfo";
 
 export const Profile = () => {
@@ -26,13 +27,20 @@ export const Profile = () => {
                     onClick={() => setActiveTab("bookings")}
                     className={activeTab === "bookings" ? "active" : ""}
                   >
-                    My Booking 
+                    Pending Bookings
+                  </li>
+                  <li
+                    onClick={() => setActiveTab("completed")}
+                    className={activeTab === "completed" ? "active" : ""}
+                  >
+                    Completed Bookings
                   </li>
                 </ul>
 
                 <div className="box-tab-cont">
                   {activeTab === "myInfo" && <ProfileMyInfo />}
                   {activeTab === "bookings" && <BookingListPending />}
+                  {activeTab === "completed" && <BookingListCompleted />}
                 </div>
               </div>
             </div>

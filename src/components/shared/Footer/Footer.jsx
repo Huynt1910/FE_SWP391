@@ -67,7 +67,7 @@ export const Footer = () => {
                 </li>
                 <li>
                   <i className="icon-mail"></i>
-                  <a href="mailto:BamboSpa@gmai.com">BamboSpa@gmai.com</a>
+                  <a href="mailto:BamboSpa@gmail.com">BamboSpa@gmail.com</a>
                 </li>
               </ul>
             </div>

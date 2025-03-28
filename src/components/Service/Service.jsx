@@ -136,17 +136,9 @@ export const Service = () => {
   };
 
   // Handle service selection
-  const handleSelectService = (serviceId) => {
+  const handleSelectService = (serviceId, e) => {
+    e.stopPropagation();
     router.push(`/service/${serviceId}`);
-  };
-
-  // Toggle description expansion
-  const toggleDescription = (serviceId, e) => {
-    e.stopPropagation(); // Prevent triggering the card click
-    setExpandedDescriptions(prev => ({
-      ...prev,
-      [serviceId]: !prev[serviceId]
-    }));
   };
 
   // Handle booking
@@ -170,6 +162,20 @@ export const Service = () => {
 
   // Setup pagination
   const paginate = usePagination(filteredServices, 12);
+
+  // Toggle description expansion
+  const toggleDescription = (serviceId, e) => {
+    e.stopPropagation();
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [serviceId]: !prev[serviceId]
+    }));
+  };
+
+  // Check if description is expanded
+  const isDescriptionExpanded = (serviceId) => {
+    return !!expandedDescriptions[serviceId];
+  };
 
   // Create a function to render placeholder cards
   const renderPlaceholderCards = () => {
@@ -195,7 +201,11 @@ export const Service = () => {
 
   // Render service card
   const renderServiceCard = (service) => (
-    <div key={service.id} className="service-card">
+    <div 
+      key={service.id} 
+      className="service-card"
+      // onClick={(e) => handleSelectService(service.id, e)}
+    >
       <div className="service-card__image">
         <img 
           src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
@@ -210,28 +220,21 @@ export const Service = () => {
         {service.category && (
           <p className="service-card__category">{service.category}</p>
         )}
-        <div className="service-card__description-container">
-          <p className="service-card__description" style={{
-            maxHeight: expandedDescriptions[service.id] ? 'none' : '4.5em',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: expandedDescriptions[service.id] ? 'unset' : '3',
-            WebkitBoxOrient: 'vertical',
-          }}>
-            {service.description || "No description available."}
-          </p>
-          {service.description && service.description.length > 100 && (
-            <button 
-              className="service-card__btn"
-              onClick={(e) => toggleDescription(service.id, e)}
-            >
-              {expandedDescriptions[service.id] 
-                ? <>View less <FaAngleUp className="icon" /></> 
-                : <>View more <FaAngleDown className="icon" /></>}
-            </button>
-          )}
+        <div className={`service-card__description ${isDescriptionExpanded(service.id) ? 'expanded' : ''}`}>
+          {service.description || "No description available."}
         </div>
+        {service.description && service.description.length > 120 && (
+          <button 
+            className="service-card__toggle-btn"
+            onClick={(e) => toggleDescription(service.id, e)}
+          >
+            {isDescriptionExpanded(service.id) ? (
+              <>View Less <FaAngleUp className="icon" /></>
+            ) : (
+              <>View More <FaAngleDown className="icon" /></>
+            )}
+          </button>
+        )}
         <div className="service-card__bottom">
           <div className="service-card__details">
             <span className="service-card__price">{formatPrice(service.price)}</span>
@@ -245,24 +248,16 @@ export const Service = () => {
           <div className="service-card__actions">
             <button 
               className="service-card__btn"
-              onClick={(e) => handleBookService(service, e)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBookService(service, e);
+              }}
             >
               Book Now
             </button>
-            {/* <button 
-              className="service-card__cart-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                addToCart(service);
-                showToast(`Added ${service.name} to cart`, "success");
-              }}
-            >
-              <FaShoppingCart />
-            </button> */}
           </div>
         </div>
       </div>
-      <div className="service-card__overlay" onClick={() => handleSelectService(service.id)}></div>
     </div>
   );
 
@@ -322,7 +317,6 @@ export const Service = () => {
             {/* <!-- Service Aside --> */}
             <div className="shop-aside">
               <div className="box-field box-field__search">
-                {/* <FaSearch className="icon-search" /> */}
                 <input
                   type="search"
                   className="form-control"
@@ -401,6 +395,8 @@ export const Service = () => {
                       <h2 className="service-category__title">{category}</h2>
                       <div className="services-grid">
                         {categoryServices.map(renderServiceCard)}
+                        {/* Add additional placeholders to maintain proper grid layout */}
+                        {categoryServices.length === 1 && <div className="service-card service-card--empty"></div>}
                       </div>
                     </div>
                   ))
@@ -430,52 +426,6 @@ export const Service = () => {
         />
       </div>
       {/* <!-- SERVICE EOF   --> */}
-
-      <style jsx>{`
-        .service-category {
-          margin-bottom: 40px;
-          padding: 20px;
-          background: white;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .service-category:nth-child(odd) {
-          border-top: 4px solid #e2879d;
-        }
-
-        .service-category:nth-child(even) {
-          border-top: 4px solid #7facc8;
-        }
-
-        .service-category__title {
-          font-size: 24px;
-          color: #333;
-          margin-bottom: 20px;
-          padding-bottom: 10px;
-          border-bottom: 1px solid #eee;
-        }
-
-        .services-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 20px;
-        }
-
-        @media (max-width: 768px) {
-          .service-category {
-            padding: 15px;
-          }
-
-          .service-category__title {
-            font-size: 20px;
-          }
-
-          .services-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
     </div>
   );
 };

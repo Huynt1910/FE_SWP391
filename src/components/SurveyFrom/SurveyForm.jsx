@@ -664,6 +664,35 @@ function SurveyForm() {
     }
   };
 
+  // Determine the primary category of recommendations
+  const determinePrimaryCategory = (services) => {
+    if (!services || services.length === 0) return "Treatments";
+    
+    // Count occurrences of each category
+    const categoryCounts = {};
+    services.forEach(service => {
+      const category = service.category || 
+        (service.name?.toLowerCase().includes('massage') ? 'Body Treatments' : 
+         service.name?.toLowerCase().includes('therapy') ? 'Therapy' :
+         'Facial Treatments');
+      
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    });
+    
+    // Find the most common category
+    let maxCount = 0;
+    let primaryCategory = "Treatments";
+    
+    Object.entries(categoryCounts).forEach(([category, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        primaryCategory = category;
+      }
+    });
+    
+    return primaryCategory;
+  };
+
   // Render results
   const renderResults = () => {
     const surveyTitle = surveyType === 'skincare' ? 'Skin Analysis' : 'Spa Treatment Analysis';
@@ -703,7 +732,7 @@ function SurveyForm() {
         </div>
         
         <div className="recommended-services">
-          <h5>Recommended {categoryText} Based On Your Answers</h5>
+          <h5>Recommended {determinePrimaryCategory(recommendedServices)} Based On Your Answers</h5>
           
           {servicesLoading ? (
             <div className="loading-indicator">
@@ -733,71 +762,101 @@ function SurveyForm() {
             </div>
           ) : (
             <div className="service-recommendations">
-              {recommendedServices.slice(0, 2).map((service, index) => (
-                <div className="service-item" key={service.id || index}>
-                  <div className="service-image">
-                  <img 
-          src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
-          alt={service.name || "Service"} 
-          onError={(e) => {
-            e.target.src = "/assets/img/services/placeholder.jpg";
-          }}
-        />
-                  </div>
-                  <div className="service-content">
-                    <div className="service-name">{service.name}</div>
-                    <div className="service-category">{service.category}</div>
-                    <div className="service-description">{service.description}</div>
-                    <div className="service-meta">
-                      <div className="service-price">{service.price?.toLocaleString('vi-VN')} ₫</div>
-                      <div className="service-duration">
-                        <FaClock className="icon-clock" /> {service.duration?.replace(/:\d+$/, '').replace(':', 'h ')}m
-                      </div>
+              {recommendedServices.slice(0, 2).map((service, index) => {
+                // Determine the service category
+                const categoryName = service.category || 
+                  (service.name?.toLowerCase().includes('massage') ? 'Body Treatments' : 
+                   service.name?.toLowerCase().includes('therapy') ? 'Therapy' :
+                   'Facial Treatments');
+                 
+                // Determine category class for styling  
+                const categoryClass = 
+                  categoryName.toLowerCase().includes('body') ? 'category-body' :
+                  categoryName.toLowerCase().includes('massage') ? 'category-massage' :
+                  categoryName.toLowerCase().includes('therapy') ? 'category-therapy' :
+                  'category-facial';
+                
+                return (
+                  <div className="service-item" key={service.id || index}>
+                    <div className="service-image">
+                      <img 
+                        src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
+                        alt={service.name || "Service"} 
+                        onError={(e) => {
+                          e.target.src = "/assets/img/services/placeholder.jpg";
+                        }}
+                      />
                     </div>
-                    <button 
-                      className="book-now-btn"
-                      onClick={() => bookService(service)}
-                    >
-                      Book Now
-                    </button>
+                    <div className="service-content">
+                      <div className={`service-category ${categoryClass}`}>{categoryName}</div>
+                      <div className="service-name">{service.name}</div>
+                      <div className="service-description">{service.description}</div>
+                      <div className="service-meta">
+                        <div className="service-price">{service.price?.toLocaleString('vi-VN', {maximumFractionDigits: 0})} ₫</div>
+                        <div className="service-duration">
+                          <FaClock className="icon-clock" /> {service.duration?.replace(/:\d+$/, '').replace(':', 'h ')}m
+                        </div>
+                      </div>
+                      <button 
+                        className="book-now-btn"
+                        onClick={() => bookService(service)}
+                      >
+                        Book Now
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               
               {recommendedServices.length > 2 && (
                 <div className="additional-services">
                   <h6>Additional Recommended Services</h6>
                   
-                  {recommendedServices.slice(2).map((service, index) => (
-                    <div className="service-item" key={service.id || `additional-${index}`}>
-                       <div className="service-image">
-                  <img 
-          src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
-          alt={service.name || "Service"} 
-          onError={(e) => {
-            e.target.src = "/assets/img/services/placeholder.jpg";
-          }}
-        />
-                  </div>
-                      <div className="service-content">
-                        <div className="service-name">{service.name}</div>
-                        <div className="service-category">{service.category}</div>
-                        <div className="service-description">{service.description}</div>
-                        <div className="service-meta">
-                          <div className="service-price">{service.price?.toLocaleString('vi-VN')} ₫</div>
-                          <div className="service-duration">
-                            <FaClock className="icon-clock" /> {service.duration?.replace(/:\d+$/, '').replace(':', 'h ')}m
-                          </div>
+                  {recommendedServices.slice(2).map((service, index) => {
+                    // Determine the service category
+                    const categoryName = service.category || 
+                      (service.name?.toLowerCase().includes('massage') ? 'Body Treatments' : 
+                       service.name?.toLowerCase().includes('therapy') ? 'Therapy' :
+                       'Facial Treatments');
+                     
+                    // Determine category class for styling  
+                    const categoryClass = 
+                      categoryName.toLowerCase().includes('body') ? 'category-body' :
+                      categoryName.toLowerCase().includes('massage') ? 'category-massage' :
+                      categoryName.toLowerCase().includes('therapy') ? 'category-therapy' :
+                      'category-facial';
+                    
+                    return (
+                      <div className="service-item" key={service.id || `additional-${index}`}>
+                        <div className="service-image">
+                          <img 
+                            src={service.imgUrl || "/assets/img/services/placeholder.jpg"} 
+                            alt={service.name || "Service"} 
+                            onError={(e) => {
+                              e.target.src = "/assets/img/services/placeholder.jpg";
+                            }}
+                          />
                         </div>
-                        <button 
-                          className="book-now-btn"
-                          onClick={() => bookService(service)}
-                        >
-                          Book Now
-                        </button>
+                        <div className="service-content">
+                          <div className={`service-category ${categoryClass}`}>{categoryName}</div>
+                          <div className="service-name">{service.name}</div>
+                          <div className="service-description">{service.description}</div>
+                          <div className="service-meta">
+                            <div className="service-price">{service.price?.toLocaleString('vi-VN', {maximumFractionDigits: 0})} ₫</div>
+                            <div className="service-duration">
+                              <FaClock className="icon-clock" /> {service.duration?.replace(/:\d+$/, '').replace(':', 'h ')}m
+                            </div>
+                          </div>
+                          <button 
+                            className="book-now-btn"
+                            onClick={() => bookService(service)}
+                          >
+                            Book Now
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

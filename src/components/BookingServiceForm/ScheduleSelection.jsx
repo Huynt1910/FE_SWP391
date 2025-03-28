@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FaArrowLeft, FaArrowRight, FaCalendarAlt, FaClock, FaExclamationTriangle } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaArrowLeft, FaArrowRight, FaCalendarAlt, FaClock, FaExclamationTriangle, FaCalendarCheck } from 'react-icons/fa';
 
 const ScheduleSelection = ({ 
   selectedTherapist, 
@@ -14,7 +14,15 @@ const ScheduleSelection = ({
 }) => {
   const [sessionExpired, setSessionExpired] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [todayString, setTodayString] = useState('');
+  const [showCalendar, setShowCalendar] = useState(false);
 
+  // Set today's date string on component mount
+  useEffect(() => {
+    const today = new Date();
+    setTodayString(today.toISOString().split('T')[0]);
+  }, []);
+  
   // Get therapist name from different possible properties
   const getTherapistName = () => {
     if (!selectedTherapist) return 'Spa Will Choose Best Available Therapist';
@@ -64,6 +72,11 @@ const ScheduleSelection = ({
     }
   };
 
+  // Toggle calendar visibility
+  const toggleCalendar = () => {
+    setShowCalendar(!showCalendar);
+  };
+
   // Handle login redirect
   const handleLogin = () => {
     window.location.href = '/login';
@@ -75,7 +88,7 @@ const ScheduleSelection = ({
     
     try {
       const date = new Date(dateString);
-      const options = { weekday: 'short', month: 'short', day: 'numeric' };
+      const options = { weekday: 'long', month: 'long', day: 'numeric' };
       return date.toLocaleDateString('en-US', options);
     } catch (error) {
       console.error("Error formatting date:", error);
@@ -115,9 +128,14 @@ const ScheduleSelection = ({
     }
   };
 
+  // Check if a date is today
+  const isToday = (dateString) => {
+    return dateString === todayString;
+  };
+
   return (
     <div className="schedule-selection">
-      <h2 className="schedule-selection__title">Select Date & Time</h2>
+      <h2 className="schedule-selection__title">Select Time for Your Appointment</h2>
       
       {/* Session expired overlay */}
       {sessionExpired && (
@@ -147,34 +165,55 @@ const ScheduleSelection = ({
           </p>
         )}
       </div>
-      
-      <div className="schedule-selection__dates">
-        <h3><FaCalendarAlt className="icon" /> Available Dates</h3>
-        <div className="date-grid">
-          {availableDates && availableDates.length > 0 ? (
-            availableDates.map((dateObj) => (
-              <div
-                key={dateObj.date}
-                className={`date-card ${selectedDate === dateObj.date ? 'selected' : ''}`}
-                onClick={() => handleDateSelect(dateObj.date)}
-              >
-                <div className="date-weekday">{getDayOfWeek(dateObj.date)}</div>
-                <div className="date-number">{getDayNumber(dateObj.date)}</div>
-                <div className="date-month">{getMonthName(dateObj.date)}</div>
-              </div>
-            ))
-          ) : (
-            <div className="no-dates-message">
-              <p>No available dates found</p>
-              <p className="select-another">Please try again later</p>
-            </div>
-          )}
+
+      {selectedDate && (
+        <div className="schedule-selection__selected-date">
+          <div className="selected-date-info">
+            <FaCalendarCheck className="icon" />
+            <span>
+              {isToday(selectedDate) ? 'Today' : formatDate(selectedDate)}
+              {isToday(selectedDate) && ` (${formatDate(selectedDate)})`}
+            </span>
+          </div>
+          <button 
+            className="change-date-btn"
+            onClick={toggleCalendar}
+          >
+            Change Date
+          </button>
         </div>
-      </div>
+      )}
+      
+      {(showCalendar || !selectedDate) && (
+        <div className="schedule-selection__dates">
+          <h3><FaCalendarAlt className="icon" /> Available Dates</h3>
+          <div className="date-grid">
+            {availableDates && availableDates.length > 0 ? (
+              availableDates.map((dateObj) => (
+                <div
+                  key={dateObj.date}
+                  className={`date-card ${selectedDate === dateObj.date ? 'selected' : ''} ${isToday(dateObj.date) ? 'today' : ''}`}
+                  onClick={() => handleDateSelect(dateObj.date)}
+                >
+                  <div className="date-weekday">{getDayOfWeek(dateObj.date)}</div>
+                  <div className="date-number">{getDayNumber(dateObj.date)}</div>
+                  <div className="date-month">{getMonthName(dateObj.date)}</div>
+                  {isToday(dateObj.date) && <div className="date-today-indicator">Today</div>}
+                </div>
+              ))
+            ) : (
+              <div className="no-dates-message">
+                <p>No available dates found</p>
+                <p className="select-another">Please try again later</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       
       {selectedDate && (
         <div className="schedule-selection__times">
-          <h3><FaClock className="icon" /> Available Times for {formatDate(selectedDate)}</h3>
+          <h3><FaClock className="icon" /> Available Times</h3>
           {availableTimes && availableTimes.length > 0 ? (
             <div className="time-grid">
               {availableTimes.map((timeSlot) => (

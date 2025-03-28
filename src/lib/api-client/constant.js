@@ -244,6 +244,12 @@ export const END_POINTS = {
     parameterized: true,
     secure: true,
   },
+  getCustomerCompletedBookings: {
+    path: "/booking/customer/:userId/completed",
+    method: "GET",
+    parameterized: true,
+    secure: true,
+  },
   deleteBooking: {
     path: "/booking/delete/:bookingId",
     method: "DELETE",
@@ -448,6 +454,7 @@ export const ACTIONS = {
   GET_ALL_SLOTS: "getAllSlots",
   REFRESH_TOKEN: "refreshToken",
   GET_CUSTOMER_PENDING_BOOKINGS: "getCustomerPendingBookings",
+  GET_CUSTOMER_COMPLETED_BOOKINGS: "getCustomerCompletedBookings",
   DELETE_BOOKING: "deleteBooking",
   FINISH_BOOKING: "finishBooking",
   SUBMIT_FEEDBACK: "submitFeedback",

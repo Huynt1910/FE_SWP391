@@ -52,7 +52,7 @@ export const Info = () => {
             </div>
             <div className="info-blocks__item-text">
               {/* <span className="saint-text">About Us</span> */}
-              <h2>Benefits of Spa Treatmentse</h2>
+              <h2>Benefits of Spa Treatments</h2>
               <span className="info-blocks__item-descr">
               A spa day is more than just a luxury; it's a necessity for skin health and relaxation. 
               Spa treatments help detoxify the skin, improve circulation, and relieve stress.

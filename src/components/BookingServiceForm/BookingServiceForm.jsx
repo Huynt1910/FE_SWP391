@@ -201,6 +201,7 @@ export const BookingServiceForm = () => {
         // Generate dates for the next 7 days
         const dates = [];
         const today = new Date();
+        const todayString = today.toISOString().split('T')[0]; // Get today's date as YYYY-MM-DD
         
         for (let i = 0; i <= 7; i++) { // Changed to include today (i = 0)
           const date = new Date(today);
@@ -219,10 +220,29 @@ export const BookingServiceForm = () => {
         console.log(`Generated ${dates.length} available dates${selectedTherapist ? ` for therapist ${selectedTherapist.id}` : ''}`);
         setAvailableDates(dates);
         
-        // Clear any previously selected date and time
-        setSelectedDate("");
-        setSelectedTime("");
-        setSelectedSlot(null);
+        // Auto-select today's date when a therapist is selected
+        if (selectedTherapist) {
+          console.log(`Auto-selecting today's date: ${todayString}`);
+          setSelectedDate(todayString);
+          
+          // Clear any previously selected time
+          setSelectedTime("");
+          setSelectedSlot(null);
+          
+          // Immediately trigger fetch of available time slots for today
+          if (selectedServices.length > 0) {
+            console.log(`Auto-fetching available time slots for today (${todayString})`);
+            const serviceIds = selectedServices.map(service => service.id);
+            await getAvailableSlots(selectedTherapist.id, serviceIds, todayString);
+          }
+        } else if (!selectedDate) {
+          // If no therapist is selected and no date is selected yet, pre-select today
+          setSelectedDate(todayString);
+          
+          // Clear any previously selected time
+          setSelectedTime("");
+          setSelectedSlot(null);
+        }
         
       } catch (err) {
         console.error("Error setting up available dates:", err);
