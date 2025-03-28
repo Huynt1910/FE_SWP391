@@ -85,32 +85,32 @@ export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
     }
   };
 
-  // Thanh toán booking
-  const checkoutBooking = async (bookingId) => {
-    try {
-      const response = await APIClient.invoke({
-        action: ACTIONS.CHECKOUT_BOOKING,
-        pathParams: { id: bookingId },
-        headers: authHeaders,
-      });
+  // // Thanh toán booking
+  // const checkoutBooking = async (bookingId) => {
+  //   try {
+  //     const response = await APIClient.invoke({
+  //       action: ACTIONS.CHECKOUT_BOOKING,
+  //       pathParams: { id: bookingId },
+  //       headers: authHeaders,
+  //     });
 
-      if (response.success) {
-        queryClient.invalidateQueries(["bookings"]); // Làm mới danh sách booking
-        return response;
-      } else {
-        throw new Error(response.message || "Có lỗi khi thanh toán!");
-      }
-    } catch (error) {
-      console.error("Error during checkout:", error);
-      throw error;
-    }
-  };
+  //     if (response.success) {
+  //       queryClient.invalidateQueries(["bookings"]); // Làm mới danh sách booking
+  //       return response;
+  //     } else {
+  //       throw new Error(response.message || "Có lỗi khi thanh toán!");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error during checkout:", error);
+  //     throw error;
+  //   }
+  // };
 
   return {
     createBookingStaff: createBookingStaff.mutateAsync,
     updateBooking: updateBooking.mutateAsync,
     checkInBooking: checkInBooking.mutateAsync,
     completeBooking,
-    checkoutBooking,
+    // checkoutBooking,
   };
 };

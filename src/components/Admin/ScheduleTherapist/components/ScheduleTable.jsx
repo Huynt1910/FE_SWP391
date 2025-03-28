@@ -29,11 +29,11 @@ const ScheduleTable = ({ schedules, onEdit, onDelete }) => {
               <td>{format(new Date(schedule.workingDate), "dd/MM/yyyy")}</td>
               <td>
                 <span
-                  className={`status-badge status-badge--${
-                    schedule.shiftId[0] === 1 ? "morning" : "evening"
+                  className={`shift-badge shift-badge--${
+                    Number(schedule.shiftId) === 1 ? "morning" : "evening"
                   }`}
                 >
-                  {schedule.shiftId[0] === 1 ? "Ca sáng" : "Ca chiều"}
+                  {Number(schedule.shiftId) === 1 ? "Ca sáng" : "Ca chiều"}
                 </span>
               </td>
               <td>

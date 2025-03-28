@@ -3,9 +3,15 @@ import { format } from "date-fns";
 import { toast } from "react-toastify";
 import { isOnline } from "@/utils/network";
 import { showNetworkErrorToast } from "@/utils/toast";
+import { useCheckoutBooking } from "@/auth/hook/admin/useCheckoutBooking";
+import { usePayment } from "@/auth/hook/admin/usePayment";
 
-const InvoiceModal = ({ data, onCheckout, onClose }) => {
+const InvoiceModal = ({ data, onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isVNPayLoading, setIsVNPayLoading] = useState(false);
+
+  const checkoutMutation = useCheckoutBooking();
+  const paymentMutation = usePayment();
 
   if (!data) return null;
 
@@ -13,36 +19,45 @@ const InvoiceModal = ({ data, onCheckout, onClose }) => {
     ? format(new Date(data.bookingDate), "dd/MM/yyyy")
     : "N/A";
 
-  const handleCheckout = async () => {
-    // Check for internet connection first
+  const handleCashCheckout = async () => {
     if (!isOnline()) {
       showNetworkErrorToast();
       return;
     }
-    
+
     setIsProcessing(true);
     try {
-      await onCheckout(data.bookingId);
-      toast.success("Thanh toán thành công!");
+      await checkoutMutation.mutateAsync({ bookingId: data.bookingId });
       onClose();
     } catch (error) {
-      console.error("Error during checkout:", error);
-      // Check if it's a network error
-      if (error.isOffline || error.message?.includes("network") || 
-          error.message?.includes("internet") || error.message?.includes("connection")) {
-        showNetworkErrorToast();
-      } else {
-        toast.error("Lỗi khi thực hiện thanh toán!");
-      }
+      toast.error("Lỗi khi thanh toán tiền mặt!");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Generate a service icon based on service name
+  const handleVNPay = async () => {
+    if (!isOnline()) {
+      showNetworkErrorToast();
+      return;
+    }
+
+    setIsVNPayLoading(true);
+    try {
+      const qrUrl = await paymentMutation.mutateAsync(data.bookingId);
+      if (qrUrl) {
+        window.open(qrUrl, "_blank");
+        toast.info("Đã mở liên kết thanh toán VNPay");
+      }
+    } catch (error) {
+      toast.error("Lỗi khi tạo liên kết thanh toán!");
+    } finally {
+      setIsVNPayLoading(false);
+    }
+  };
+
   const getServiceIcon = (serviceName) => {
     if (!serviceName) return "🔹";
-    
     const name = serviceName.toLowerCase();
     if (name.includes("massage")) return "💆";
     if (name.includes("facial") || name.includes("face")) return "👩";
@@ -51,7 +66,7 @@ const InvoiceModal = ({ data, onCheckout, onClose }) => {
     if (name.includes("spa")) return "🧖";
     if (name.includes("stress") || name.includes("relax")) return "🧘";
     if (name.includes("package")) return "📦";
-    return "✨"; // Default icon
+    return "✨";
   };
 
   return (
@@ -76,11 +91,15 @@ const InvoiceModal = ({ data, onCheckout, onClose }) => {
             </div>
             <div className="invoice-info__item">
               <span className="invoice-info__label">Khách hàng:</span>
-              <span className="invoice-info__value">{data.customerName || "N/A"}</span>
+              <span className="invoice-info__value">
+                {data.customerName || "N/A"}
+              </span>
             </div>
             <div className="invoice-info__item">
               <span className="invoice-info__label">Nhân viên:</span>
-              <span className="invoice-info__value">{data.stylistName || "N/A"}</span>
+              <span className="invoice-info__value">
+                {data.stylistName || "N/A"}
+              </span>
             </div>
           </div>
 
@@ -122,11 +141,21 @@ const InvoiceModal = ({ data, onCheckout, onClose }) => {
 
         <div className="admin-page__modal-footer">
           <button
-            className={`btn-checkout ${isProcessing ? 'processing' : ''}`}
-            onClick={handleCheckout}
+            className="btn btn-cash"
+            onClick={handleCashCheckout}
             disabled={isProcessing}
           >
-            {isProcessing ? "Đang xử lý..." : "✅ Xác nhận thanh toán"}
+            {isProcessing ? "Đang xử lý..." : "💵 Thanh toán tiền mặt"}
+          </button>
+
+          <button
+            className="btn btn-vnpay"
+            onClick={handleVNPay}
+            disabled={isVNPayLoading}
+          >
+            {isVNPayLoading
+              ? "Đang tạo liên kết..."
+              : "🏦 Thanh toán chuyển khoản"}
           </button>
         </div>
       </div>

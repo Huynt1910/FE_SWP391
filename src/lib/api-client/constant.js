@@ -272,7 +272,12 @@ export const END_POINTS = {
     secure: true,
   },
 
-  checkOutBooking: {
+  // checkOutBooking: {
+  //   path: "/booking/checkout?bookingId=:id",
+  //   method: "PUT",
+  //   secure: true,
+  // },
+  checkoutBooking: {
     path: "/booking/checkout?bookingId=:id",
     method: "PUT",
     secure: true,
@@ -299,6 +304,11 @@ export const END_POINTS = {
     path: "/booking/update/:id",
     method: "PUT",
     parameterized: true,
+    secure: true,
+  },
+  getQrVnpay: {
+    path: "/payment/:id",
+    method: "GET",
     secure: true,
   },
   // Separate voucher endpoints
@@ -449,9 +459,10 @@ export const ACTIONS = {
   DEACTIVATE_USER: "deactivateUser",
   ACTIVATE_USER: "activateUser",
   RESET_USER_PASSWORD: "resetUserPassword",
-  CHECKOUT_BOOKING: "checkOutBooking",
+  CHECKOUT_BOOKING: "checkoutBooking",
   UPDATE_BOOKING: "updateBooking",
   CREATE_USER_BY_STAFF: "createUserByStaff",
+  GET_QR_VNPAY: "getQrVnpay",
   // Separate voucher actions
   GET_ALL_VOUCHERS: "getAllVouchers",
   GET_ACTIVE_VOUCHERS: "getActiveVouchers",
