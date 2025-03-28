@@ -6,6 +6,9 @@ const nextConfig = {
     // Enables the styled-components SWC transform if you're using styled-components
     styledComponents: true,
   },
+  images: {
+    domains: ["res.cloudinary.com"], // Thêm hostname của hình ảnh
+  },
 };
 
 module.exports = nextConfig;

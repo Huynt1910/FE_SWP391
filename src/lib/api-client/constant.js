@@ -123,7 +123,16 @@ export const END_POINTS = {
     method: "GET",
     secure: true,
   },
-
+  changePasswordTherapist: {
+    path: "/therapists/change-password",
+    method: "PUT",
+    secure: true,
+  },
+  getTherapistFeedback: {
+    path: "/feedback/therapist/:id",
+    method: "GET",
+    secure: true,
+  },
   // Staff
   getAllStaffs: { path: "/staffs", method: "GET", secure: true },
   createStaff: { path: "/staffs", method: "POST", secure: true },
@@ -177,7 +186,7 @@ export const END_POINTS = {
     method: "POST",
     secure: true,
   },
-  updateService: { path: "/services/update", method: "PUT", secure: true },
+  updateService: { path: "/services/update/:id", method: "PUT", secure: true },
   deactiveService: {
     path: "/services/deactive/:id",
     method: "PUT",
@@ -215,7 +224,6 @@ export const END_POINTS = {
   updateTherapistSchedule: {
     path: "/schedule/therapist/update/:id",
     method: "PUT",
-    parameterized: true,
     secure: true,
   },
   deleteTherapistSchedule: {
@@ -433,6 +441,8 @@ export const ACTIONS = {
   RESTORE_THERAPIST: "restoreTherapist",
   RESET_PASSWORD: "resetPassword",
   THERAPIST_PROFILE: "therapistProfile",
+  CHANGE_PASSWORD_THERAPIST: "changePasswordTherapist",
+  GET_THERAPIST_FEEDBACK: "getTherapistFeedback",
   //--------------- STAFF ACTIONS ----------------
   GET_ALL_STAFFS: "getAllStaffs",
   CREATE_STAFF: "createStaff",

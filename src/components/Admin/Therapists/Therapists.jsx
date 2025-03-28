@@ -19,7 +19,7 @@ const Therapists = () => {
     therapists,
     isLoading,
     createTherapist,
-    // updateTherapist,
+    updateTherapist, // Sử dụng chức năng cập nhật
     deleteTherapist,
     restoreTherapist,
   } = useTherapistActions();
@@ -32,6 +32,31 @@ const Therapists = () => {
   const closeModal = (type) => {
     setSelectedTherapist(null);
     setModalState((prev) => ({ ...prev, [type]: false }));
+  };
+
+  const handleUpdateConfirm = async (formData) => {
+    try {
+      await updateTherapist({
+        id: selectedTherapist.id,
+        formData,
+      });
+      toast.success("Cập nhật nhân viên thành công!");
+      closeModal("edit");
+    } catch (error) {
+      toast.error("Lỗi cập nhật nhân viên!");
+      console.error("Error updating therapist:", error);
+    }
+  };
+
+  const handleAddConfirm = async (therapistData) => {
+    try {
+      await createTherapist(therapistData);
+      toast.success("Thêm nhân viên thành công!");
+      closeModal("add");
+    } catch (error) {
+      toast.error("Lỗi thêm nhân viên!");
+      console.error("Error creating therapist:", error);
+    }
   };
 
   const handleToggleStatus = async (therapist) => {
@@ -57,30 +82,6 @@ const Therapists = () => {
     }
   };
 
-  const handleUpdateConfirm = async (data) => {
-    try {
-      await updateTherapist({
-        id: selectedTherapist.id,
-        data,
-      });
-      toast.success("Cập nhật nhân viên thành công!");
-      closeModal("edit");
-    } catch (error) {
-      toast.error("Lỗi cập nhật nhân viên!");
-      console.error("Error updating therapist:", error);
-    }
-  };
-
-  const handleAddConfirm = async (therapistData) => {
-    try {
-      await createTherapist(therapistData);
-      toast.success("Thêm nhân viên thành công!");
-      closeModal("add");
-    } catch (error) {
-      toast.error("Lỗi thêm nhân viên!");
-      console.error("Error creating therapist:", error);
-    }
-  };
   const handleResetPasswordConfirm = async (passwordData) => {
     try {
       await resetPassword({
@@ -133,9 +134,10 @@ const Therapists = () => {
         <TherapistEditModal
           therapist={selectedTherapist}
           onClose={() => closeModal("edit")}
-          onConfirm={handleUpdateConfirm}
+          onConfirm={handleUpdateConfirm} // Truyền hàm xử lý cập nhật
         />
       )}
+
       {modalState.resetPassword && selectedTherapist && (
         <ResetPasswordModal
           therapist={selectedTherapist}

@@ -1,0 +1,237 @@
+.admin-page {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 {
+      font-size: 28px; // Tăng kích thước tiêu đề
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    &__actions {
+      .admin-page__select {
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #1e293b;
+
+        &:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+      }
+    }
+  }
+
+  &__content {
+    .schedule-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .schedule-item {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        &__header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px; // Tăng khoảng cách giữa header và phần ca làm việc
+
+          .calendar-icon {
+            font-size: 28px; // Tăng kích thước icon lịch
+            color: #3b82f6;
+          }
+
+          .schedule-item__date {
+            font-size: 18px; // Tăng kích thước ngày
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap; // Đảm bảo chữ không bị xuống dòng
+          }
+        }
+
+        &__shifts {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px; // Tăng khoảng cách giữa các ca làm việc
+
+          .schedule-item__shift {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f9fafb;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+            .shift-icon {
+              font-size: 24px;
+
+              &.morning {
+                color: #fbbf24;
+              }
+
+              &.afternoon {
+                color: #3b82f6;
+              }
+            }
+
+            .shift-details {
+              display: flex;
+              flex-direction: column;
+
+              .shift-label {
+                font-size: 16px; // Tăng kích thước nhãn ca làm việc
+                font-weight: 600;
+                color: #1e293b;
+              }
+
+              .shift-time {
+                font-size: 14px; // Tăng kích thước giờ làm việc
+                color: #64748b;
+                margin-top: 4px; // Tạo khoảng cách giữa nhãn và giờ làm việc
+              }
+            }
+          }
+        }
+      }
+
+      .schedule-empty {
+        text-align: center;
+        font-size: 16px;
+        color: #9ca3af;
+        font-weight: 500;
+      }
+    }
+  }
+
+  &__loading,
+  &__error {
+    text-align: center;
+    margin-top: 24px;
+
+    .spinner {
+      font-size: 24px;
+      color: #3b82f6;
+      animation: spin 1s linear infinite;
+    }
+
+    p {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #6b7280;
+    }
+  }
+
+  &__select {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1e293b;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: #3b82f6;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    option {
+      font-size: 14px;
+      color: #1e293b;
+      background-color: #ffffff;
+    }
+  }
+}
+
+// Spinner animation
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .admin-page {
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+
+      h1 {
+        margin-bottom: 16px;
+      }
+
+      &__actions {
+        width: 100%;
+
+        .admin-page__select {
+          width: 100%;
+        }
+      }
+    }
+
+    &__content {
+      .schedule-container {
+        .schedule-item {
+          padding: 12px;
+
+          &__header {
+            .calendar-icon {
+              font-size: 20px;
+            }
+
+            .schedule-item__date {
+              font-size: 14px;
+            }
+          }
+
+          &__shifts {
+            .schedule-item__shift {
+              padding: 8px 12px;
+
+              .shift-icon {
+                font-size: 20px;
+              }
+
+              .shift-details {
+                .shift-label {
+                  font-size: 14px;
+                }
+
+                .shift-time {
+                  font-size: 12px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

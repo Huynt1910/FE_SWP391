@@ -1,36 +1,45 @@
 import React, { useState } from "react";
-import { useTherapistSchedule } from "@/auth/hook/useTherapistScheduleHook";
+import { useTherapistSchedule } from "@/auth/hook/admin/useTherapistScheduleHook";
 import { FaSpinner, FaCalendarAlt, FaSun, FaMoon } from "react-icons/fa";
-import { getCookie } from "cookies-next";
 
 const SHIFTS = {
   1: {
     label: "Ca sáng",
     icon: <FaSun className="shift-icon morning" />,
-    time: "8:00 - 12:00",
+    time: "7:00 - 15:00",
   },
   2: {
     label: "Ca chiều",
     icon: <FaMoon className="shift-icon afternoon" />,
-    time: "13:00 - 17:00",
+    time: "15:00 - 22:00",
   },
 };
 
 export const TherapistSchedule = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const therapistId = getCookie("therapistId");
-  const { data: schedules, isLoading } = useTherapistSchedule(
-    therapistId,
-    selectedMonth
-  );
 
+  // Lấy lịch làm việc từ hook useTherapistSchedule
+  const {
+    data: schedules,
+    isLoading,
+    error,
+  } = useTherapistSchedule(selectedMonth);
+
+  // Hiển thị trạng thái loading nếu đang tải lịch làm việc
   if (isLoading) {
     return (
-      <div className="admin-page">
-        <div className="admin-page__loading">
-          <FaSpinner className="spinner" />
-          <p>Đang tải lịch làm việc...</p>
-        </div>
+      <div className="admin-page__loading">
+        <FaSpinner className="spinner" />
+        <p>Đang tải dữ liệu...</p>
+      </div>
+    );
+  }
+
+  // Hiển thị lỗi nếu có lỗi xảy ra
+  if (error) {
+    return (
+      <div className="admin-page__error">
+        <p>Có lỗi xảy ra khi tải dữ liệu</p>
       </div>
     );
   }
@@ -56,8 +65,8 @@ export const TherapistSchedule = () => {
 
       <div className="admin-page__content">
         <div className="schedule-container">
-          {schedules?.result?.length > 0 ? (
-            schedules.result.map((schedule) => (
+          {schedules?.length > 0 ? (
+            schedules.map((schedule) => (
               <div key={schedule.id} className="schedule-item">
                 <div className="schedule-item__header">
                   <FaCalendarAlt className="calendar-icon" />

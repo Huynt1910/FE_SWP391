@@ -18,7 +18,7 @@ const Services = () => {
     services,
     isLoading,
     createService,
-    // updateService,
+    updateService, // Sử dụng chức năng cập nhật
     activateService,
     deactivateService,
   } = useServiceActions();
@@ -31,6 +31,31 @@ const Services = () => {
   const closeModal = (type) => {
     setSelectedService(null);
     setModalState((prev) => ({ ...prev, [type]: false }));
+  };
+
+  const handleUpdateConfirm = async (formData) => {
+    try {
+      await updateService({
+        id: selectedService.serviceId,
+        formData,
+      });
+      toast.success("Cập nhật dịch vụ thành công!");
+      closeModal("edit");
+    } catch (error) {
+      toast.error("Lỗi cập nhật dịch vụ!");
+      console.error("Error updating service:", error);
+    }
+  };
+
+  const handleAddConfirm = async (serviceData) => {
+    try {
+      await createService(serviceData);
+      toast.success("Thêm dịch vụ thành công!");
+      closeModal("add");
+    } catch (error) {
+      toast.error("Lỗi thêm dịch vụ!");
+      console.error("Error creating service:", error);
+    }
   };
 
   const handleToggleStatus = async (service) => {
@@ -53,31 +78,6 @@ const Services = () => {
         );
         console.error("Error toggling service status:", error);
       }
-    }
-  };
-
-  const handleUpdateConfirm = async (data) => {
-    try {
-      await updateService({
-        id: selectedService.id,
-        data,
-      });
-      toast.success("Cập nhật dịch vụ thành công!");
-      closeModal("edit");
-    } catch (error) {
-      toast.error("Lỗi cập nhật dịch vụ!");
-      console.error("Error updating service:", error);
-    }
-  };
-
-  const handleAddConfirm = async (serviceData) => {
-    try {
-      await createService(serviceData);
-      toast.success("Thêm dịch vụ thành công!");
-      closeModal("add");
-    } catch (error) {
-      toast.error("Lỗi thêm dịch vụ!");
-      console.error("Error creating service:", error);
     }
   };
 
@@ -124,7 +124,7 @@ const Services = () => {
         <ServiceEditModal
           service={selectedService}
           onClose={() => closeModal("edit")}
-          onConfirm={handleUpdateConfirm}
+          onConfirm={handleUpdateConfirm} // Truyền hàm xử lý cập nhật
         />
       )}
     </div>

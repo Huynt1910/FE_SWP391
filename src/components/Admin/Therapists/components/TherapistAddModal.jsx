@@ -43,6 +43,7 @@ const TherapistAddModal = ({ onClose, onConfirm }) => {
     setIsSubmitting(true);
 
     try {
+      // Tạo FormData để gửi payload
       const formDataToSend = new FormData();
       formDataToSend.append("username", formData.username);
       formDataToSend.append("password", formData.password);
@@ -54,10 +55,20 @@ const TherapistAddModal = ({ onClose, onConfirm }) => {
       formDataToSend.append("birthDate", formData.birthDate);
       formDataToSend.append("yearExperience", formData.yearExperience);
 
+      // Kiểm tra và thêm file hình ảnh
       if (selectedFile) {
         formDataToSend.append("imgUrl", selectedFile);
+      } else {
+        console.error("No file selected for imgUrl");
       }
 
+      // Debug log để kiểm tra payload
+      console.log("Payload to send:");
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      // Gửi payload qua hàm onConfirm
       await onConfirm(formDataToSend);
       onClose();
     } catch (error) {

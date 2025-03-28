@@ -5,10 +5,11 @@ const ServiceEditModal = ({ service, onClose, onConfirm, isLoading }) => {
   const [formData, setFormData] = useState({
     serviceName: "",
     description: "",
+    category: "",
     price: "",
     duration: "",
   });
-  const [image, setImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
 
   useEffect(() => {
@@ -16,10 +17,11 @@ const ServiceEditModal = ({ service, onClose, onConfirm, isLoading }) => {
       setFormData({
         serviceName: service.serviceName || "",
         description: service.description || "",
+        category: service.category || "",
         price: service.price || "",
         duration: service.duration || "",
       });
-      setPreview(service.imgUrl);
+      setPreview(service.imgUrl || null); // Hiển thị hình ảnh hiện tại nếu có
     }
   }, [service]);
 
@@ -34,35 +36,40 @@ const ServiceEditModal = ({ service, onClose, onConfirm, isLoading }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImage(file);
-      setPreview(URL.createObjectURL(file));
+      setSelectedFile(file);
+      setPreview(URL.createObjectURL(file)); // Hiển thị preview hình ảnh mới
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const submitData = new FormData();
+    const formDataToSend = new FormData();
 
-    // Log the data before sending
-    console.log("Form data before submit:", formData);
+    // Thêm các trường vào FormData
+    formDataToSend.append("serviceName", formData.serviceName || "");
+    formDataToSend.append("description", formData.description || "");
+    formDataToSend.append("category", formData.category || "");
+    formDataToSend.append("price", formData.price || "0");
+    formDataToSend.append("duration", formData.duration || "00:00:00");
 
-    // Add each field with the correct key name
-    submitData.append("serviceName", formData.serviceName);
-    submitData.append("description", formData.description);
-    submitData.append("price", formData.price);
-    submitData.append("duration", formData.duration);
-
-    // Only append image if a new one is selected
-    if (image) {
-      submitData.append("image", image);
+    // Xử lý hình ảnh
+    if (selectedFile) {
+      formDataToSend.append("imgUrl", selectedFile); // Gửi hình ảnh mới nếu có
+    } else if (service.imgUrl) {
+      // Tải file từ URL và thêm vào FormData
+      const response = await fetch(service.imgUrl);
+      const blob = await response.blob();
+      const file = new File([blob], "current-image.jpg", { type: blob.type });
+      formDataToSend.append("imgUrl", file);
     }
 
-    // Log the FormData entries
-    for (let pair of submitData.entries()) {
-      console.log(pair[0] + ": " + pair[1]);
+    // Log dữ liệu trước khi gửi
+    console.log("FormData to send:");
+    for (let [key, value] of formDataToSend.entries()) {
+      console.log(`${key}:`, value instanceof File ? value.name : value);
     }
 
-    onConfirm(service.serviceId, submitData);
+    onConfirm(formDataToSend);
   };
 
   return (
@@ -93,6 +100,18 @@ const ServiceEditModal = ({ service, onClose, onConfirm, isLoading }) => {
               id="description"
               name="description"
               value={formData.description}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="admin-page__form-group">
+            <label htmlFor="category">Danh mục</label>
+            <input
+              type="text"
+              id="category"
+              name="category"
+              value={formData.category}
               onChange={handleChange}
               required
             />
