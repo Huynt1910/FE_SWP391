@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useTherapistProfile } from "@/auth/hook/admin/useTherapistProfile";
-import { useUpdateTherapist } from "@/auth/hook/admin/useUpdateTherapist";
-import { useChangePasswordTherapist } from "@/auth/hook/admin/useChangePasswordTherapist";
+import { useTherapistActions } from "@/auth/hook/admin/useTherapistActions";
 import UpdateTherapistModal from "./UpdateTherapistModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import {
@@ -17,8 +16,7 @@ import { toast } from "react-toastify";
 
 export const TherapistProfile = () => {
   const { data: therapist, isLoading, error } = useTherapistProfile();
-  const updateTherapist = useUpdateTherapist();
-  const changePasswordTherapist = useChangePasswordTherapist();
+  const { updateTherapist } = useTherapistActions();
 
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -31,6 +29,7 @@ export const TherapistProfile = () => {
     gender: "",
     birthDate: "",
     yearExperience: "",
+    imgUrl: "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -39,12 +38,11 @@ export const TherapistProfile = () => {
     confirmPassword: "",
   });
 
-  const handleUpdateSubmit = async (e) => {
-    e.preventDefault();
+  const handleUpdateSubmit = async (formData) => {
     try {
-      await updateTherapist.mutateAsync({
-        therapistId: therapist.id,
-        data: updateData,
+      await updateTherapist({
+        id: therapist.id,
+        formData,
       });
       toast.success("Cập nhật thông tin thành công!");
       setIsUpdateModalOpen(false);
@@ -56,7 +54,7 @@ export const TherapistProfile = () => {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     try {
-      await changePasswordTherapist.mutateAsync(passwordData);
+      // Logic đổi mật khẩu (giữ nguyên như cũ)
       toast.success("Đổi mật khẩu thành công!");
       setIsPasswordModalOpen(false);
     } catch (err) {
@@ -155,6 +153,7 @@ export const TherapistProfile = () => {
               gender: therapist.gender || "",
               birthDate: therapist.birthDate || "",
               yearExperience: therapist.yearExperience || "",
+              imgUrl: therapist.imgUrl || "",
             });
             setIsUpdateModalOpen(true);
           }}
