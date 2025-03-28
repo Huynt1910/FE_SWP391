@@ -12,33 +12,44 @@ export const useServiceActions = () => {
     Authorization: `Bearer ${token}`,
   };
 
-  const { data: services, isLoading, error: servicesError } = useQuery({
+  const {
+    data: services,
+    isLoading,
+    error: servicesError,
+  } = useQuery({
     queryKey: ["services"],
     queryFn: async () => {
       // Check network connectivity first
       if (!isOnline()) {
-        toast.error("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.");
+        toast.error(
+          "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+        );
         return [];
       }
-      
+
       try {
         const response = await APIClient.invoke({
           action: ACTIONS.GET_ALL_SERVICES,
           headers: authHeaders,
         });
-        
+
         // Check if we received an offline error
         if (response.isOffline) {
           console.log("Offline response received in useServiceActions");
           return [];
         }
-        
+
         return response.result || [];
       } catch (error) {
         // Handle network errors
-        if (error.message?.includes("network") || error.message?.includes("internet") || 
-            error.message?.includes("connection")) {
-          toast.error("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.");
+        if (
+          error.message?.includes("network") ||
+          error.message?.includes("internet") ||
+          error.message?.includes("connection")
+        ) {
+          toast.error(
+            "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+          );
           return [];
         }
         throw error;
@@ -53,14 +64,36 @@ export const useServiceActions = () => {
     },
   });
 
+  const { mutateAsync: updateService } = useMutation({
+    mutationFn: async ({ id, formData }) => {
+      const response = await APIClient.invoke({
+        action: ACTIONS.UPDATE_SERVICE,
+        pathParams: { id },
+        data: formData,
+        headers: authHeaders,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["services"]);
+      toast.success("Cập nhật dịch vụ thành công!");
+    },
+    onError: (error) => {
+      toast.error("Lỗi cập nhật dịch vụ!");
+      console.error("Error updating service:", error.response?.data || error);
+    },
+  });
+
   const { mutateAsync: createService } = useMutation({
     mutationFn: async (formData) => {
       // Check network connectivity first
       if (!isOnline()) {
-        toast.error("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.");
+        toast.error(
+          "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+        );
         throw new Error("No internet connection");
       }
-      
+
       const response = await APIClient.invoke({
         action: ACTIONS.CREATE_SERVICE,
         data: formData,
@@ -68,12 +101,14 @@ export const useServiceActions = () => {
           ...authHeaders,
         },
       });
-      
+
       // Check if we received an offline error
       if (response.isOffline) {
-        throw new Error("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.");
+        throw new Error(
+          "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+        );
       }
-      
+
       return response;
     },
     onSuccess: () => {
@@ -81,9 +116,15 @@ export const useServiceActions = () => {
     },
     onError: (error) => {
       // Check if this is a network error
-      if (error.message?.includes("network") || error.message?.includes("internet") || 
-          error.message?.includes("connection") || error.isOffline) {
-        toast.error("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.");
+      if (
+        error.message?.includes("network") ||
+        error.message?.includes("internet") ||
+        error.message?.includes("connection") ||
+        error.isOffline
+      ) {
+        toast.error(
+          "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+        );
       } else {
         // Log the full error response for other errors
         console.error("Error creating service:", error.response?.data || error);
@@ -96,21 +137,25 @@ export const useServiceActions = () => {
     mutationFn: async (serviceId) => {
       // Check network connectivity first
       if (!isOnline()) {
-        toast.error("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.");
+        toast.error(
+          "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+        );
         throw new Error("No internet connection");
       }
-      
+
       const response = await APIClient.invoke({
         action: ACTIONS.ACTIVE_SERVICE,
         pathParams: { id: serviceId },
         headers: authHeaders,
       });
-      
+
       // Check if we received an offline error
       if (response.isOffline) {
-        throw new Error("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.");
+        throw new Error(
+          "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+        );
       }
-      
+
       return response;
     },
     onSuccess: () => {
@@ -119,9 +164,15 @@ export const useServiceActions = () => {
     },
     onError: (error) => {
       // Check if this is a network error
-      if (error.message?.includes("network") || error.message?.includes("internet") || 
-          error.message?.includes("connection") || error.isOffline) {
-        toast.error("Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn.");
+      if (
+        error.message?.includes("network") ||
+        error.message?.includes("internet") ||
+        error.message?.includes("connection") ||
+        error.isOffline
+      ) {
+        toast.error(
+          "Không có kết nối mạng. Vui lòng kiểm tra lại kết nối Internet của bạn."
+        );
       } else {
         toast.error("Có lỗi xảy ra khi kích hoạt dịch vụ!");
         console.error(error);
@@ -151,6 +202,7 @@ export const useServiceActions = () => {
   return {
     services,
     isLoading,
+    updateService,
     createService,
     activateService: activateService.mutate,
     deactivateService: deactivateService.mutate,

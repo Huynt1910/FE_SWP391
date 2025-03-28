@@ -1,5 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTherapistProfile } from "@/auth/hook/admin/useTherapistProfile";
+import { useUpdateTherapist } from "@/auth/hook/admin/useUpdateTherapist";
+import { useChangePasswordTherapist } from "@/auth/hook/admin/useChangePasswordTherapist";
+import UpdateTherapistModal from "./UpdateTherapistModal";
+import ChangePasswordModal from "./ChangePasswordModal";
 import {
   FaEnvelope,
   FaPhone,
@@ -9,9 +13,56 @@ import {
   FaMedal,
 } from "react-icons/fa";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 export const TherapistProfile = () => {
   const { data: therapist, isLoading, error } = useTherapistProfile();
+  const updateTherapist = useUpdateTherapist();
+  const changePasswordTherapist = useChangePasswordTherapist();
+
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+
+  const [updateData, setUpdateData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    address: "",
+    gender: "",
+    birthDate: "",
+    yearExperience: "",
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateTherapist.mutateAsync({
+        therapistId: therapist.id,
+        data: updateData,
+      });
+      toast.success("Cập nhật thông tin thành công!");
+      setIsUpdateModalOpen(false);
+    } catch (err) {
+      toast.error(err.message || "Lỗi khi cập nhật thông tin");
+    }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await changePasswordTherapist.mutateAsync(passwordData);
+      toast.success("Đổi mật khẩu thành công!");
+      setIsPasswordModalOpen(false);
+    } catch (err) {
+      toast.error(err.message || "Lỗi khi đổi mật khẩu");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -34,7 +85,7 @@ export const TherapistProfile = () => {
       <div className="profile-header">
         <div className="profile-avatar">
           <Image
-            src={therapist.imgUrl || "/default-avatar.png"}
+            src={therapist.imgUrl || "/default-avatar.png"} // Hiển thị hình ảnh từ server hoặc hình mặc định
             alt={therapist.fullName}
             width={150}
             height={150}
@@ -91,6 +142,49 @@ export const TherapistProfile = () => {
           </div>
         </div>
       </div>
+
+      <div className="profile-actions">
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            setUpdateData({
+              fullName: therapist.fullName || "",
+              email: therapist.email || "",
+              phone: therapist.phone || "",
+              address: therapist.address || "",
+              gender: therapist.gender || "",
+              birthDate: therapist.birthDate || "",
+              yearExperience: therapist.yearExperience || "",
+            });
+            setIsUpdateModalOpen(true);
+          }}
+        >
+          Cập nhật thông tin
+        </button>
+        <button
+          className="btn btn-secondary"
+          onClick={() => setIsPasswordModalOpen(true)}
+        >
+          Đổi mật khẩu
+        </button>
+      </div>
+
+      {/* Modals */}
+      <UpdateTherapistModal
+        isOpen={isUpdateModalOpen}
+        onClose={() => setIsUpdateModalOpen(false)}
+        onSubmit={handleUpdateSubmit}
+        updateData={updateData}
+        setUpdateData={setUpdateData}
+      />
+
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSubmit={handlePasswordSubmit}
+        passwordData={passwordData}
+        setPasswordData={setPasswordData}
+      />
     </div>
   );
 };

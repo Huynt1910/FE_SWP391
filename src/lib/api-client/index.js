@@ -39,11 +39,19 @@ export class APIClient {
         method,
         headers: Object.assign(
           {
-            "Content-Type": "application/json",
+            // Không đặt Content-Type nếu là FormData
+            ...(data instanceof FormData
+              ? {}
+              : { "Content-Type": "application/json" }),
           },
           headers
         ),
-        body: data ? JSON.stringify(data) : undefined,
+        body:
+          data instanceof FormData
+            ? data
+            : data
+            ? JSON.stringify(data)
+            : undefined,
       };
 
       const fullUrl = `${url}${queryParams ? `?${queryParams}` : ""}`;

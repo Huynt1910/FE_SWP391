@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaSpinner } from "react-icons/fa";
 
-const TherapistEditModal = ({ staff, onClose, onConfirm }) => {
+const TherapistEditModal = ({ therapist, onClose, onConfirm }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -10,20 +10,30 @@ const TherapistEditModal = ({ staff, onClose, onConfirm }) => {
     address: "",
     gender: "Male",
     birthDate: "",
+    yearExperience: "",
+    imgUrl: "",
   });
 
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  // Load thông tin therapist khi mở modal
   useEffect(() => {
-    if (staff) {
+    if (therapist) {
       setFormData({
-        fullName: staff.fullName || "",
-        email: staff.email || "",
-        phone: staff.phone || "",
-        address: staff.address || "",
-        gender: staff.gender || "Male",
-        birthDate: staff.birthDate?.split("T")[0] || "",
+        fullName: therapist.fullName || "",
+        email: therapist.email || "",
+        phone: therapist.phone || "",
+        address: therapist.address || "",
+        gender: therapist.gender || "Male",
+        birthDate: therapist.birthDate?.split("T")[0] || "",
+        yearExperience: therapist.yearExperience || "",
       });
+
+      // Hiển thị hình ảnh hiện tại nếu có
+      setImagePreview(therapist.imgUrl || null);
     }
-  }, [staff]);
+  }, [therapist]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,13 +42,55 @@ const TherapistEditModal = ({ staff, onClose, onConfirm }) => {
       [name]: value,
     }));
   };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+
+    // Hiển thị preview hình ảnh mới
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+
     try {
-      await onConfirm(formData);
+      const formDataToSend = new FormData();
+      formDataToSend.append("fullName", formData.fullName || "");
+      formDataToSend.append("email", formData.email || "");
+      formDataToSend.append("phone", formData.phone || "");
+      formDataToSend.append("address", formData.address || "");
+      formDataToSend.append("gender", formData.gender || "Male");
+      formDataToSend.append("birthDate", formData.birthDate || "");
+      formDataToSend.append("yearExperience", formData.yearExperience || "0");
+
+      if (selectedFile) {
+        formDataToSend.append("imgUrl", selectedFile); // Gửi hình ảnh mới nếu có
+      } else if (therapist.imgUrl) {
+        // Tải file từ URL và thêm vào FormData
+        const response = await fetch(therapist.imgUrl);
+        const blob = await response.blob();
+        const file = new File([blob], "current-image.jpg", { type: blob.type });
+        formDataToSend.append("imgUrl", file);
+      }
+
+      // Log dữ liệu FormData
+      console.log("FormData to send:");
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`${key}:`, value instanceof File ? value.name : value);
+      }
+
+      await onConfirm(formDataToSend);
+      onClose();
     } catch (error) {
-      console.error("Error updating staff:", error);
+      console.error("Error updating therapist:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -61,7 +113,7 @@ const TherapistEditModal = ({ staff, onClose, onConfirm }) => {
             <label>Họ và tên</label>
             <input
               type="text"
-              name="fullname"
+              name="fullName"
               value={formData.fullName}
               onChange={handleChange}
               required
@@ -103,7 +155,11 @@ const TherapistEditModal = ({ staff, onClose, onConfirm }) => {
 
           <div className="form-group">
             <label>Giới tính</label>
-            <select value={formData.gender} onChange={handleChange}>
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+            >
               <option value="Male">Nam</option>
               <option value="Female">Nữ</option>
             </select>
@@ -118,6 +174,27 @@ const TherapistEditModal = ({ staff, onClose, onConfirm }) => {
               onChange={handleChange}
               required
             />
+          </div>
+
+          <div className="form-group">
+            <label>Kinh nghiệm (năm)</label>
+            <input
+              type="number"
+              name="yearExperience"
+              value={formData.yearExperience}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Hình ảnh</label>
+            {imagePreview && (
+              <div className="image-preview">
+                <img src={imagePreview} alt="Preview" />
+              </div>
+            )}
+            <input type="file" onChange={handleFileChange} />
           </div>
 
           <div className="admin-page__modal-content-footer">
