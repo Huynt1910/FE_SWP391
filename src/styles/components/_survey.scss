@@ -326,43 +326,103 @@
       margin-top: 30px;
       
       h5 {
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 600;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
         color: #333;
-        border-bottom: none;
-        text-transform: none;
+        text-align: left;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f0f0f0;
       }
       
       .service-recommendations {
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
       }
       
       .service-item {
-        padding: 20px;
+        display: flex;
         border: 1px solid #e6e6e6;
-        border-radius: 6px;
-        margin-bottom: 15px;
-        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #fff;
         transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        position: relative;
         
         &:hover {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+          transform: translateY(-3px);
+        }
+        
+        .service-image {
+          width: 180px;
+          min-width: 180px;
+          height: 150px;
+          overflow: hidden;
+          
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            
+            &:hover {
+              transform: scale(1.05);
+            }
+          }
+        }
+        
+        .service-content {
+          flex: 1;
+          padding: 15px 20px;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          padding-bottom: 50px; /* Space for the button */
         }
         
         .service-name {
           font-size: 18px;
           font-weight: 600;
           color: #333;
-          margin-bottom: 5px;
+          margin-bottom: 6px;
+          border-bottom: 2px solid #ff4f6f;
+          padding-bottom: 4px;
+          display: inline-block;
         }
         
         .service-category {
-          color: #666;
-          font-size: 14px;
+          display: inline-block;
+          padding: 3px 10px;
+          border-radius: 20px;
+          font-size: 12px;
           margin-bottom: 10px;
+          
+          // Default for Facial Treatments
+          &.category-facial {
+            background-color: #e8f8f0;
+            color: #3a9f76;
+          }
+          
+          // For Body Treatments
+          &.category-body {
+            background-color: #f0e7f5;
+            color: #9b59b6;
+          }
+          
+          // For Massage
+          &.category-massage {
+            background-color: #e8f0f8;
+            color: #3498db;
+          }
+          
+          // For Therapy
+          &.category-therapy {
+            background-color: #fff0e8;
+            color: #e67e22;
+          }
         }
         
         .service-description {
@@ -370,17 +430,22 @@
           color: #666;
           line-height: 1.5;
           margin-bottom: 15px;
+          flex-grow: 1;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
         
         .service-meta {
           display: flex;
           align-items: center;
-          gap: 20px;
+          justify-content: space-between;
           margin-bottom: 15px;
         }
         
         .service-price {
-          font-weight: 600;
+          font-weight: 700;
           font-size: 16px;
           color: #333;
         }
@@ -388,26 +453,30 @@
         .service-duration {
           display: flex;
           align-items: center;
-          gap: 5px;
           color: #666;
-          font-size: 14px;
+          font-size: 13px;
           
           .icon-clock {
-            font-size: 12px;
+            margin-right: 5px;
+            color: #888;
           }
         }
         
         .book-now-btn {
-          display: inline-block;
           background-color: #ff4f6f;
           color: white;
           border: none;
-          padding: 8px 18px;
+          padding: 6px 12px;
           border-radius: 4px;
-          font-size: 14px;
+          font-size: 12px;
           font-weight: 500;
           cursor: pointer;
           transition: background-color 0.3s;
+          text-align: center;
+          position: absolute;
+          bottom: 15px;
+          right: 20px;
+          width: auto;
           
           &:hover {
             background-color: darken(#ff4f6f, 10%);
@@ -416,13 +485,16 @@
       }
       
       .additional-services {
-        margin-top: 20px;
+        margin-top: 30px;
         
         h6 {
-          font-size: 16px;
+          font-size: 18px;
           font-weight: 600;
-          margin-bottom: 15px;
+          margin-bottom: 20px;
           color: #333;
+          text-align: left;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #f0f0f0;
         }
       }
     }
@@ -858,6 +930,75 @@
         color: #e2879d;
         font-weight: 500;
       }
+    }
+  }
+}
+
+// Book services button at bottom
+.book-services-btn {
+  display: block;
+  width: 100%;
+  background-color: #ff4f6f;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  
+  &:hover {
+    background-color: darken(#ff4f6f, 10%);
+  }
+}
+
+// Survey navigation buttons
+.survey-bottom-buttons {
+  display: flex;
+  margin-top: 30px;
+  gap: 15px;
+  
+  .btn-back {
+    flex: 1;
+    padding: 12px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    svg {
+      margin-right: 8px;
+    }
+    
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
+  
+  .btn-take-survey {
+    flex: 2;
+    padding: 12px;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    
+    &:hover {
+      background-color: darken(#4caf50, 10%);
     }
   }
 } 

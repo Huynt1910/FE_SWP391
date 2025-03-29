@@ -1,60 +1,42 @@
 import React from "react";
-import { motion } from "framer-motion"; // If you have framer-motion installed
+import { FaSpa, FaFaceSmile } from "react-icons/fa6";
 
 const SurveyTypeSelection = ({ onSelectType, selectedType }) => {
-  // Animation variants for cards
-  const cardVariants = {
-    hover: {
-      y: -5,
-      boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)",
-      borderColor: "#dda5a5",
-      transition: { duration: 0.3 }
-    },
-    selected: {
-      borderColor: "#e2879d",
-      backgroundColor: "rgba(226, 135, 157, 0.05)",
-      boxShadow: "0 5px 15px rgba(226, 135, 157, 0.2)",
-      transition: { duration: 0.3 }
-    }
-  };
-
   return (
     <div className="survey-type-selection">
-      <h4>Choose a Survey Type</h4>
+      <h4>What type of assessment would you like to take?</h4>
       <div className="options-grid">
         {/* Skincare Survey Option */}
-        <motion.div
+        <div
           className={`option-card ${selectedType === 'skincare' ? 'selected' : ''}`}
           onClick={() => onSelectType('skincare')}
-          whileHover="hover"
-          variants={cardVariants}
-          animate={selectedType === 'skincare' ? "selected" : ""}
         >
           <div className="option-content">
-            <h5>Skincare Assessment</h5>
-            <div className="option-icon">🧴</div>
+            <div className="option-icon">
+              <FaFaceSmile />
+            </div>
+            <h5>Skin Assessment</h5>
             <p className="option-description">
-              Evaluate your skin type, concerns, and get personalized skincare recommendations.
+              Get personalized skincare recommendations based on your skin type and concerns
             </p>
           </div>
-        </motion.div>
+        </div>
         
         {/* Spa Treatment Survey Option */}
-        <motion.div
+        <div
           className={`option-card ${selectedType === 'spa' ? 'selected' : ''}`}
           onClick={() => onSelectType('spa')}
-          whileHover="hover"
-          variants={cardVariants}
-          animate={selectedType === 'spa' ? "selected" : ""}
         >
           <div className="option-content">
-            <h5>Spa Treatment Assessment</h5>
-            <div className="option-icon">🧖</div>
+            <div className="option-icon">
+              <FaSpa />
+            </div>
+            <h5>Spa Treatment</h5>
             <p className="option-description">
-              Discover the perfect spa treatments based on your preferences and needs.
+              Find the perfect spa treatments to address your specific needs and preferences
             </p>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
