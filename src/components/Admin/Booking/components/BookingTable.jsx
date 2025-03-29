@@ -191,6 +191,11 @@ const BookingTable = ({
     }
   };
 
+  const formatToLocalDate = (utcDate) => {
+    const localDate = new Date(utcDate);
+    return format(localDate, "dd/MM/yyyy");
+  };
+
   return (
     <>
       <div className="admin-page__table">
@@ -215,7 +220,7 @@ const BookingTable = ({
                   <td>{userDetails.fullName}</td>
                   <td>{userDetails.phone}</td>
                   <td>{getTherapistName(booking.therapistId)}</td>
-                  <td>{format(new Date(booking.date), "dd/MM/yyyy")}</td>
+                  <td>{formatToLocalDate(booking.date)}</td>
                   <td>{booking.time}</td>
                   <td>
                     {booking.serviceId && booking.serviceId.length > 0 ? (

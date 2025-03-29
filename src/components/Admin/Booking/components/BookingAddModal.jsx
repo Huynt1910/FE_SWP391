@@ -2,7 +2,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import DatePicker from "react-datepicker";
 import { FaSpinner } from "react-icons/fa";
-import { useVoucherActions } from "@/auth/hook/admin/useVoucherActions";
+import { useActiveVouchers } from "@/auth/hook/admin/useActiveVouchers";
 import { useSlotActions } from "@/auth/hook/admin/useSlotActions";
 import { useCheckTherapistAvailability } from "@/auth/hook/admin/useCheckTherapistAvailability";
 import { useGetActiveService } from "@/auth/hook/admin/useGetActiveService";
@@ -18,7 +18,7 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
     voucherId: "",
   });
 
-  const { vouchers } = useVoucherActions();
+  const { vouchers } = useActiveVouchers();
   const { slots } = useSlotActions();
   const {
     data: services,
@@ -75,10 +75,12 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
       phoneNumber: formData.phoneNumber,
       slotId: Number(formData.slotId),
       bookingDate: format(formData.bookingDate, "yyyy-MM-dd"),
-      serviceId: formData.serviceId.map(Number), // Convert thành số
+      serviceId: formData.serviceId.map(Number),
       therapistId: Number(formData.therapistId),
-      voucherId: formData.voucherId ? Number(formData.voucherId) : null,
+      voucherId: Number(formData.voucherId) || null, // Nếu không có voucherId thì gửi null
     };
+
+    console.log("Payload gửi đi:", bookingData); // Log payload
 
     try {
       await onConfirm(bookingData);
@@ -212,9 +214,10 @@ const BookingAddModal = ({ onClose, onConfirm, isLoading }) => {
             <label>Mã giảm giá (Voucher):</label>
             <select
               value={formData.voucherId}
-              onChange={(e) =>
-                setFormData({ ...formData, voucherId: e.target.value })
-              }
+              onChange={(e) => {
+                console.log("Voucher được chọn:", e.target.value);
+                setFormData({ ...formData, voucherId: e.target.value });
+              }}
               className="form-control"
             >
               <option value="">-- Chọn voucher --</option>

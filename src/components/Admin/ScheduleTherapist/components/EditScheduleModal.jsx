@@ -1,39 +1,47 @@
 import React, { useState, useEffect } from "react";
 import { FaSpinner } from "react-icons/fa";
-import { format } from "date-fns";
-import { useTherapistActions } from "@/auth/hook/admin/useTherapistActions";
 
-const EditScheduleModal = ({ schedule, onClose, onConfirm, isLoading }) => {
+const EditScheduleModal = ({
+  schedule,
+  onClose,
+  onConfirm,
+  isLoading,
+  therapists,
+}) => {
   const [formData, setFormData] = useState({
-    therapistId: "",
     shiftId: "",
   });
-
-  const { activeTherapists, isLoading: loadingTherapists } =
-    useTherapistActions();
-
-  const shifts = [
-    { id: 1, name: "Ca sáng" },
-    { id: 2, name: "Ca chiều" },
-  ];
 
   useEffect(() => {
     if (schedule) {
       setFormData({
-        therapistId: schedule.therapistId,
-        shiftId: schedule.shiftId[0],
+        shiftId: schedule.shiftId[0], // Lấy ca làm việc hiện tại
       });
     }
   }, [schedule]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Tìm therapistId từ therapistName (so khớp với fullName)
+    const therapist = therapists.find(
+      (t) => t.fullName === schedule.therapistName
+    );
+    const therapistId = therapist ? therapist.id : null;
+
+    if (!therapistId) {
+      console.error("Therapist not found for the given therapistName.");
+      return;
+    }
+
     const data = {
-      therapistId: Number(formData.therapistId),
-      workingDate: format(new Date(schedule.workingDate), "yyyy-MM-dd"),
+      therapistId: therapistId, // Sử dụng therapistId được ánh xạ
+      workingDate: schedule.workingDate,
       shiftId: [Number(formData.shiftId)],
     };
-    // Pass the schedule.id directly from the schedule object
+
+    console.log("Data to send to server (EditScheduleModal):", data);
+
     onConfirm(schedule.id, data);
   };
 
@@ -52,32 +60,6 @@ const EditScheduleModal = ({ schedule, onClose, onConfirm, isLoading }) => {
           className="admin-page__modal-content-body"
         >
           <div className="form-group">
-            <label>Therapist:</label>
-            {loadingTherapists ? (
-              <div className="loading-text">
-                <FaSpinner className="spinner" /> Đang tải danh sách
-                therapist...
-              </div>
-            ) : (
-              <select
-                value={formData.therapistId}
-                onChange={(e) =>
-                  setFormData({ ...formData, therapistId: e.target.value })
-                }
-                required
-                className="form-control"
-              >
-                <option value="">-- Chọn Therapist --</option>
-                {activeTherapists?.map((therapist) => (
-                  <option key={therapist.id} value={therapist.id}>
-                    {therapist.fullName}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div className="form-group">
             <label>Ca làm việc:</label>
             <select
               value={formData.shiftId}
@@ -88,11 +70,8 @@ const EditScheduleModal = ({ schedule, onClose, onConfirm, isLoading }) => {
               className="form-control"
             >
               <option value="">-- Chọn ca làm --</option>
-              {shifts.map((shift) => (
-                <option key={shift.id} value={shift.id}>
-                  {shift.name}
-                </option>
-              ))}
+              <option value="1">Ca sáng</option>
+              <option value="2">Ca chiều</option>
             </select>
           </div>
 
@@ -101,14 +80,14 @@ const EditScheduleModal = ({ schedule, onClose, onConfirm, isLoading }) => {
               type="button"
               className="btn btn-secondary"
               onClick={onClose}
-              disabled={isLoading || loadingTherapists}
+              disabled={isLoading}
             >
               Hủy
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={isLoading || loadingTherapists}
+              disabled={isLoading}
             >
               {isLoading ? (
                 <>

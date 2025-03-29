@@ -23,6 +23,10 @@ const Settings = () => {
   } = useVoucherActions();
 
   const openModal = (type, voucher = null) => {
+    if (type === "edit" && !voucher) {
+      console.error("Cannot open edit modal without a valid voucher");
+      return;
+    }
     setSelectedVoucher(voucher);
     setModalState((prev) => ({ ...prev, [type]: true }));
   };
@@ -57,14 +61,23 @@ const Settings = () => {
 
   const handleUpdateConfirm = async (data) => {
     try {
+      console.log("Selected voucher before API call:", selectedVoucher);
+
+      if (!selectedVoucher || !selectedVoucher.voucherId) {
+        throw new Error("Voucher ID không tồn tại!");
+      }
+
+      const voucherId = selectedVoucher.voucherId;
+
       await updateVoucher({
-        id: selectedVoucher.voucherId,
+        voucherId, // Đảm bảo truyền đúng voucherId
         data,
       });
+
       toast.success("Cập nhật voucher thành công!");
       closeModal("edit");
     } catch (error) {
-      toast.error("Lỗi cập nhật voucher!");
+      toast.error(error.message || "Lỗi cập nhật voucher!");
       console.error("Error updating voucher:", error);
     }
   };
@@ -87,6 +100,8 @@ const Settings = () => {
       </div>
     );
   }
+
+  console.log("Selected voucher:", selectedVoucher);
 
   return (
     <div className="admin-page">

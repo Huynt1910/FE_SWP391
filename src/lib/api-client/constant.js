@@ -75,7 +75,7 @@ export const END_POINTS = {
     secure: true,
   },
   resetUserPassword: {
-    path: "/users/reset-password",
+    path: "/users/reset-password/:id",
     method: "PUT",
     secure: true,
   },
@@ -137,7 +137,7 @@ export const END_POINTS = {
   getAllStaffs: { path: "/staffs", method: "GET", secure: true },
   createStaff: { path: "/staffs", method: "POST", secure: true },
   updateStaff: {
-    path: "/staffs/update/{staffId}",
+    path: "/staffs/update/:id",
     method: "PUT",
     secure: true,
   },
@@ -280,11 +280,11 @@ export const END_POINTS = {
     secure: true,
   },
 
-  // checkOutBooking: {
-  //   path: "/booking/checkout?bookingId=:id",
-  //   method: "PUT",
-  //   secure: true,
-  // },
+  checkoutBookingTransaction: {
+    path: "/booking/checkout?transactionId=:id",
+    method: "PUT",
+    secure: true,
+  },
   checkoutBooking: {
     path: "/booking/checkout?bookingId=:id",
     method: "PUT",
@@ -473,6 +473,7 @@ export const ACTIONS = {
   UPDATE_BOOKING: "updateBooking",
   CREATE_USER_BY_STAFF: "createUserByStaff",
   GET_QR_VNPAY: "getQrVnpay",
+  CHECKOUT_BOOKING_TRANSACTION: "checkoutBookingTransaction",
   // Separate voucher actions
   GET_ALL_VOUCHERS: "getAllVouchers",
   GET_ACTIVE_VOUCHERS: "getActiveVouchers",

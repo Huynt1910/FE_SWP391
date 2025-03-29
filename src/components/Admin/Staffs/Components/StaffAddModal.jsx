@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { FaSpinner, FaUpload } from "react-icons/fa";
+import { FaSpinner } from "react-icons/fa";
 import { toast } from "react-toastify";
 
-const TherapistAddModal = ({ onClose, onConfirm }) => {
+const StaffAddModal = ({ onClose, onConfirm }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -11,12 +11,9 @@ const TherapistAddModal = ({ onClose, onConfirm }) => {
     email: "",
     phone: "",
     address: "",
-    gender: "Male",
+    gender: "Female",
     birthDate: "",
-    yearExperience: "",
   });
-  const [imagePreview, setImagePreview] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,39 +23,14 @@ const TherapistAddModal = ({ onClose, onConfirm }) => {
     }));
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("username", formData.username);
-      formDataToSend.append("password", formData.password);
-      formDataToSend.append("fullName", formData.fullName);
-      formDataToSend.append("email", formData.email);
-      formDataToSend.append("phone", formData.phone);
-      formDataToSend.append("address", formData.address);
-      formDataToSend.append("gender", formData.gender);
-      formDataToSend.append("birthDate", formData.birthDate);
-      formDataToSend.append("yearExperience", formData.yearExperience);
-
-      if (selectedFile) {
-        formDataToSend.append("image", selectedFile);
-      }
-
-      await onConfirm(formDataToSend);
+      // Gửi dữ liệu dưới dạng JSON
+      await onConfirm(formData);
+      toast.success("Thêm nhân viên thành công!");
       onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -180,41 +152,6 @@ const TherapistAddModal = ({ onClose, onConfirm }) => {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="yearExperience">Số năm kinh nghiệm</label>
-            <input
-              type="number"
-              id="yearExperience"
-              name="yearExperience"
-              value={formData.yearExperience}
-              onChange={handleChange}
-              min="0"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="image">Hình ảnh</label>
-            <div className="image-upload">
-              <input
-                type="file"
-                id="image"
-                name="image"
-                accept="image/*"
-                onChange={handleFileChange}
-                required
-              />
-              <label htmlFor="image" className="file-label">
-                <FaUpload /> Chọn ảnh
-              </label>
-              {imagePreview && (
-                <div className="image-preview">
-                  <img src={imagePreview} alt="Preview" />
-                </div>
-              )}
-            </div>
-          </div>
-
           <div className="admin-page__modal-content-footer">
             <button
               type="button"
@@ -244,4 +181,4 @@ const TherapistAddModal = ({ onClose, onConfirm }) => {
   );
 };
 
-export default TherapistAddModal;
+export default StaffAddModal;

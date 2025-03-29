@@ -35,7 +35,6 @@ export const useVoucherActions = () => {
       return response;
     },
     onSuccess: () => {
-      toast.success("Tạo voucher thành công!");
       refetch();
     },
     onError: (error) => {
@@ -54,7 +53,6 @@ export const useVoucherActions = () => {
       return response;
     },
     onSuccess: () => {
-      toast.success("Cập nhật voucher thành công!");
       refetch();
     },
     onError: (error) => {
@@ -90,7 +88,6 @@ export const useVoucherActions = () => {
       return response;
     },
     onSuccess: () => {
-      toast.success("Đã kích hoạt voucher thành công!");
       refetch();
     },
     onError: (error) => {

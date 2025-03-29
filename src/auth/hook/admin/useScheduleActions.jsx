@@ -52,16 +52,16 @@ export const useScheduleActions = () => {
           data,
           headers: authHeaders,
         });
+
+        // Kiểm tra trường success trong response
+        if (!response.success) {
+          throw new Error(response.message);
+        }
         return response.result;
       },
       onSuccess: () => {
-        toast.success("Tạo lịch làm việc thành công!");
         queryClient.invalidateQueries(["schedules"]);
         queryClient.invalidateQueries(["therapistSchedule"]);
-      },
-      onError: (error) => {
-        toast.error(error.message || "Có lỗi xảy ra khi tạo lịch!");
-        console.error("Create schedule error:", error);
       },
     });
   };
@@ -75,16 +75,14 @@ export const useScheduleActions = () => {
           data: data, // Sending only the data without id
           headers: authHeaders,
         });
+        if (!response.success) {
+          throw new Error(response.message);
+        }
         return response.result;
       },
       onSuccess: () => {
-        toast.success("Cập nhật lịch làm việc thành công!");
         queryClient.invalidateQueries(["schedules"]);
         queryClient.invalidateQueries(["therapistSchedule"]);
-      },
-      onError: (error) => {
-        toast.error(error.message || "Có lỗi xảy ra khi cập nhật lịch!");
-        console.error("Update schedule error:", error);
       },
     });
   };

@@ -61,7 +61,7 @@ const StaffEditModal = ({ staff, onClose, onConfirm }) => {
             <label>Họ và tên</label>
             <input
               type="text"
-              name="fullname"
+              name="fullName"
               value={formData.fullName}
               onChange={handleChange}
               required

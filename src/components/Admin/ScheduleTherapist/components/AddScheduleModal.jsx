@@ -25,6 +25,7 @@ const AddScheduleModal = ({ onClose, onConfirm, isLoading }) => {
       workingDate: format(formData.workingDate, "yyyy-MM-dd"),
       shiftId: [Number(formData.shiftId)],
     };
+    console.log("Data to send to server:", data);
     onConfirm(data);
   };
 

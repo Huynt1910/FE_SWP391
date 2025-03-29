@@ -4,7 +4,7 @@ import { ACTIONS } from "@/lib/api-client/constant";
 import { getCookie } from "cookies-next";
 import { toast } from "react-toastify";
 
-export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
+export const useBookingActions = () => {
   const token = getCookie("token");
   const queryClient = useQueryClient(); // Lấy queryClient từ react-query
 
@@ -23,7 +23,6 @@ export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
       return response;
     },
     onSuccess: () => {
-      toast.success("Thêm lịch hẹn thành công!");
       queryClient.invalidateQueries(["bookings"]); // Làm mới danh sách booking
     },
     onError: (error) => {
@@ -62,7 +61,6 @@ export const useBookingActions = ({ setInvoiceData, setShowInvoiceModal }) => {
       return response;
     },
     onSuccess: () => {
-      toast.success("Check-in thành công!");
       queryClient.invalidateQueries(["bookings"]); // Làm mới danh sách booking
     },
     onError: (error) => {

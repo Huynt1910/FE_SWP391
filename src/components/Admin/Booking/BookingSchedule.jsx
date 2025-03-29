@@ -10,7 +10,7 @@ import { useBookingsByDate } from "@/auth/hook/admin/useGetBookingByDateHook";
 import { useBookingActions } from "@/auth/hook/admin/useBookingActions";
 import { useServiceActions } from "@/auth/hook/admin/useServiceActionsHook";
 import { useTherapistActions } from "@/auth/hook/admin/useTherapistActions";
-import { useVoucherActions } from "@/auth/hook/admin/useVoucherActions";
+import { useActiveVouchers } from "@/auth/hook/admin/useActiveVouchers";
 
 import BookingTable from "./components/BookingTable";
 import BookingAddModal from "./components/BookingAddModal";
@@ -18,10 +18,7 @@ import InvoiceModal from "./components/InvoiceModal";
 
 const BookingSchedule = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const formattedDate = useMemo(
-    () => selectedDate.toISOString().split("T")[0],
-    [selectedDate]
-  );
+  const formattedDate = selectedDate.toISOString().split("T")[0];
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [invoiceData, setInvoiceData] = useState(null);
@@ -44,13 +41,10 @@ const BookingSchedule = () => {
   const { customers } = useCustomerActions();
   const { services, isLoading: isLoadingServices } = useServiceActions();
   const { therapists } = useTherapistActions();
-  const { vouchers } = useVoucherActions();
+  const { vouchers } = useActiveVouchers();
 
   const handleDateChange = (date) => {
-    // Đặt thời gian về 00:00:00 để tránh lệch ngày
-    const adjustedDate = new Date(date);
-    adjustedDate.setHours(0, 0, 0, 0);
-    setSelectedDate(adjustedDate);
+    setSelectedDate(date); // Cập nhật ngày được chọn
   };
 
   const handleCheckIn = useCallback(
@@ -126,7 +120,7 @@ const BookingSchedule = () => {
             selected={selectedDate}
             onChange={handleDateChange}
             dateFormat="dd/MM/yyyy"
-            minDate={new Date()}
+            // minDate={new Date()}
             className="form-control"
             placeholderText="Chọn ngày"
           />
@@ -154,7 +148,7 @@ const BookingSchedule = () => {
         <BookingAddModal
           services={services || []}
           therapists={therapists}
-          vouchers={vouchers}
+          // vouchers={vouchers}
           onClose={() => setIsAddModalOpen(false)}
           onConfirm={handleCreateBooking}
         />

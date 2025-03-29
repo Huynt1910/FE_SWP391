@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
 import { useScheduleActions } from "@/auth/hook/admin/useScheduleActions";
+import { useTherapistActions } from "@/auth/hook/admin/useTherapistActions"; // Import hook
 import { toast } from "react-toastify";
 import ScheduleHeader from "./components/HeaderSchedule";
 import ScheduleTable from "./components/ScheduleTable";
@@ -21,6 +22,8 @@ const ScheduleManagement = () => {
     useUpdateSchedule,
     useDeleteSchedule,
   } = useScheduleActions();
+
+  const { therapists, isLoading: isTherapistsLoading } = useTherapistActions(); // Lấy danh sách therapists
 
   // Get schedules for selected date
   const { data: schedules, isLoading } = useGetScheduleByDate(selectedDate);
@@ -53,8 +56,9 @@ const ScheduleManagement = () => {
     try {
       await createSchedule(data);
       handleCloseModal("add");
+      toast.success("Tạo lịch làm việc thành công!");
     } catch (error) {
-      toast.error("Lỗi khi tạo lịch làm việc");
+      toast.error(error.message);
     }
   };
 
@@ -64,7 +68,7 @@ const ScheduleManagement = () => {
       await updateSchedule({ id, data });
       handleCloseModal("edit");
     } catch (error) {
-      toast.error("Lỗi khi cập nhật lịch làm việc");
+      toast.error(error.message);
     }
   };
 
@@ -78,7 +82,7 @@ const ScheduleManagement = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isTherapistsLoading) {
     return (
       <div className="loading-container">
         <FaSpinner className="loading-spinner" />
@@ -111,6 +115,7 @@ const ScheduleManagement = () => {
       {modalState.edit && selectedSchedule && (
         <EditScheduleModal
           schedule={selectedSchedule}
+          therapists={therapists} // Truyền danh sách therapist vào modal
           onClose={() => handleCloseModal("edit")}
           onConfirm={handleUpdateSchedule}
           isLoading={isUpdating}

@@ -4,28 +4,26 @@ import { FaSpinner } from "react-icons/fa";
 const EditVoucherModal = ({ voucher, onClose, onConfirm }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    code: "",
-    value: "",
+    voucherName: "",
+    voucherCode: "",
+    percentDiscount: "",
     quantity: "",
     expiryDate: "",
-    description: "",
   });
 
   useEffect(() => {
-    if (voucher) {
-      // Format the date to YYYY-MM-DD for the date input
-      const formattedDate = voucher.expiryDate
-        ? new Date(voucher.expiryDate).toISOString().split("T")[0]
-        : "";
-
-      setFormData({
-        code: voucher.code || "",
-        value: voucher.value || 0,
-        quantity: voucher.quantity || 0,
-        expiryDate: formattedDate,
-        description: voucher.description || "",
-      });
+    if (!voucher) {
+      console.error("Voucher is null or undefined in EditVoucherModal");
+      return;
     }
+
+    setFormData({
+      voucherName: voucher.voucherName || "",
+      voucherCode: voucher.voucherCode || "",
+      percentDiscount: voucher.percentDiscount || "",
+      quantity: voucher.quantity || "",
+      expiryDate: voucher.expiryDate || "",
+    });
   }, [voucher]);
 
   const handleChange = (e) => {
@@ -41,13 +39,13 @@ const EditVoucherModal = ({ voucher, onClose, onConfirm }) => {
     setIsSubmitting(true);
 
     try {
-      // Include voucher ID in the update data
       const updateData = {
         ...formData,
-        id: voucher.id, // Make sure to include the ID for updating
+        percentDiscount: parseFloat(formData.percentDiscount),
+        quantity: parseInt(formData.quantity),
       };
+      console.log("Data to send to API:", updateData);
       await onConfirm(updateData);
-      onClose();
     } catch (error) {
       console.error("Error updating voucher:", error);
     } finally {
@@ -55,14 +53,11 @@ const EditVoucherModal = ({ voucher, onClose, onConfirm }) => {
     }
   };
 
-  // Add validation for expiry date
-  const today = new Date().toISOString().split("T")[0];
-
   return (
     <div className="admin-page__modal">
       <div className="admin-page__modal-content">
         <div className="admin-page__modal-content-header">
-          <h2>Chỉnh sửa Voucher: {voucher.code}</h2>
+          <h2>Chỉnh sửa Voucher</h2>
           <button className="close-btn" onClick={onClose}>
             ×
           </button>
@@ -72,13 +67,24 @@ const EditVoucherModal = ({ voucher, onClose, onConfirm }) => {
           className="admin-page__modal-content-body"
         >
           <div className="form-group">
+            <label>Tên Voucher</label>
+            <input
+              type="text"
+              name="voucherName"
+              value={formData.voucherName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
             <label>Mã Voucher</label>
             <input
               type="text"
-              name="code"
-              value={formData.code}
-              disabled
-              className="input-disabled"
+              name="voucherCode"
+              value={formData.voucherCode}
+              onChange={handleChange}
+              required
             />
           </div>
 
@@ -86,8 +92,8 @@ const EditVoucherModal = ({ voucher, onClose, onConfirm }) => {
             <label>Giá trị (%)</label>
             <input
               type="number"
-              name="value"
-              value={formData.value}
+              name="percentDiscount"
+              value={formData.percentDiscount}
               onChange={handleChange}
               min="0"
               max="100"
@@ -114,19 +120,7 @@ const EditVoucherModal = ({ voucher, onClose, onConfirm }) => {
               name="expiryDate"
               value={formData.expiryDate}
               onChange={handleChange}
-              min={today}
               required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Mô tả</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="3"
-              placeholder="Nhập mô tả voucher..."
             />
           </div>
 

@@ -18,7 +18,7 @@ const ScheduleHeader = ({ selectedDate, onDateChange, onAddClick }) => {
             selected={selectedDate}
             onChange={onDateChange}
             dateFormat="dd/MM/yyyy"
-            minDate={new Date()}
+            // minDate={new Date()}
             className="form-control"
             placeholderText="Chọn ngày"
           />

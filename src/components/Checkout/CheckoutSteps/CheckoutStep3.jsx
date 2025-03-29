@@ -1,7 +1,57 @@
+import { useRouter } from "next/router";
+import { useMemo } from "react";
+import { usePaymentResponse } from "@/auth/hook/usePaymentResponse";
+import { useCheckoutTransaction } from "@/auth/hook/admin/useCheckoutTransaction";
 import { FaCheckCircle } from "react-icons/fa";
 import Link from "next/link";
 
 export const CheckoutStep3 = () => {
+  const router = useRouter();
+
+  // Lấy query parameters từ URL và sử dụng useMemo để tránh thay đổi liên tục
+  const queryParams = useMemo(() => {
+    const { vnp_BankCode, vnp_CardType, vnp_ResponseCode, vnp_TxnRef } =
+      router.query;
+
+    if (!vnp_BankCode || !vnp_CardType || !vnp_ResponseCode || !vnp_TxnRef) {
+      return null;
+    }
+
+    return {
+      vnp_BankCode,
+      vnp_CardType,
+      vnp_ResponseCode,
+      vnp_TxnRef,
+    };
+  }, [router.query]);
+
+  // Sử dụng hook để gọi API lấy thông tin giao dịch
+  const {
+    data: transactionMessage,
+    isLoading,
+    error,
+  } = usePaymentResponse(queryParams);
+
+  // Sử dụng hook để gọi API checkout
+  const checkoutMutation = useCheckoutTransaction();
+
+  const handleReturnToBookingPage = async () => {
+    const transactionId = queryParams?.vnp_TxnRef;
+
+    if (!transactionId) {
+      console.error("Transaction ID không tồn tại");
+      return;
+    }
+
+    try {
+      await checkoutMutation.mutateAsync({ transactionId });
+      console.log("Thanh toán thành công!");
+      router.push("/admin/bookings"); // Điều hướng về trang quản lý booking
+    } catch (err) {
+      console.error("Lỗi khi thanh toán:", err.message);
+    }
+  };
+
   const styles = {
     checkoutSuccess: {
       display: "flex",
@@ -47,6 +97,28 @@ export const CheckoutStep3 = () => {
     },
   };
 
+  if (isLoading) {
+    return (
+      <div style={styles.checkoutSuccess}>
+        <p style={styles.message}>Loading transaction details...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={styles.checkoutSuccess}>
+        <p style={styles.message}>Error: {error}</p>
+        <button
+          onClick={() => router.push("/admin/bookings")}
+          style={styles.homeButton}
+        >
+          Return to Booking Page
+        </button>
+      </div>
+    );
+  }
+
   return (
     <>
       <style jsx>{`
@@ -88,12 +160,16 @@ export const CheckoutStep3 = () => {
         </div>
         <div className="success-content">
           <h2 style={styles.heading}>Payment successfully!</h2>
-          <p style={styles.message}>
-            Thank you for your payment. Your order has been processed.
-          </p>
-          <Link href="/admin/bookings" style={styles.homeButton}>
-            Return to Booking Page
-          </Link>
+          <p style={styles.message}>{transactionMessage}</p>
+          <button
+            onClick={handleReturnToBookingPage}
+            style={styles.homeButton}
+            disabled={checkoutMutation.isLoading}
+          >
+            {checkoutMutation.isLoading
+              ? "Processing..."
+              : "Return to Booking Page"}
+          </button>
         </div>
       </div>
     </>
