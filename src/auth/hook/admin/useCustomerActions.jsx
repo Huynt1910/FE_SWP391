@@ -37,9 +37,9 @@ export const useCustomerActions = () => {
       });
       return response;
     },
-    onSuccess: () => {
-      toast.success("Đặt lại mật khẩu thành công!");
-    },
+    // onSuccess: () => {
+    //   toast.success("Đặt lại mật khẩu thành công!");
+    // },
     onError: (error) => {
       toast.error("Có lỗi xảy ra khi đặt lại mật khẩu!");
       console.error(error);

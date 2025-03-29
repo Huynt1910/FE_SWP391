@@ -1089,3 +1089,59 @@
     cursor: not-allowed;
   }
 }
+
+// Styles cho phần filter
+.admin-page__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px; // Khoảng cách giữa các phần tử
+
+  select.form-control {
+    width: 250px; // Đặt chiều rộng cho dropdown
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1e293b;
+    background: #ffffff;
+    transition: all 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6; // Màu xanh khi focus
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    &:hover {
+      border-color: #94a3b8; // Màu xám nhạt khi hover
+    }
+  }
+
+  button.btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: #3b82f6; // Màu xanh dương
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #2563eb; // Màu xanh đậm hơn khi hover
+      transform: translateY(-1px); // Hiệu ứng hover
+    }
+
+    &:active {
+      transform: translateY(0); // Hiệu ứng khi nhấn
+    }
+
+    .btn-icon {
+      font-size: 16px;
+    }
+  }
+}

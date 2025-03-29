@@ -13,12 +13,13 @@ const Services = () => {
     add: false,
   });
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(""); // Lưu category được chọn
 
   const {
     services,
     isLoading,
     createService,
-    updateService, // Sử dụng chức năng cập nhật
+    updateService,
     activateService,
     deactivateService,
   } = useServiceActions();
@@ -89,6 +90,11 @@ const Services = () => {
     );
   }
 
+  // Lọc danh sách dịch vụ theo category
+  const filteredServices = selectedCategory
+    ? services.filter((service) => service.category === selectedCategory)
+    : services;
+
   return (
     <div className="admin-page">
       <div className="admin-page__header">
@@ -97,6 +103,20 @@ const Services = () => {
           <p>Quản lý và cập nhật các dịch vụ</p>
         </div>
         <div className="admin-page__header-actions">
+          <select
+            className="form-control"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="">Tất cả danh mục</option>
+            {Array.from(
+              new Set(services.map((service) => service.category))
+            ).map((category, index) => (
+              <option key={index} value={category}>
+                {category || "Không có danh mục"}
+              </option>
+            ))}
+          </select>
           <button
             className="btn btn-primary"
             onClick={() => setIsAddModalOpen(true)}
@@ -108,7 +128,7 @@ const Services = () => {
       </div>
 
       <ServiceTable
-        services={services}
+        services={filteredServices} // Truyền danh sách dịch vụ đã lọc
         onEdit={(service) => openModal("edit", service)}
         onToggleStatus={handleToggleStatus}
       />
@@ -124,7 +144,7 @@ const Services = () => {
         <ServiceEditModal
           service={selectedService}
           onClose={() => closeModal("edit")}
-          onConfirm={handleUpdateConfirm} // Truyền hàm xử lý cập nhật
+          onConfirm={handleUpdateConfirm}
         />
       )}
     </div>

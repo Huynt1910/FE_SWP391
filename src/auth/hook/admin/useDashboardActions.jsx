@@ -28,11 +28,6 @@ export const useDashboardActions = () => {
               }),
             ]);
 
-          console.log("Bookings Count:", bookingsCount.data);
-          console.log("Total Money:", totalMoney.data);
-          console.log("Customer Count:", customerCount.data);
-          console.log("Service Count:", serviceCount.data);
-
           return {
             totalBookings: bookingsCount.data.result || 0,
             totalRevenue: totalMoney.data.result || 0,

@@ -20,7 +20,6 @@ export const useCreateCustomer = () => {
       return response;
     },
     onSuccess: () => {
-      toast.success("Tạo khách hàng thành công!");
       queryClient.invalidateQueries(["customers"]); // Làm mới danh sách khách hàng
     },
     onError: (error) => {

@@ -42,7 +42,6 @@ export const useBookingActions = () => {
       return response;
     },
     onSuccess: () => {
-      toast.success("Cập nhật thành công!");
       queryClient.invalidateQueries(["bookings"]); // Làm mới danh sách booking
     },
     onError: (error) => {
