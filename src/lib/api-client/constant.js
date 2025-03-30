@@ -15,6 +15,12 @@ export const END_POINTS = {
     secure: false,
     publicAccess: true,
   },
+  signInGoogle: {
+    path: "/authentication/login-gg",
+    method: "POST",
+    secure: false,
+    publicAccess: true,
+  },
   signUp: { path: "/users", method: "POST", secure: false, publicAccess: true },
   refreshToken: {
     path: "/authentication/refresh-token",
@@ -413,6 +419,8 @@ export const END_POINTS = {
 
 export const ACTIONS = {
   SIGN_IN: "signIn",
+  SIGN_IN_GOOGLE: "signInGoogle",
+  SIGN_IN_WITH_GOOGLE: "signInGoogle",
   SIGN_UP: "signUp",
   MY_INFO: "myInfo",
   FORGOT_PASSWORD: "forgotpassword",
@@ -525,3 +533,14 @@ export const PAGE_ACCESS = {
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "https://skincare-booking-api-3e537a79674f.herokuapp.com/api";
+
+// Firebase Configuration
+export const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBDR8tHvs2hUTSTf9_TwUz6v8_8S0fXalQ",
+  authDomain: "bambospa-c430d.firebaseapp.com",
+  projectId: "bambospa-c430d",
+  storageBucket: "bambospa-c430d.firebasestorage.app",
+  messagingSenderId: "385375331430",
+  appId: "1:385375331430:web:1288c1ac8a1d1f2d99f9a7",
+  measurementId: "G-WCRPBF0HRJ"
+};
