@@ -76,7 +76,6 @@ export const useServiceActions = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["services"]);
-      toast.success("Cập nhật dịch vụ thành công!");
     },
     onError: (error) => {
       toast.error("Lỗi cập nhật dịch vụ!");

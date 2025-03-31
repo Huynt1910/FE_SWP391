@@ -40,7 +40,6 @@ const Services = () => {
         id: selectedService.serviceId,
         formData,
       });
-      toast.success("Cập nhật dịch vụ thành công!");
       closeModal("edit");
     } catch (error) {
       toast.error("Lỗi cập nhật dịch vụ!");
@@ -70,9 +69,6 @@ const Services = () => {
         await (isActive
           ? deactivateService(service.serviceId)
           : activateService(service.serviceId));
-        toast.success(
-          `${isActive ? "Ngưng hoạt động" : "Kích hoạt"} dịch vụ thành công!`
-        );
       } catch (error) {
         toast.error(
           `Lỗi ${isActive ? "ngưng hoạt động" : "kích hoạt"} dịch vụ!`
