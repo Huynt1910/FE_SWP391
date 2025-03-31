@@ -4,7 +4,7 @@ import { showToast } from "@utils/toast";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { ROLES } from "@/lib/api-client/constant";
+import { ROLES, ACTIONS } from "@/lib/api-client/constant";
 import { setAuthData } from "@/utils/auth";
 
 export const Login = () => {
@@ -25,34 +25,24 @@ export const Login = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("Submitting login form:", {
-      username: formData.username.trim(),
-      password: "********", // Hide password in logs
-    });
+  const handleSuccessfulAuth = (response) => {
+    // console.log("Authentication response:", response);
+    
+    // If we have a response with a token, proceed with login
+    if (response?.result?.token) {
+      // Lưu token và role
+      setAuthData(
+        response.result.token,
+        response.result.role,
+        formData.rememberMe ? 30 : 1
+      );
 
-    try {
-      const response = await signIn({
-        username: formData.username.trim(),
-        password: formData.password,
-      });
-
-      // If login failed, display a specific toast message for incorrect credentials
-      if (!response.success) {
-        // showToast("Wrong username or password. Please try again.", "error");
-        return;
-      }
-
-      // If we have a response with a token, proceed with login
-      if (response?.result?.token) {
-        // Lưu token và role
-        setAuthData(
-          response.result.token,
-          response.result.role,
-          formData.rememberMe ? 30 : 1
-        );
-
+      // Get return URL from query parameters or default to a route based on role
+      const returnUrl = router.query.returnUrl;
+      
+      if (returnUrl) {
+        router.push(returnUrl);
+      } else {
         // Chuyển hướng dựa trên role
         switch (response.result.role.toUpperCase()) {
           case ROLES.ADMIN:
@@ -71,10 +61,33 @@ export const Login = () => {
             console.error("Unknown role:", response.result.role);
             router.push("/");
         }
-      } else {
-        console.error("Invalid response format - missing token");
-        showToast("Login failed - invalid response from server", "error");
       }
+    } else {
+      console.error("Invalid response format - missing token");
+      showToast("Login failed - invalid response from server", "error");
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    console.log("Submitting login form:", {
+      username: formData.username.trim(),
+      password: "********", // Hide password in logs
+    });
+
+    try {
+      const response = await signIn({
+        username: formData.username.trim(),
+        password: formData.password,
+      });
+
+      // If login failed, display a specific toast message for incorrect credentials
+      if (!response.success) {
+        // showToast("Wrong username or password. Please try again.", "error");
+        return;
+      }
+
+      handleSuccessfulAuth(response);
     } catch (error) {
       console.error("Login error:", error);
       // All error handling is now in the hook
@@ -92,8 +105,7 @@ export const Login = () => {
           >
             <form onSubmit={handleSubmit}>
               <h3>Login</h3>
-              {/* <SocialLogin /> */}
-              {/* <SocialLogin /> */}
+              <SocialLogin onAuthSuccess={handleSuccessfulAuth} />
 
               <div className="box-field">
                 <input

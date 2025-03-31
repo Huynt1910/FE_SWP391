@@ -1,6 +1,7 @@
 .booking-list,
 .booking-list-pending,
-.booking-list-completed {
+.booking-list-completed,
+.profile-booking {
   padding: 20px;
 
   h2 {
@@ -18,7 +19,10 @@
 .booking-list-pending__auth-error,
 .booking-list-completed__loading,
 .booking-list-completed__error,
-.booking-list-completed__auth-error {
+.booking-list-completed__auth-error,
+.profile-booking__loading,
+.profile-booking__error,
+.profile-booking__auth-error {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -70,7 +74,8 @@
 
 .booking-list__empty,
 .booking-list-pending__empty,
-.booking-list-completed__empty {
+.booking-list-completed__empty,
+.profile-booking__empty {
   text-align: center;
   padding: 40px 20px;
   background-color: #f9f9f9;
@@ -137,7 +142,8 @@
 
 .booking-list__list,
 .booking-list-pending__list,
-.booking-list-completed__list {
+.booking-list-completed__list,
+.profile-booking__list {
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -415,6 +421,57 @@
         &:not(:last-child) {
           border-bottom: 1px dashed #eee;
         }
+      }
+    }
+  }
+
+  // Add new styles for booking-services section
+  .booking-services {
+    padding: 0 15px 15px;
+    
+    h4 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    .services-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .service-item {
+      background-color: #f8f8f8;
+      border-radius: 5px;
+      padding: 12px 15px;
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 5px;
+      border: 1px solid #eee;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+    
+    p {
+      color: #666;
+      font-style: italic;
+      padding: 10px 0;
+    }
+  }
+  
+  // Override booking status for CANCELLED state
+  .booking-status {
+    &.cancelled,
+    &[style*="background-color: #f8d7da"] {
+      background-color: #f8d7da !important; 
+      color: #721c24 !important;
+      
+      .status-dot {
+        background-color: #dc3545 !important;
       }
     }
   }
@@ -872,6 +929,211 @@
 
     &:hover {
       background-color: darken(#f44336, 10%);
+    }
+  }
+}
+
+// Profile booking specific styles
+.profile-booking {
+  &__title {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+  }
+
+  &__item {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &.expanded {
+      .profile-booking__details {
+        max-height: 500px;
+        opacity: 1;
+      }
+    }
+
+    &.deleting {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+  }
+
+  &__header {
+    padding: 15px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__service {
+    display: flex;
+    flex-direction: column;
+    
+    h3 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+      color: #333;
+    }
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-top: 5px;
+    width: fit-content;
+    
+    &.cancelled {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    svg {
+      margin-right: 5px;
+      font-size: 12px;
+    }
+  }
+
+  &__actions {
+    .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #aaa;
+      padding: 5px;
+      transition: all 0.2s;
+      
+      &:hover {
+        color: #333;
+      }
+    }
+  }
+
+  &__details {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+  }
+
+  &__info {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    
+    .info-item {
+      display: flex;
+      align-items: center;
+      
+      svg {
+        color: #f06eaa;
+        margin-right: 10px;
+        min-width: 16px;
+      }
+      
+      .cancel-reason {
+        color: #721c24;
+      }
+    }
+  }
+
+  &__actions-expanded {
+    padding: 0 15px 15px;
+    display: flex;
+    justify-content: flex-end;
+    
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      .spinner {
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+}
+
+// Modal overlay styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  
+  .modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    
+    h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 20px;
+      color: #333;
+    }
+    
+    p {
+      margin-bottom: 10px;
+      color: #666;
+    }
+    
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+      
+      button {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        
+        &.btn-secondary {
+          background-color: #e0e0e0;
+          color: #333;
+          
+          &:hover {
+            background-color: darken(#e0e0e0, 10%);
+          }
+        }
+        
+        &.btn-danger {
+          background-color: #f44336;
+          color: white;
+          
+          &:hover {
+            background-color: darken(#f44336, 10%);
+          }
+        }
+      }
     }
   }
 } 
