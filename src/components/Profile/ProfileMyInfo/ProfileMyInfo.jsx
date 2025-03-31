@@ -86,7 +86,7 @@ export const ProfileMyInfo = () => {
       onSuccess: (updatedData) => {
         setFormData((prev) => ({ ...prev, ...updatedData }));
         setIsUpdateModalOpen(false);
-        toast.success("Cập nhật thông tin thành công!");
+        toast.success("Your information updated successfully!");
       },
       onError: (error) => {
         toast.error(`Cập nhật thất bại: ${error.message}`);
@@ -103,7 +103,7 @@ export const ProfileMyInfo = () => {
         setFormData((prev) => ({ ...prev, phone: updatedData.phone }));
         setIsPhoneModalOpen(false);
         setNewPhone("");
-        toast.success("Cập nhật số điện thoại thành công!");
+        toast.success("Phone updated successfully!");
       },
       onError: (error) => {
         toast.error(`Cập nhật số điện thoại thất bại: ${error.message}`);
@@ -120,10 +120,10 @@ export const ProfileMyInfo = () => {
         setFormData(updatedData);
         setIsEmailModalOpen(false);
         setNewEmail("");
-        toast.success("Cập nhật email thành công!");
+        toast.success("Email updated successfully!");
       },
       onError: (error) => {
-        toast.error("Cập nhật email thất bại: " + error.message);
+        toast.error("Email update failed: " + error.message);
       },
     });
   };
@@ -156,7 +156,7 @@ export const ProfileMyInfo = () => {
   return (
     <div className="profile-my-info-container">
       <div className="profile-my-info-title-container">
-        <div className="profile-my-info-title">Hồ Sơ Của Tôi</div>
+        <div className="profile-my-info-title">My profile</div>
         <button
           onClick={() => setIsUpdateModalOpen(true)}
           className="profile-my-info-update-button"
@@ -169,7 +169,7 @@ export const ProfileMyInfo = () => {
         {/* Thông tin cá nhân */}
         <div className="profile-my-info-info-container">
           <div className="profile-my-info-personal-section">
-            <div className="profile-my-info-info-title">Thông tin cá nhân</div>
+            <div className="profile-my-info-info-title">Information</div>
             <div className="profile-my-info-form-group">
               <label className="profile-my-info-label">Username</label>
               <input
@@ -231,9 +231,7 @@ export const ProfileMyInfo = () => {
 
         {/* Phần bảo mật thông tin */}
         <div className="profile-my-info-security-section">
-          <div className="profile-my-info-security-title">
-            Bảo mật thông tin
-          </div>
+          <div className="profile-my-info-security-title">Security</div>
           <div className="profile-my-info-form-group">
             <label className="profile-my-info-label">Email</label>
             <div className="profile-my-info-input-group masked-field">

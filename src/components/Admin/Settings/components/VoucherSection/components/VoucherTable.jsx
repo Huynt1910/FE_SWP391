@@ -15,6 +15,8 @@ const VoucherTable = ({ vouchers, onEdit, onToggleStatus }) => {
             <th>Tên Voucher</th>
             <th>Mã Voucher</th>
             <th>Giá trị</th>
+            <th>Ngày hết hạn</th>
+            <th>Số lượng</th>
             <th>Trạng thái</th>
             <th>Thao tác</th>
           </tr>
@@ -28,6 +30,9 @@ const VoucherTable = ({ vouchers, onEdit, onToggleStatus }) => {
               <td>{voucher.voucherName}</td>
               <td>{voucher.voucherCode}</td>
               <td>{voucher.percentDiscount}%</td>
+              <td>{voucher.expiryDate || "N/A"}</td>{" "}
+              {/* Hiển thị ngày hết hạn */}
+              <td>{voucher.quantity || 0}</td> {/* Hiển thị số lượng */}
               <td>
                 <span
                   className={`status-badge ${

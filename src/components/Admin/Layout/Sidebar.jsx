@@ -75,7 +75,7 @@ const Sidebar = ({ isCollapsed }) => {
       roles: ["ADMIN"],
     },
     {
-      label: "Cài đặt",
+      label: "Quản lý voucher",
       path: "/admin/settings",
       icon: <FaCog />,
       roles: ["ADMIN"],
