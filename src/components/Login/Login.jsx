@@ -136,8 +136,8 @@ export const Login = () => {
                   checked={formData.rememberMe}
                   onChange={handleInputChange}
                 />
-                <span className="checkmark"></span>
-                Remember me
+                {/* <span className="checkmark"></span>
+                Remember me */}
               </label>
               <button className="btn" type="submit" disabled={isPending}>
                 {isPending ? "Logging in..." : "Log in"}

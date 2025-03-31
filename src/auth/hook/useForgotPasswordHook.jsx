@@ -87,7 +87,7 @@ export function useForgotPassword() {
         console.log("Password change response:", response);
 
         if (response.success) {
-          showToast("Password changed successfully", "success");
+          // showToast("Password changed successfully", "success");
           return { success: true };
         } else {
           showToast(response.message || "Failed to change password", "error");

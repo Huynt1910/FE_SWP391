@@ -75,7 +75,7 @@ export const Footer = () => {
             </div>
           </div>
           <div className="footer-copy">
-            <span>&copy; All rights reserved. BamboSpa 2020</span>
+            <span>&copy; All rights reserved. BamboSpa 2025</span>
           </div>
         </div>
       </footer>
