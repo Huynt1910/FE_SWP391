@@ -44,7 +44,7 @@ const ServiceTable = ({ services, onEdit, onToggleStatus }) => {
               <td>{service.serviceName}</td>
               <td className="description-cell">{service.description}</td>
               <td className="price-cell">{formatPrice(service.price)}</td>
-              <td className="duration-cell">{service.duration} giờ</td>
+              <td className="duration-cell">{service.duration}</td>
               <td>{service.category}</td>
               <td>
                 <span

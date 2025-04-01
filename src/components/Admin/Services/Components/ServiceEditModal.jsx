@@ -54,13 +54,13 @@ const ServiceEditModal = ({ service, onClose, onConfirm, isLoading }) => {
 
     // Xử lý hình ảnh
     if (selectedFile) {
-      formDataToSend.append("image", selectedFile); // Gửi hình ảnh mới nếu có
-    } else if (service.image) {
+      formDataToSend.append("imgUrl", selectedFile); // Thay đổi key thành imgUrl
+    } else if (service.imgUrl) {
       // Tải file từ URL và thêm vào FormData
-      const response = await fetch(service.image);
+      const response = await fetch(service.imgUrl);
       const blob = await response.blob();
       const file = new File([blob], "current-image.jpg", { type: blob.type });
-      formDataToSend.append("image", file);
+      formDataToSend.append("imgUrl", file); // Thay đổi key thành imgUrl
     }
 
     // Log dữ liệu trước khi gửi
@@ -144,10 +144,10 @@ const ServiceEditModal = ({ service, onClose, onConfirm, isLoading }) => {
           </div>
 
           <div className="admin-page__form-group">
-            <label htmlFor="image">Hình ảnh</label>
+            <label htmlFor="imgUrl">Hình ảnh</label>
             <input
               type="file"
-              id="image"
+              id="imgUrl"
               accept="image/*"
               onChange={handleImageChange}
             />

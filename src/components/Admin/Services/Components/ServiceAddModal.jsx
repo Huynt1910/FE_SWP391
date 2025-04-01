@@ -48,20 +48,45 @@ const ServiceAddModal = ({ onClose, onConfirm }) => {
       formDataToSend.append("duration", formData.duration);
       formDataToSend.append("isActive", "true");
 
-      // Add file last
+      // Add file for imgUrl
       if (selectedFile) {
-        formDataToSend.append("image", selectedFile);
+        formDataToSend.append("imgUrl", selectedFile);
+      } else {
+        console.error("Hình ảnh không được chọn");
+        toast.error("Vui lòng chọn hình ảnh");
+        return;
       }
 
-      // Log what's being sent
+      // Validate price
+      if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
+        console.error("Price phải là số hợp lệ lớn hơn 0");
+        toast.error("Giá phải là số hợp lệ lớn hơn 0");
+        return;
+      }
+
+      // Validate duration
+      if (!/^\d{2}:\d{2}:\d{2}$/.test(formData.duration)) {
+        console.error("Duration không đúng định dạng HH:mm:ss");
+        toast.error("Thời lượng phải đúng định dạng HH:mm:ss");
+        return;
+      }
+
+      // Log dữ liệu gửi đi
+      console.log("FormData to send:");
       for (let pair of formDataToSend.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
+        console.log(
+          `${pair[0]}:`,
+          pair[1] instanceof File ? pair[1].name : pair[1]
+        );
       }
 
       await onConfirm(formDataToSend);
       onClose();
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error(
+        "Error submitting form:",
+        error.response?.data || error.message
+      );
       toast.error(error.response?.data?.message || "Lỗi thêm dịch vụ");
     } finally {
       setIsSubmitting(false);
@@ -120,42 +145,47 @@ const ServiceAddModal = ({ onClose, onConfirm }) => {
           <div className="form-group">
             <label htmlFor="price">Giá (VNĐ)</label>
             <input
-              type="text"
+              type="number"
               id="price"
               name="price"
               value={formData.price}
-              onChange={handleChange}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (!isNaN(value) && Number(value) >= 0) {
+                  setFormData({ ...formData, price: value });
+                }
+              }}
+              step="0.01"
               min="0"
-              step="1000"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="duration">Thời gian (HH:mm:ss)</label>
+            <label htmlFor="duration">Thời lượng (HH:mm:ss)</label>
             <input
               type="text"
               id="duration"
               name="duration"
               value={formData.duration}
               onChange={handleChange}
-              step="1"
+              placeholder="Nhập thời lượng (HH:mm:ss)"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="image">Hình ảnh</label>
+            <label htmlFor="imgUrl">Hình ảnh</label>
             <div className="image-upload">
               <input
                 type="file"
-                id="image"
-                name="image"
+                id="imgUrl"
+                name="imgUrl"
                 accept="image/*"
                 onChange={handleFileChange}
                 required
               />
-              <label htmlFor="image" className="file-label">
+              <label htmlFor="imgUrl" className="file-label">
                 <FaUpload /> Chọn ảnh
               </label>
               {imagePreview && (
