@@ -35,7 +35,6 @@ export const useStaffActions = () => {
       return response;
     },
     onSuccess: () => {
-      toast.success("Thêm nhân viên thành công!");
       refetch();
     },
     onError: (error) => {

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaSpinner, FaUpload } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const ServiceAddModal = ({ onClose, onConfirm }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);

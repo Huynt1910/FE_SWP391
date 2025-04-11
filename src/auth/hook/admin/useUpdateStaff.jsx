@@ -11,7 +11,7 @@ export const useUpdateStaff = () => {
     mutationFn: async ({ staffId, data }) => {
       const response = await APIClient.invoke({
         action: ACTIONS.UPDATE_STAFF,
-        pathParams: { staffId },
+        pathParams: { id: staffId },
         headers: { Authorization: `Bearer ${token}` },
         data,
       });
@@ -21,7 +21,7 @@ export const useUpdateStaff = () => {
       }
 
       console.log("Response:", response);
-      throw new Error(response.message || "Lỗi khi cập nhật thông tin staff");
+      // throw new Error(response.message || "Lỗi khi cập nhật thông tin staff");
     },
     onSuccess: () => {
       // Làm mới query liên quan sau khi mutation thành công

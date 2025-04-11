@@ -532,7 +532,7 @@ export const PAGE_ACCESS = {
 };
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
-  "https://skincare-booking-api-3e537a79674f.herokuapp.com/api";
+  "https://skincare-api-4d96c0caf8d1.herokuapp.com/api";
 
 // Firebase Configuration
 export const FIREBASE_CONFIG = {

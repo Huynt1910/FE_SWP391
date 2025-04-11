@@ -388,7 +388,7 @@ function SurveyForm() {
     localStorage.setItem('selectedService', JSON.stringify(service));
     // Redirect to booking page
     router.push('/booking?step=2');
-    showToast(`Booking ${service.name}...`, "success");
+    // showToast(`Booking ${service.name}...`, "success");
   };
 
   // Book the featured LED Light Therapy service
@@ -406,7 +406,7 @@ function SurveyForm() {
     // Store the service and redirect
     localStorage.setItem('selectedService', JSON.stringify(ledTherapyService));
     router.push('/booking?step=2');
-    showToast("Booking LED Light Therapy...", "success");
+    // showToast("Booking LED Light Therapy...", "success");
   };
 
   // Handle radio input change
@@ -444,7 +444,7 @@ function SurveyForm() {
   const nextStep = () => {
     // If we're on the survey type selection screen and no survey type is selected
     if (currentStep === 0 && !surveyType) {
-      showToast("Please select a survey type", "error");
+      // showToast("Please select a survey type", "error");
       return;
     }
 
@@ -452,7 +452,7 @@ function SurveyForm() {
     if (currentStep >= 1 && currentStep <= surveyQuestions.length) {
       const currentQuestion = surveyQuestions[currentStep - 1];
       if (!currentQuestion.validation(formData[currentQuestion.name])) {
-        showToast("Please answer the question before proceeding", "error");
+        // showToast("Please answer the question before proceeding", "error");
         return;
       }
     }
@@ -495,11 +495,11 @@ function SurveyForm() {
     try {
       // Simulate API call to submit survey
       setTimeout(() => {
-        showToast.success("Survey submitted successfully!");
+        // showToast.success("Survey submitted successfully!");
         setIsPending(false);
       }, 1500);
     } catch (error) {
-      showToast.error("Error submitting survey");
+      // showToast.error("Error submitting survey");
       setIsPending(false);
     }
   };

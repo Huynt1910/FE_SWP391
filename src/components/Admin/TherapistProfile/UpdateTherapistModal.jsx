@@ -40,9 +40,24 @@ const UpdateTherapistModal = ({
     // Xử lý hình ảnh
     if (selectedFile) {
       formData.append("imgUrl", selectedFile); // Gửi hình ảnh mới nếu có
+    } else if (updateData.imgUrl) {
+      // Nếu không chọn hình ảnh mới, tải hình ảnh hiện tại từ URL và chuyển thành file
+      try {
+        const response = await fetch(updateData.imgUrl);
+        const blob = await response.blob();
+        const file = new File([blob], "current-image.jpg", { type: blob.type });
+        formData.append("imgUrl", file); // Gửi file thay vì URL
+      } catch (error) {
+        console.error("Lỗi khi tải hình ảnh từ URL:", error);
+        toast.error(
+          "Không thể tải hình ảnh hiện tại. Vui lòng chọn hình ảnh mới."
+        );
+        return;
+      }
     } else {
-      // Nếu không chọn hình ảnh mới, báo lỗi hoặc giữ nguyên hình ảnh hiện tại
+      // Nếu không có hình ảnh nào, báo lỗi
       console.error("Hình ảnh không được chọn!");
+      toast.error("Vui lòng chọn hoặc giữ nguyên hình ảnh hiện tại.");
       return;
     }
 
@@ -145,10 +160,12 @@ const UpdateTherapistModal = ({
           <div className="form-group">
             <label>Hình ảnh</label>
             <input type="file" accept="image/*" onChange={handleFileChange} />
-            {preview && (
+            {preview ? (
               <div className="image-preview">
                 <img src={preview} alt="Preview" />
               </div>
+            ) : (
+              <p className="error-message">Chưa có hình ảnh nào được chọn.</p>
             )}
           </div>
           <div className="modal-actions">
